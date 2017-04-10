@@ -219,6 +219,13 @@ class BluePrint():
         return len(self._tslist)
 
     @property
+    def length_segments(self):
+        """
+        Returns the number of segments in the blueprint
+        """
+        return len(self._namelist)
+
+    @property
     def length_seconds(self):
         """
         If possible, returns the length of the blueprint in seconds.
@@ -1782,13 +1789,14 @@ class Sequence:
                 blueprint = data[(chan, pos)][0].copy()
                 delay = delays[chanind]
                 # update existing waituntils
-                for segpos in range(blueprint.length):
+                for segpos in range(blueprint.length_segments):
                     if isinstance(blueprint._funlist[segpos], str):
                         if 'waituntil' in blueprint._funlist[segpos]:
                             oldwait = blueprint._argslist[segpos](0)
                             blueprint._argslist[segpos] = (oldwait+delay,)
                 # insert delay before the waveform
-                blueprint.insertSegment(0, 'waituntil', (delay,), 'waituntil')
+                blueprint.insertSegment(0, 'waituntil', (delay,), 'waituntil',
+                                        durs=None)
                 # add zeros at the end
                 blueprint.insertSegment(-1, PulseAtoms.ramp, (0, 0))
                 newdurs = data[(chan, pos)][1]+[maxdelay-delay]
