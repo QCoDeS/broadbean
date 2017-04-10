@@ -273,8 +273,13 @@ class BluePrint():
         """
         # TODO: tidy up this method
 
+        if self._durslist is None:
+            dl = [None]*len(self._namelist)
+        else:
+            dl = self._durslist
+
         datalists = [self._namelist, self._funlist, self._argslist,
-                     self._tslist, self._durslist]
+                     self._tslist, dl]
 
         lzip = zip(*datalists)
 
