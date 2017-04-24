@@ -36,7 +36,8 @@ class PulseAtoms:
         return (ampl*np.sin(freq*time)+off)
 
     @staticmethod
-    def ramp(slope, offset, SR, dur):
+    def ramp(start, stop, SR, dur):
+        slope = (stop-start)/dur
         time = np.linspace(0, dur, int(dur*SR))
         return (slope*time+offset)
 
