@@ -1024,6 +1024,10 @@ class Element:
 
         bluePrintPlotter(blueprints, self.SR, durs)
 
+        # hack the ylabels
+        cur_fig = plt.gcf()
+        for ii, channel in enumerate(self.channels):
+            cur_fig.axes[ii].set_ylabel('Ch. {} (V)'.format(channel))
 
 class Sequence2:
     """
