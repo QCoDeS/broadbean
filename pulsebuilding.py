@@ -604,6 +604,26 @@ class BluePrint():
         del self._segmark1[position]
         del self._segmark2[position]
 
+    def plot(self, SR=None):
+        """
+        Plot the blueprint.
+
+        Args:
+            SR (Optional[Union[int, None]]): The sample rate. If None, the sample rate
+                of the blueprint is used.
+
+        Raises:
+            ValueError: If no sample rate is provided as argument nor set for
+            the blueprint.
+        """
+
+        if self.SR is None:
+            raise ValueError('No sample rate specified. Please provide one!')
+
+        # bluePrintPlotter needs a flat list of durations
+        flatdurs = [d for dur in self._durslist for d in dur]
+        bluePrintPlotter(self, self.SR, flatdurs)
+
     def _validateDurations(self, durations):
         """
         Checks wether the number of durations matches the number of segments
