@@ -39,7 +39,7 @@ class PulseAtoms:
     def ramp(start, stop, SR, dur):
         slope = (stop-start)/dur
         time = np.linspace(0, dur, int(dur*SR))
-        return (slope*time+offset)
+        return (slope*time+start)
 
     @staticmethod
     def waituntil(dummy, SR, dur):
@@ -292,7 +292,6 @@ class BluePrint():
         lzip = zip(*datalists)
 
         print('Legend: Name, function, arguments, timesteps, durations')
-        print('\n')
 
         for ind, (name, fun, args, ts, durs) in enumerate(lzip):
             ind_p = ind+1
@@ -303,6 +302,7 @@ class BluePrint():
 
             list_p = [ind_p, name, fun_p, args, ts, durs]
             print('Segment {}: "{}", {}, {}, {}, {}'.format(*list_p))
+        print('-'*10)
 
     def changeArg(self, name, arg, value, replaceeverywhere=False):
         """
@@ -551,7 +551,7 @@ class BluePrint():
         if pos < -1:
             raise ValueError('Position must be strictly larger than -1')
 
-        if name is None:
+        if name is None or name == '':
             if func == 'waituntil':
                 name = 'waituntil'
             else:
