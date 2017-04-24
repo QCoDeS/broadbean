@@ -603,6 +603,7 @@ class BluePrint():
         del self._namelist[position]
         del self._segmark1[position]
         del self._segmark2[position]
+        del self._durslist[position]
 
     def plot(self, SR=None):
         """
@@ -713,8 +714,26 @@ class BluePrint():
         tl = self._tslist + other._tslist
         m1 = self.marker1 + other.marker1
         m2 = self.marker2 + other.marker2
+        sm1 = self._segmark1 + other._segmark1
+        sm2 = self._segmark2 + other._segmark2
+        dl = self._durslist + other._durslist
 
-        return BluePrint(fl, al, nl, tl, m1, m2)
+        new_bp = BluePrint()
+
+        new_bp._namelist = new_bp._make_names_unique(nl.copy())
+        new_bp._funlist = fl.copy()
+        new_bp._argslist = al.copy()
+        new_bp._tslist = tl.copy()
+        new_bp.marker1 = m1.copy()
+        new_bp.marker2 = m2.copy()
+        new_bp._segmark1 = sm1.copy()
+        new_bp._segmark2 = sm2.copy()
+        new_bp._durslist = dl.copy()
+
+        if self.SR is not None:
+            new_bp.setSR(self.SR)
+
+        return new_bp
 
     def __eq__(self, other):
         """
