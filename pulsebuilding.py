@@ -2220,7 +2220,7 @@ def makeVaryingSequence(baseelement, channels, names, args, iters):
         raise ValueError('Not the same number of values in each parameter '
                          'value sequence (input argument: iters)')
 
-    sequence = Sequence2()
+    sequence = Sequence()
     sequence.setSR(baseelement.SR)
 
     for elnum in range(1, noofvals[0]+1):
