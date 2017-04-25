@@ -85,10 +85,10 @@ class _AWGOutput:
         """
 
         self._channels = {}
-        for ii in range(1, len(rawpackage[0])+1):
-            self._channels[ii] = {'wfms': rawpackage[0][ii-1],
-                                  'm1s': rawpackage[1][ii-1],
-                                  'm2s': rawpackage[2][ii-1]}
+        for ii in range(len(rawpackage[0])):
+            self._channels[ii] = {'wfms': rawpackage[0][ii],
+                                  'm1s': rawpackage[1][ii],
+                                  'm2s': rawpackage[2][ii]}
         self.nreps = rawpackage[3]
         self.trig_wait = rawpackage[4]
         self.goto = rawpackage[5]
@@ -105,7 +105,7 @@ class _AWGOutput:
 
                 return output
             else:
-                raise KeyError('{} Not a valid key.'.format(key))
+                raise KeyError('{} is not a valid key.'.format(key))
 
         if isinstance(key, slice):
             start = key.start
