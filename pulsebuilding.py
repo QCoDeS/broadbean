@@ -7,8 +7,8 @@ from inspect import signature
 from copy import deepcopy
 import functools as ft
 import numpy as np
-#import matplotlib.pyplot as plt
-#plt.ion()
+import matplotlib.pyplot as plt
+plt.ion()
 
 log = logging.getLogger(__name__)
 
