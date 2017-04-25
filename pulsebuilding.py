@@ -7,14 +7,15 @@ from inspect import signature
 from copy import deepcopy
 import functools as ft
 import numpy as np
-import matplotlib.pyplot as plt
-plt.ion()
+#import matplotlib.pyplot as plt
+#plt.ion()
 
 log = logging.getLogger(__name__)
 
 
 class ElementDurationError(Exception):
     pass
+
 
 class SequenceConsistencyError(Exception):
     pass
@@ -58,6 +59,81 @@ class PulseAtoms:
         baregauss = np.exp((-(time-mu-centre)**2/(2*sigma**2)))
         normalisation = 1/np.sqrt(2*sigma**2*np.pi)
         return ampl*baregauss*normalisation+offset
+
+
+class _AWGOutput:
+    """
+    Class used inside Sequence.outputForAWGFile
+
+    Allows for easy-access slicing to return several valid tuples
+    for the QCoDeS Tektronix AWG 5014 driver from the same sequence.
+
+    Example:
+    A sequence, myseq, specifies channels 1, 2, 3, 4.
+
+    out = myseq.outputForAWGFile()
+
+    out[:] <--- tuple with all channels
+    out[1:3] <--- tuple with channels 1, 2
+    out[2] <--- tuple with channel 2
+    """
+
+    def __init__(self, rawpackage):
+        """
+        Rawpackage is a tuple:
+        (wfms, m1s, m2s, nreps, trig_wait, goto, jump)
+        """
+
+        self._channels = {}
+        for ii in range(1, len(rawpackage[0])+1):
+            self._channels[ii] = {'wfms': rawpackage[0][ii-1],
+                                  'm1s': rawpackage[1][ii-1],
+                                  'm2s': rawpackage[2][ii-1]}
+        self.nreps = rawpackage[3]
+        self.trig_wait = rawpackage[4]
+        self.goto = rawpackage[5]
+        self.jump = rawpackage[6]
+
+    def __getitem__(self, key):
+
+        if isinstance(key, int):
+            if key in self._channels.keys():
+                output = ([self._channels[key]['wfms']],
+                          [self._channels[key]['m1s']],
+                          [self._channels[key]['m2s']],
+                          self.nreps, self.trig_wait, self.goto, self.jump)
+
+                return output
+            else:
+                raise KeyError('{} Not a valid key.'.format(key))
+
+        if isinstance(key, slice):
+            start = key.start
+            if start is None:
+                start = 1
+
+            stop = key.stop
+            if stop is None:
+                stop = len(self._channels.keys())+1
+
+            step = key.step
+            if step is None:
+                step = 1
+
+            indeces = range(start, stop, step)
+
+            wfms = [self._channels[ind]['wfms'] for ind in indeces]
+            m1s = [self._channels[ind]['m1s'] for ind in indeces]
+            m2s = [self._channels[ind]['m2s'] for ind in indeces]
+
+            output = (wfms, m1s, m2s,
+                      self.nreps, self.trig_wait, self.goto, self.jump)
+
+            return output
+
+        raise KeyError('Key must be int or slice!')
+
+
 
 
 class BluePrint():
@@ -1463,9 +1539,11 @@ class Sequence:
             jump_tos.append(self._sequencing[pos][2])
             goto_states.append(self._sequencing[pos][3])
 
-        return (waveforms, m1s, m2s, nreps, trig_waits, goto_states,
-                jump_tos, list(channels))
+        output = _AWGOutput((waveforms, m1s, m2s, nreps,
+                             trig_waits, goto_states,
+                             jump_tos))
 
+        return output
 
 # class Sequence:
 #     """
