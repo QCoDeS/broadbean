@@ -1457,10 +1457,11 @@ class Sequence:
                 waveforms[chanind].append(elements[pos-1][chan][0])
                 m1s[chanind].append(elements[pos-1][chan][1])
                 m2s[chanind].append(elements[pos-1][chan][2])
-                nreps.append(self._sequencing[pos][1])
-                trig_waits.append(self._sequencing[pos][0])
-                jump_tos.append(self._sequencing[pos][2])
-                goto_states.append(self._sequencing[pos][3])
+
+            nreps.append(self._sequencing[pos][1])
+            trig_waits.append(self._sequencing[pos][0])
+            jump_tos.append(self._sequencing[pos][2])
+            goto_states.append(self._sequencing[pos][3])
 
         return (waveforms, m1s, m2s, nreps, trig_waits, goto_states,
                 jump_tos, list(channels))
@@ -2164,7 +2165,7 @@ def makeLinearlyVaryingSequence(baseelement, channel, name, arg, start, stop,
     # TODO: validation
     # TODO: Make more general varyer and refactor code
 
-    sequence = Sequence2()
+    sequence = Sequence()
 
     sequence.setSR(baseelement.SR)
 
