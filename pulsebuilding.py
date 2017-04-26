@@ -78,11 +78,16 @@ class _AWGOutput:
     out[2] <--- tuple with channel 2
     """
 
-    def __init__(self, rawpackage):
+    def __init__(self, rawpackage, channels):
         """
         Rawpackage is a tuple:
         (wfms, m1s, m2s, nreps, trig_wait, goto, jump)
+
+        Channels is a list of what the channels were called in their
+        sequence object whence this instance is created
         """
+
+        self.channels = channels
 
         self._channels = {}
         for ii in range(len(rawpackage[0])):
@@ -110,11 +115,11 @@ class _AWGOutput:
         if isinstance(key, slice):
             start = key.start
             if start is None:
-                start = 1
+                start = 0
 
             stop = key.stop
             if stop is None:
-                stop = len(self._channels.keys())+1
+                stop = len(self._channels.keys())
 
             step = key.step
             if step is None:
@@ -132,7 +137,6 @@ class _AWGOutput:
             return output
 
         raise KeyError('Key must be int or slice!')
-
 
 
 
@@ -1288,6 +1292,13 @@ class Sequence:
 
         return SR
 
+    @property
+    def channels(self):
+        """
+        Returns a list of the specified channels
+        """
+        return self.element(1).channels
+
     def element(self, pos):
         """
         Returns the element at the given position. Changes made to the return
@@ -1450,13 +1461,15 @@ class Sequence:
 
     def outputForAWGFile(self):
         """
-        Returns an output matching the call signature of the 'make_*_awg_file'
-        functions of the QCoDeS AWG5014 driver. One may then construct an awg
-        file as follows (assuming that seq is the sequence object):
+        Returns a sliceable object with items matching the call
+        signature of the 'make_*_awg_file' functions of the QCoDeS
+        AWG5014 driver. One may then construct an awg file as follows
+        (assuming that seq is the sequence object):
 
-        make_awg_file(*seq.outputForAWGFile(), **kwargs)
+        package = seq.outputForAWGFile()
+        make_awg_file(*package[:], **kwargs)
 
-        The outputForAWGFile applies all specified signal corrections.
+        The outputForAWGFile applies all specified signal corrections:
           delay of channels
         """
         # TODO: implement corrections
@@ -1583,7 +1596,7 @@ class Sequence:
 
         output = _AWGOutput((waveforms, m1s, m2s, nreps,
                              trig_waits, goto_states,
-                             jump_tos))
+                             jump_tos), self.channels)
 
         return output
 
