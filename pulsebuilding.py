@@ -1103,7 +1103,9 @@ class Element:
         # hack the ylabels
         cur_fig = plt.gcf()
         for ii, channel in enumerate(self.channels):
-            cur_fig.axes[ii].set_ylabel('Ch. {} (V)'.format(channel))
+            oldlabel = cur_fig.axes[ii].get_ylabel()
+            newlabel = oldlabel.replace('Signal', 'Ch {}'.format(channel))
+            cur_fig.axes[ii].set_ylabel(newlabel)
 
 
 class Sequence:
@@ -2181,43 +2183,78 @@ def bluePrintPlotter(blueprints, SR, durations, fig=None, axs=None):
         wfm = arrays[0, :]
         m1 = arrays[1, :]
         m2 = arrays[2, :]
-        yrange = wfm.max() - wfm.min()
-        ax.set_ylim([wfm.min()-0.05*yrange, wfm.max()+0.2*yrange])
         time = np.linspace(0, np.sum(newdurs), np.sum(newdurs)*SR)
 
-        # plot lines indicating the durations
+        # Figure out time axis scaling
+        exponent = np.log10(time.max())
+        timeunit = 's'
+        timescaling = 1
+        if exponent < 0:
+            timeunit = 'ms'
+            timescaling = 1e3
+        if exponent < -3:
+            timeunit = 'micro s'  # sadly, we don't live in the global future..
+            timescaling = 1e6
+        if exponent < -6:
+            timeunit = 'ns'
+            timescaling = 1e9
+
+        # Figure out voltage axis scaling
+        exponent = np.log10(wfm.max())
+        voltageunit = 'V'
+        voltagescaling = 1
+        if exponent < 0:
+            voltageunit = 'mV'
+            voltagescaling = 1e3
+        if exponent < -3:
+            voltageunit = 'micro V'
+            voltagescaling = 1e6
+        if exponent < -6:
+            voltageunit = 'nV'
+            voltagescaling = 1e9
+
+        yrange = voltagescaling * (wfm.max() - wfm.min())
+        ax.set_ylim([voltagescaling*wfm.min()-0.05*yrange,
+                     voltagescaling*wfm.max()+0.2*yrange])
+
+        # PLOT lines indicating the durations
         for dur in np.cumsum(newdurs):
-            ax.plot([dur, dur], [ax.get_ylim()[0],
-                                 ax.get_ylim()[1]],
+            ax.plot([dur*timescaling, dur*timescaling],
+                    [ax.get_ylim()[0], ax.get_ylim()[1]],
                     color=(0.312, 0.2, 0.33),
                     alpha=0.3)
 
         # plot the waveform
-        ax.plot(time, wfm, lw=3, color=(0.6, 0.4, 0.3), alpha=0.4)
+        ax.plot(timescaling*time, voltagescaling*wfm,
+                lw=3, color=(0.6, 0.4, 0.3), alpha=0.4)
 
         # plot the markers
-        y_m1 = wfm.max()+0.15*yrange
+        y_m1 = (voltagescaling*wfm.max()+0.15*yrange)
         marker_on = np.ones_like(m1)
         marker_on[m1 == 0] = np.nan
         marker_off = np.ones_like(m1)
-        ax.plot(time, y_m1*marker_off, color=(0.6, 0.1, 0.1), alpha=0.2, lw=2)
-        ax.plot(time, y_m1*marker_on, color=(0.6, 0.1, 0.1), alpha=0.6, lw=2)
+        ax.plot(time*timescaling, y_m1*marker_off,
+                color=(0.6, 0.1, 0.1), alpha=0.2, lw=2)
+        ax.plot(time*timescaling, y_m1*marker_on,
+                color=(0.6, 0.1, 0.1), alpha=0.6, lw=2)
         #
-        y_m2 = wfm.max()+0.10*yrange
+        y_m2 = voltagescaling*wfm.max()+0.10*yrange
         marker_on = np.ones_like(m2)
         marker_on[m2 == 0] = np.nan
         marker_off = np.ones_like(m2)
-        ax.plot(time, y_m2*marker_off, color=(0.1, 0.1, 0.6), alpha=0.2, lw=2)
-        ax.plot(time, y_m2*marker_on, color=(0.1, 0.1, 0.6), alpha=0.6, lw=2)
+        ax.plot(time*timescaling, y_m2*marker_off,
+                color=(0.1, 0.1, 0.6), alpha=0.2, lw=2)
+        ax.plot(time*timescaling, y_m2*marker_on,
+                color=(0.1, 0.1, 0.6), alpha=0.6, lw=2)
 
     # Prettify a bit
     for ax in axs[:-1]:
         ax.set_xticks([])
-    axs[-1].set_xlabel('Time (s)')
+    axs[-1].set_xlabel('Time ({})'.format(timeunit))
     for ax in axs:
         yt = ax.get_yticks()
         ax.set_yticks(yt[2:-2])
-        ax.set_ylabel('Signal (V)')
+        ax.set_ylabel('Signal ({})'.format(voltageunit))
     fig.subplots_adjust(hspace=0)
 
 
