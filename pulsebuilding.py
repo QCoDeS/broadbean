@@ -1357,6 +1357,9 @@ class Sequence:
                 if len(chans) > 1 and seqlen > 1:
                     ax = axs[chanind, pos]
 
+                # reduce the tickmark density (must be called before scaling)
+                ax.locator_params(tight=True, nbins=4, prune='lower')
+
                 wfm = elements[pos][chan][0]
                 m1 = elements[pos][chan][1]
                 m2 = elements[pos][chan][2]
@@ -1367,10 +1370,38 @@ class Sequence:
                 except IndexError:
                     newdurs = []
 
+                # Figure out the axes' scaling
+                timeexponent = np.log10(time.max())
+                timeunit = 's'
+                timescaling = 1
+                if timeexponent < 0:
+                    timeunit = 'ms'
+                    timescaling = 1e3
+                if timeexponent < -3:
+                    timeunit = 'micro s'
+                    timescaling = 1e6
+                if timeexponent < -6:
+                    timeunit = 'ns'
+                    timescaling = 1e9
+                voltageexponent = np.log10(wfm.max())
+                voltageunit = 'V'
+                voltagescaling = 1
+                if voltageexponent < 0:
+                    voltageunit = 'mV'
+                    voltagescaling = 1e3
+                if voltageexponent < -3:
+                    voltageunit = 'micro V'
+                    voltagescaling = 1e6
+                if voltageexponent < -6:
+                    voltageunit = 'nV'
+                    voltagescaling = 1e9
+
+
                 # waveform
-                ax.plot(time, wfm, lw=3, color=(0.6, 0.4, 0.3), alpha=0.4)
-                ymax = chanminmax[chanind][1]
-                ymin = chanminmax[chanind][0]
+                ax.plot(timescaling*time, voltagescaling*wfm, lw=3,
+                        color=(0.6, 0.4, 0.3), alpha=0.4)
+                ymax = voltagescaling * chanminmax[chanind][1]
+                ymin = voltagescaling * chanminmax[chanind][0]
                 yrange = ymax - ymin
                 ax.set_ylim([ymin-0.05*yrange, ymax+0.2*yrange])
 
@@ -1379,27 +1410,36 @@ class Sequence:
                 marker_on = np.ones_like(m1)
                 marker_on[m1 == 0] = np.nan
                 marker_off = np.ones_like(m1)
-                ax.plot(time, y_m1*marker_off, color=(0.6, 0.1, 0.1),
-                        alpha=0.2, lw=2)
-                ax.plot(time, y_m1*marker_on, color=(0.6, 0.1, 0.1),
-                        alpha=0.6, lw=2)
+                ax.plot(timescaling*time, y_m1*marker_off,
+                        color=(0.6, 0.1, 0.1), alpha=0.2, lw=2)
+                ax.plot(timescaling*time, y_m1*marker_on,
+                        color=(0.6, 0.1, 0.1), alpha=0.6, lw=2)
 
                 # marker 2 (blue, below the red)
                 y_m2 = ymax+0.10*yrange
                 marker_on = np.ones_like(m2)
                 marker_on[m2 == 0] = np.nan
                 marker_off = np.ones_like(m2)
-                ax.plot(time, y_m2*marker_off, color=(0.1, 0.1, 0.6),
-                        alpha=0.2, lw=2)
-                ax.plot(time, y_m2*marker_on, color=(0.1, 0.1, 0.6),
-                        alpha=0.6, lw=2)
+                ax.plot(timescaling*time, y_m2*marker_off,
+                        color=(0.1, 0.1, 0.1), alpha=0.2, lw=2)
+                ax.plot(timescaling*time, y_m2*marker_on,
+                        color=(0.1, 0.1, 0.6), alpha=0.6, lw=2)
 
                 # time step lines
                 for dur in np.cumsum(newdurs):
-                    ax.plot([dur, dur], [ax.get_ylim()[0],
-                                         ax.get_ylim()[1]],
+                    ax.plot([timescaling*dur, timescaling*dur],
+                            [ax.get_ylim()[0], ax.get_ylim()[1]],
                             color=(0.312, 0.2, 0.33),
                             alpha=0.3)
+
+                # labels
+                if pos == 0:
+                    ax.set_ylabel('({})'.format(voltageunit))
+                if pos == seqlen - 1:
+                    newax = ax.twinx()
+                    newax.set_yticks([])
+                    newax.set_ylabel('Ch. {}'.format(chan))
+                ax.set_xlabel('({})'.format(timeunit))
 
                 # remove excess space from the plot
                 if not chanind+1 == len(chans):
