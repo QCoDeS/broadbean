@@ -1,11 +1,13 @@
-# sandbox for filter compensation
+# Module providing filter compensation. Developed for use with the broadbean
+# pulse building module, but provides a standalone API
 #
-# Ripasso... get it?
+# The name is (of course) a pun. Ripasso; first a filter, then a compensation,
+# i.e. something that is re-passed. Also not quite an Amarone...
+#
 
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.signal import deconvolve, fftconvolve
-from numpy.fft import fft, fftshift, ifft, ifftshift
+from numpy.fft import fft, ifft, fftfreq
 
 plt.ion()
 
@@ -30,13 +32,13 @@ def squarewave(npts, periods=5):
     return array
 
 
-def filt(SR, npts, f_cut, kind='HP'):
+def filt(SR, npts, f_cut, kind='HP', order=1, DGgain=0):
     """
     First-order (RC circuit) filter
     made with frequencies matching the fft output
     """
 
-    freqs = np.fft.fftfreq(npts, 1/SR)
+    freqs = fftfreq(npts, 1/SR)
 
     tau = 1/f_cut
     top = 2j*np.pi
@@ -46,13 +48,15 @@ def filt(SR, npts, f_cut, kind='HP'):
 
         # now, we have identically zero gain for the DC component,
         # which makes the transfer function non-invertible
+        #
+        # It is a bit of an open question what DC compensation we want...
 
-        tf[tf == 0] = 1e-8
+        tf[tf == 0] = DCgain  # No DC suppression
 
     elif kind == 'LP':
         tf = 1/(1+top*tau*freqs)
 
-    return tf
+    return tf**order
 
 
 def checking():
@@ -127,8 +131,8 @@ def deconvolving():
     SR = int(30e3)
     npts = int(2e3)
 
-    f_cut = 250
-    order = 1
+    f_cut = 100
+    order = 3
     tau = 1/f_cut
 
     time = np.linspace(0, npts/SR, npts)
@@ -139,7 +143,7 @@ def deconvolving():
     signal_fd = fft(signal)
 
     # filter the signal
-    transferfun = filt(SR, npts, f_cut)
+    transferfun = filt(SR, npts, f_cut, kind='LP')
 
     signal_anti_filtered = signal_fd*(transferfun**(-order))
 
@@ -165,7 +169,10 @@ def deconvolving():
     test3 = np.real(test3)
     test4 = np.real(test4)
 
-    compsig = ifft(signal_anti_filtered)
+    # Now the final thing
+    out1 = np.convolve(np.tile(test1, 2), ifft(transferfun**(-order)), mode='full')
+    out1 = out1[npts:2*npts]
+    out2 = ifft(fft(test3)*transferfun**(order))
 
     # t1 = ifft(fft(compsig)*transferfun)  # Boom! this is the original signal
 
@@ -183,6 +190,132 @@ def deconvolving():
     axs[1, 0].set_title('Compensated signal')
     axs[1, 0].set_xlabel('Time (s)')
 
+    axs[1, 1].plot(time, out2)
+    axs[1, 1].set_title('Filtered compensated signal')
+    axs[1, 1].set_xlabel('Time (s)')
+
     plt.tight_layout()
 
-deconvolving()
+
+###############################################################################
+# API BEGINS HERE
+###############################################################################
+
+
+def _rcFilter(SR, npts, f_cut, kind='HP', order=1, DCgain=0):
+    """
+    Nth order (RC circuit) filter
+    made with frequencies matching the fft output
+    """
+
+    freqs = fftfreq(npts, 1/SR)
+
+    tau = 1/f_cut
+    top = 2j*np.pi
+
+    if kind == 'HP':
+        tf = top*tau*freqs/(1+top*tau*freqs)
+
+        # now, we have identically zero gain for the DC component,
+        # which makes the transfer function non-invertible
+        #
+        # It is a bit of an open question what DC compensation we want...
+
+        tf[tf == 0] = DCgain  # No DC suppression
+
+    elif kind == 'LP':
+        tf = 1/(1+top*tau*freqs)
+
+    return tf**order
+
+
+def applyRCFilter(signal, SR, kind, f_cut, order, DCgain=0):
+    """
+    Apply a simple RC-circuit filter
+    to signal and return the filtered signal.
+
+    Args:
+        signal (np.array): The input signal. The signal is assumed to start at
+            t=0 and be evenly sampled at sample rate SR.
+        SR (int): Sample rate (Sa/s) of the input signal
+        kind (str): The type of filter. Either 'HP' or 'LP'.
+        f_cut (float): The cutoff frequency of the filter (Hz)
+        order (int): The order of the filter. The first order filter is
+            applied order times.
+        DCgain (Optional[float]): The DC gain of the filter. ONLY used by the
+            high-pass filter. Default 0.
+
+    Returns:
+        np.array: The filtered signal along the original time axis. Imaginary
+            parts are discarded prior to return.
+
+    Raises:
+        ValueError: If kind is neither 'HP' nor 'LP'
+    """
+
+    if kind not in ['HP', 'LP']:
+        raise ValueError('Please specify filter type as either "HP" or "LP".')
+
+    N = len(signal)
+    transfun = _rcFilter(SR, N, f_cut, kind=kind, order=order, DCgain=DCgain)
+    output = ifft(fft(signal*transfun))
+    output = np.real(output)
+
+    return output
+
+
+def applyInverseRCFilter(signal, SR, kind, f_cut, order, DCgain=1):
+    """
+    Apply the inverse of an RC-circuit filter to a signal and return the
+    compensated signal.
+
+    Note that a high-pass filter in principle has identically zero DC
+    gain which requires an infinite offset to compensate.
+
+    Args:
+        signal (np.array): The input signal. The signal is assumed to start at
+            t=0 and be evenly sampled at sample rate SR.
+        SR (int): Sample rate (Sa/s) of the input signal
+        kind (str): The type of filter. Either 'HP' or 'LP'.
+        f_cut (float): The cutoff frequency of the filter (Hz)
+        order (int): The order of the filter. The first order filter is
+            applied order times.
+        DCgain (Optional[float]): The DC gain of the filter. ONLY used by the
+            high-pass filter. Default 1.
+
+    Returns:
+        np.array: The filtered signal along the original time axis. Imaginary
+            parts are discarded prior to return.
+
+    Raises:
+        ValueError: If kind is neither 'HP' nor 'LP'
+        ValueError: If DCgain is zero.
+    """
+
+    if kind not in ['HP', 'LP']:
+        raise ValueError('Wrong filter type. '
+                         'Please specify filter type as either "HP" or "LP".')
+
+    if not DCgain > 0:
+        raise ValueError('Non-invertible DCgain! '
+                         'Please set DCgain to a finite value.')
+
+    N = len(signal)
+    transfun = _rcFilter(SR, N, f_cut, order=-order, kind=kind, DCgain=DCgain)
+    output = ifft(fft(signal*transfun))
+    output = np.real(output)
+
+    return output
+
+
+SR = int(10e3)
+npts = int(2e3)
+f_cut = 250
+
+signal = squarewave(npts, periods=4)
+
+signal_hp = applyRCFilter(signal, SR, 'HP', f_cut, order=1)
+
+plt.figure()
+plt.plot(signal)
+plt.plot(signal_hp)
