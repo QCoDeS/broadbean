@@ -8,6 +8,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy.fft import fft, ifft, fftfreq
+import logging
+
+log = logging.getLogger(__name__)
 
 plt.ion()
 
@@ -202,6 +205,10 @@ def deconvolving():
 ###############################################################################
 
 
+class MissingFrequenciesError(Exception):
+    pass
+
+
 def _rcFilter(SR, npts, f_cut, kind='HP', order=1, DCgain=0):
     """
     Nth order (RC circuit) filter
@@ -258,7 +265,7 @@ def applyRCFilter(signal, SR, kind, f_cut, order, DCgain=0):
 
     N = len(signal)
     transfun = _rcFilter(SR, N, f_cut, kind=kind, order=order, DCgain=DCgain)
-    output = ifft(fft(signal*transfun))
+    output = ifft(fft(signal)*transfun)
     output = np.real(output)
 
     return output
@@ -302,20 +309,63 @@ def applyInverseRCFilter(signal, SR, kind, f_cut, order, DCgain=1):
 
     N = len(signal)
     transfun = _rcFilter(SR, N, f_cut, order=-order, kind=kind, DCgain=DCgain)
-    output = ifft(fft(signal*transfun))
+    output = ifft(fft(signal)*transfun)
     output = np.real(output)
 
     return output
 
 
-SR = int(10e3)
-npts = int(2e3)
-f_cut = 250
+def applyCustomTransferFunction(signal, SR, tf_freqs, tf_amp, invert=False):
+    """
+    Apply custom transfer function
 
-signal = squarewave(npts, periods=4)
+    Given a signal, its sample rate, and a provided transfer func
 
-signal_hp = applyRCFilter(signal, SR, 'HP', f_cut, order=1)
+    tf_freqs must be linearly increasing
+    """
 
-plt.figure()
-plt.plot(signal)
-plt.plot(signal_hp)
+    npts = len(signal)
+
+    # validate tf_freqs
+
+    df = np.diff(tf_freqs).round(6)
+
+    if not list(df).count(df[0]) == len(df):
+        raise ValueError('Invalid transfer function freq. axis. '
+                         'Frequencies must be linearly increasing.')
+
+    if not tf_freqs[-1] >= SR/2:
+        # TODO: think about whether this is a problem
+        # What is the desired behaviour for high frequencies if nothing
+        # is specified? I guess NOOP, i.e. the transfer func. is 1
+        raise MissingFrequenciesError('Supplied transfer function does not '
+                                      'specify frequency response up to the '
+                                      'Nyquist frequency of the signal.')
+
+    if not tf_freqs[0] == 0:
+        # what to do in this case? Extrapolate 1s? Make the user do this?
+        pass
+
+    # Step 1: resample to fftfreq type axis
+    freqax = fftfreq(npts, 1/SR)
+    freqax_pos = freqax[:npts//2]
+    freqax_neg = freqax[npts//2:]
+
+    resampled_pos = np.interp(freqax_pos, tf_freqs, tf_amp)
+    resampled_neg = np.interp(-freqax_neg[::-1], tf_freqs, tf_amp)
+
+    transferfun = np.concatenate((resampled_pos, resampled_neg[::-1]))
+
+    # Step 2: Apply transfer function
+    if invert:
+        power = -1
+    else:
+        power = 1
+
+    signal_filtered = ifft(fft(signal)*(transferfun**power))
+    imax = np.imag(signal_filtered).max()
+    log.debug('Applying custom transfer function. Discarding imag parts '
+              'no larger than {}'.format(imax))
+    signal_filtered = np.real(signal_filtered)
+
+    return signal_filtered
