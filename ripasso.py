@@ -138,9 +138,9 @@ def applyCustomTransferFunction(signal, SR, tf_freqs, tf_amp, invert=False):
 
     df = np.diff(tf_freqs).round(6)
 
-    if not list(df).count(df[0]) == len(df):
+    if not np.sum(df > 0) == len(df):
         raise ValueError('Invalid transfer function freq. axis. '
-                         'Frequencies must be linearly increasing.')
+                         'Frequencies must be monotonically increasing.')
 
     if not tf_freqs[-1] >= SR/2:
         # TODO: think about whether this is a problem
