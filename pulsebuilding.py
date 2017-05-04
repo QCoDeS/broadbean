@@ -1552,6 +1552,8 @@ class Sequence:
         # Apply channel scaling
         # We must rescale to the interval -1, 1 where 1 is ampl/2+off and -1 is
         # -ampl/2+off.
+        #
+
         def rescaler(val, ampl, off):
             return val/ampl*2-off
         for pos in range(1, seqlen+1):
@@ -1560,7 +1562,7 @@ class Sequence:
                 ampl = self._awgspecs['channel{}_amplitude'.format(chan)]
                 off = self._awgspecs['channel{}_offset'.format(chan)]
                 wfm = element[chan][0]
-                # check whether the wafeform voltages can be realised
+                # check whether the waveform voltages can be realised
                 if wfm.max() > ampl/2+off:
                     raise ValueError('Waveform voltages exceed channel range '
                                      'on channel {}'.format(chan) +
@@ -1572,6 +1574,8 @@ class Sequence:
                                      ' sequence element {}. '.format(pos) +
                                      '{} < {}!'.format(wfm.min(), -ampl/2+off))
                 wfm = rescaler(wfm, ampl, off)
+                element[chan][0] = wfm
+            elements[pos-1] = element
 
         # Finally cast the lists into the shapes required by the AWG driver
         waveforms = [[] for dummy in range(len(channels))]
