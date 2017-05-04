@@ -5,8 +5,8 @@ particular its Tektronix AWG 5014 driver), but works as standalone.
 
 The usage is documented in the notebooks.
 
-Current status: The notebook `New pulsebuilding tutorial part A` is
-the correct and up-to-date one. All other notebooks are wrong and
+Current status: The notebooks in `docs` are
+the correct and up-to-date ones. All other notebooks are wrong and
 obsolete.
 
 Short description: The broadbean module lets the user compose and
