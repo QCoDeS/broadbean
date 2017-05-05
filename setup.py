@@ -19,11 +19,11 @@ setup(
 
     license='MIT',
 
-    packages=['broadbean.py', 'ripasso.py'],
+    packages=['broadbean'],
 
     classifiers=[
         'Development Status :: 4 - Beta',
-        'Intended Audience :: Students and Scientists',
+        'Intended Audience :: Science/Research',
         'Programming Language :: Python :: 3.5'
         ],
 
