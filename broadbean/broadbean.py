@@ -1,7 +1,3 @@
-# implementing what Filip and Natalie asked for...
-#
-# In this iteration, we do it in a horribly object-oriented way
-
 import logging
 from inspect import signature
 from copy import deepcopy
@@ -353,6 +349,36 @@ class BluePrint():
         Sample rate of the element
         """
         return self._SR
+
+    @property
+    def description(self):
+        """
+        Returns a dict describing the blueprint.
+        """
+        desc = {}  # the dict to return
+
+        no_segs = len(self._namelist)
+
+        for sn in range(no_segs):
+            segkey = 'segment_{:02d}'.format(sn+1)
+            desc[segkey] = {}
+            desc[segkey]['name'] = self._namelist[sn]
+            desc[segkey]['function'] = self._funlist[sn]
+            desc[segkey]['timesteps'] = self._tslist[sn]
+            desc[segkey]['durations'] = self._durslist[sn]
+            if desc[segkey]['function'] == 'waituntil':
+                desc[segkey]['arguments'] = {'waittime': self._argslist[sn]}
+            else:
+                sig = signature(desc[segkey]['function'])
+                desc[segkey]['arguments'] = dict(zip(sig.parameters,
+                                                     self._argslist[sn]))
+
+        desc['marker1_abs'] = self.marker1
+        desc['marker2_abs'] = self.marker2
+        desc['marker1_rel'] = self._segmark1
+        desc['marker2_rel'] = self._segmark2
+
+        return desc
 
     def showPrint(self):
         """
@@ -1028,6 +1054,21 @@ class Element:
         chans = [key for key in self._data.keys()]
         return chans
 
+    @property
+    def description(self):
+        """
+        Returns a dict describing the element.
+        """
+        desc = {}
+
+        for key, val in self._data.items():
+            if 'blueprint' in val.keys():
+                desc[key] = val['blueprint'].description
+            elif 'array' in val.keys():
+                desc[key] = 'array'
+
+        return desc
+
     def changeArg(self, channel, name, arg, value, replaceeverywhere=False):
         """
         Change the argument of a function of the blueprint on the specified
@@ -1113,7 +1154,7 @@ class Element:
 
 class Sequence:
     """
-    New style sequence.
+    Sequence object
     """
 
     def __init__(self):
@@ -1273,6 +1314,28 @@ class Sequence:
         return True
 
     @property
+    def description(self):
+        """
+        Return a dictionary fully describing the Sequence.
+        """
+        desc = {}
+
+        for pos, elem in self._data.items():
+            desc[pos] = {}
+            desc[pos]['channels'] = elem.description
+            try:
+                sequencing = self._sequencing[pos]
+                seqdict = {'Wait trigger': sequencing[0],
+                           'Repeat': sequencing[1],
+                           'Event jump to': sequencing[2],
+                           'Go to': sequencing[3]}
+                desc[pos]['sequencing'] = seqdict
+            except KeyError:
+                desc[pos]['sequencing'] = 'Not set'
+
+        return desc
+
+    @property
     def length_sequenceelements(self):
         """
         Returns the current number of specified sequence elements
@@ -1405,7 +1468,6 @@ class Sequence:
                 if voltageexponent < -6:
                     voltageunit = 'nV'
                     voltagescaling = 1e9
-
 
                 # waveform
                 ax.plot(timescaling*time, voltagescaling*wfm, lw=3,
