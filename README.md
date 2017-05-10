@@ -18,3 +18,7 @@ and frequency filter  compensation. It could be useful in a general
 setting and is therefore factored out to its own module.
 
 The name: The broad bean is one of my favourite pulses.
+
+### Installation
+
+...coming soon...
