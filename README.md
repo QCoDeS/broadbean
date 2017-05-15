@@ -21,4 +21,14 @@ The name: The broad bean is one of my favourite pulses.
 
 ### Installation
 
-...coming soon...
+On a good day, installation is as easy as
+```
+$ git clone https://github.com/QCoDeS/broadbean.git bbdir
+$ cd bbdir
+$ pip install .
+```
+You can now fire up a python interpreter and do
+```
+>>> import broadbean as bb
+>>> import ripasso as rp
+```
