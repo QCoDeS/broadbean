@@ -363,13 +363,18 @@ class BluePrint():
             segkey = 'segment_{:02d}'.format(sn+1)
             desc[segkey] = {}
             desc[segkey]['name'] = self._namelist[sn]
-            desc[segkey]['function'] = self._funlist[sn]
+            if self._funlist[sn] == 'waituntil':
+                desc[segkey]['function'] = self._funlist[sn]
+            else:
+                funname = str(self._funlist[sn])[1:]
+                funname = funname[:funname.find(' at')]
+                desc[segkey]['function'] = funname
             desc[segkey]['timesteps'] = self._tslist[sn]
             desc[segkey]['durations'] = self._durslist[sn]
             if desc[segkey]['function'] == 'waituntil':
                 desc[segkey]['arguments'] = {'waittime': self._argslist[sn]}
             else:
-                sig = signature(desc[segkey]['function'])
+                sig = signature(self._funlist[sn])
                 desc[segkey]['arguments'] = dict(zip(sig.parameters,
                                                      self._argslist[sn]))
 
@@ -1063,9 +1068,9 @@ class Element:
 
         for key, val in self._data.items():
             if 'blueprint' in val.keys():
-                desc[key] = val['blueprint'].description
+                desc[str(key)] = val['blueprint'].description
             elif 'array' in val.keys():
-                desc[key] = 'array'
+                desc[str(key)] = 'array'
 
         return desc
 
@@ -1321,17 +1326,17 @@ class Sequence:
         desc = {}
 
         for pos, elem in self._data.items():
-            desc[pos] = {}
-            desc[pos]['channels'] = elem.description
+            desc[str(pos)] = {}
+            desc[str(pos)]['channels'] = elem.description
             try:
                 sequencing = self._sequencing[pos]
                 seqdict = {'Wait trigger': sequencing[0],
                            'Repeat': sequencing[1],
                            'Event jump to': sequencing[2],
                            'Go to': sequencing[3]}
-                desc[pos]['sequencing'] = seqdict
+                desc[str(pos)]['sequencing'] = seqdict
             except KeyError:
-                desc[pos]['sequencing'] = 'Not set'
+                desc[str(pos)]['sequencing'] = 'Not set'
 
         return desc
 
