@@ -1,4 +1,5 @@
 import logging
+import math
 from inspect import signature
 from copy import deepcopy
 import functools as ft
@@ -389,7 +390,7 @@ class BluePrint():
         """
         Pretty-print the contents of the BluePrint. Not finished.
         """
-        # TODO: tidy up this method
+        # TODO: tidy up this method and make it use the description property
 
         if self._durslist is None:
             dl = [None]*len(self._namelist)
@@ -1001,7 +1002,7 @@ class Element:
                                        '{}, {}'.format(*errmssglst))
 
         # If these three tests pass, we equip the dictionary with convenient
-        # info used by Sequence TODO: Currently sequence2
+        # info used by Sequence
         self._meta['SR'] = SRs[0]
         self._meta['duration'] = durations[0]
 
@@ -1538,7 +1539,7 @@ class Sequence:
         The outputForAWGFile applies all specified signal corrections:
           delay of channels
         """
-        # TODO: implement corrections
+        # TODO: implement corrections from ripasso
 
         # Validation
         if not self.checkConsistency():
@@ -1546,7 +1547,6 @@ class Sequence:
                              'inconsistent. Please run '
                              'checkConsistency(verbose=True) for more details')
         #
-        #  CHANGE CODE FROM THIS POINT
         #
         channels = self.element(1).channels  # all elements have ident. chans
         # We copy the data so that the state of the Sequence is left unaltered
@@ -1675,8 +1675,8 @@ def _subelementBuilder(blueprint, SR, durs):
     """
     The function building a blueprint, returning a numpy array.
 
-    This is a single-blueprint forger. Multiple blueprints are forged with
-    elementBuilder.
+    This is the core translater from description of pulse to actual data points
+    All arrays must be made with this function
     """
 
     # Important: building the element must NOT modify any of the mutable
@@ -1736,7 +1736,7 @@ def _subelementBuilder(blueprint, SR, durs):
     output = [block for sl in blocks for block in sl]
 
     # now make the markers
-    time = np.linspace(0, sum(newdurations), sum(newdurations)*SR)  # round off
+    time = np.linspace(0, sum(newdurations), int(sum(newdurations)*SR))
     m1 = np.zeros_like(time)
     m2 = m1.copy()
     dt = time[1] - time[0]
@@ -2042,6 +2042,6 @@ def makeVaryingSequence(baseelement, channels, names, args, iters):
     if not sequence.checkConsistency():
         raise SequenceConsistencyError('Invalid sequence. See log for '
                                        'details.')
-
     else:
+        log.info('Valid sequence')
         return sequence
