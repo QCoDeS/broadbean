@@ -1730,6 +1730,20 @@ def _subelementBuilder(blueprint, SR, durs):
         dur = sum(durations[steps[ii]:steps[ii+1]])
         newdurations.append(dur)
 
+    # then round all durations to an integer number of time resolution
+    # (time resolution = 1/SR)
+    # We try to be clever and not perform division to avoid float. point errors
+    # We always round up to avoid losing small features
+
+    for ii, dur in enumerate(newdurations):
+        dec_dur, int_dur = math.modf(dur*SR)
+        # round up unless there is nothing to round
+        if dec_dur == 0:
+            extra = 0
+        else:
+            extra = 1
+        newdurations[ii] = (int_dur + extra)/SR
+
     # The actual forging of the waveform
     parts = [ft.partial(fun, *args) for (fun, args) in zip(funlist, argslist)]
     blocks = [list(p(SR, d)) for (p, d) in zip(parts, newdurations)]
