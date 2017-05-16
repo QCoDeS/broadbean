@@ -1531,6 +1531,27 @@ class Sequence:
                     ax.set_yticks([])
                 fig.subplots_adjust(hspace=0, wspace=0)
 
+                # display sequencer information (if any)
+                if chanind == 0:
+                    try:
+                        seq_info = self._sequencing[pos+1]
+                    except KeyError:
+                        seq_info = [0, 0, 0, 0]
+                    titlestring = ''
+                    if seq_info[0] == 1:
+                        titlestring += 'T '
+                    if seq_info[1] > 1:
+                        titlestring += '\u21BB{} '.format(seq_info[1])
+                    if seq_info[2] != 0:
+                        if seq_info[2] == -1:
+                            titlestring += 'E next '
+                        else:
+                            titlestring += 'E{} '.format(seq_info[2])
+                    if seq_info[3] > 0:
+                        titlestring += '\u21b1{}'.format(seq_info[3])
+
+                    ax.set_title(titlestring)
+
     def outputForAWGFile(self):
         """
         Returns a sliceable object with items matching the call
@@ -2064,5 +2085,3 @@ def makeVaryingSequence(baseelement, channels, names, args, iters):
     else:
         log.info('Valid sequence')
         return sequence
-
-print('We get signal')
