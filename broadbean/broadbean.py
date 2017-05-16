@@ -1424,6 +1424,23 @@ class Sequence:
 
         # ...and do the plotting
         for chanind, chan in enumerate(chans):
+
+            # figure out the channel voltage scaling
+            # The entire channel shares a y-axis
+            v_max = max([elements[pp][chan][0].max() for pp in range(seqlen)])
+            voltageexponent = np.log10(v_max)
+            voltageunit = 'V'
+            voltagescaling = 1
+            if voltageexponent < 0:
+                voltageunit = 'mV'
+                voltagescaling = 1e3
+            if voltageexponent < -3:
+                voltageunit = 'micro V'
+                voltagescaling = 1e6
+            if voltageexponent < -6:
+                voltageunit = 'nV'
+                voltagescaling = 1e9
+
             for pos in range(seqlen):
                 # 1 by N arrays are indexed differently than M by N arrays
                 # and 1 by 1 arrays are not arrays at all...
@@ -1462,18 +1479,6 @@ class Sequence:
                 if timeexponent < -6:
                     timeunit = 'ns'
                     timescaling = 1e9
-                voltageexponent = np.log10(wfm.max())
-                voltageunit = 'V'
-                voltagescaling = 1
-                if voltageexponent < 0:
-                    voltageunit = 'mV'
-                    voltagescaling = 1e3
-                if voltageexponent < -3:
-                    voltageunit = 'micro V'
-                    voltagescaling = 1e6
-                if voltageexponent < -6:
-                    voltageunit = 'nV'
-                    voltagescaling = 1e9
 
                 # waveform
                 ax.plot(timescaling*time, voltagescaling*wfm, lw=3,
@@ -2059,3 +2064,5 @@ def makeVaryingSequence(baseelement, channels, names, args, iters):
     else:
         log.info('Valid sequence')
         return sequence
+
+print('We get signal')
