@@ -1,5 +1,7 @@
 ## QCoDeS Pulsebuilder aka broadbean
 
+[![Documentation Status](https://readthedocs.org/projects/broadbean/badge/?version=latest)](http://broadbean.readthedocs.io/en/latest/?badge=latest)
+
 A library for making pulses. Supposed to be used with QCoDeS (in
 particular its Tektronix AWG 5014 driver), but works as standalone.
 
