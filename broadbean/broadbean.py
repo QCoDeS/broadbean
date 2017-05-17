@@ -671,6 +671,10 @@ class BluePrint():
             durs (Optional[Union[float, tuple]]): The duration(s) of the
                 segment. Must be a tuple if more than one is specified,
                 else both a float and a tuple is acceptable.
+
+        Raises:
+            ValueError: If the position is negative
+            ValueError: If the name ends in a number
         """
 
         # Validation
