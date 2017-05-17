@@ -247,6 +247,11 @@ class BluePrint():
         """
         Remove trailing numbers from a string.
         """
+
+        if not isinstance(string, str):
+            raise ValueError('_basename received a non-string input!'
+                             ' Got the following: {}'.format(string))
+
         if string == '':
             return string
         if not(string[-1].isdigit()):
@@ -273,6 +278,10 @@ class BluePrint():
             lst (list): List of strings. Intended for the _namelist
 
         """
+
+        if not isinstance(lst, list):
+            raise ValueError('_make_names_unique received a non-list input!'
+                             ' Got {}'.format(lst))
 
         baselst = [BluePrint._basename(lstel) for lstel in lst]
         uns = np.unique(baselst)
