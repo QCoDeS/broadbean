@@ -245,8 +245,13 @@ class BluePrint():
     @staticmethod
     def _basename(string):
         """
-        Remove trailing numbers from a string. (currently removes all numbers)
+        Remove trailing numbers from a string.
         """
+
+        if not isinstance(string, str):
+            raise ValueError('_basename received a non-string input!'
+                             ' Got the following: {}'.format(string))
+
         if string == '':
             return string
         if not(string[-1].isdigit()):
@@ -273,6 +278,10 @@ class BluePrint():
             lst (list): List of strings. Intended for the _namelist
 
         """
+
+        if not isinstance(lst, list):
+            raise ValueError('_make_names_unique received a non-list input!'
+                             ' Got {}'.format(lst))
 
         baselst = [BluePrint._basename(lstel) for lstel in lst]
         uns = np.unique(baselst)
@@ -432,10 +441,10 @@ class BluePrint():
         Raises:
             ValueError: If the argument can not be matched (either the argument
                 name does not match or the argument number is wrong).
+            ValueError: If the name can not be matched.
 
         """
         # TODO: is there any reason to use tuples internally?
-        # TODO: add input validation
 
         if replaceeverywhere:
             basename = BluePrint._basename
@@ -444,6 +453,11 @@ class BluePrint():
             replacelist = [nm for nm in nmlst if basename(nm) == name]
         else:
             replacelist = [name]
+
+        # Validation
+        if name not in self._namelist:
+            raise ValueError('No segment of that name in blueprint.'
+                             ' Contains segments: {}'.format(self._namelist))
 
         for name in replacelist:
 
@@ -457,11 +471,13 @@ class BluePrint():
                     raise ValueError('No such argument of function '
                                      '{}.'.format(function.__name__) +
                                      'Has arguments '
-                                     '{}.'.format(sig.parameters))
-            if isinstance(arg, int) and arg > len(sig.parameters):
+                                     '{}.'.format(sig.parameters.keys()))
+            # Each function has two 'secret' arguments, SR and dur
+            user_params = len(sig.parameters)-2
+            if isinstance(arg, int) and (arg not in range(user_params)):
                 raise ValueError('No argument {} '.format(arg) +
                                  'of function {}.'.format(function.__name__) +
-                                 'Has {} '.format(len(sig.parameters)) +
+                                 ' Has {} '.format(user_params) +
                                  'arguments.')
 
             # allow the user to input single values instead of (val,)
@@ -499,6 +515,9 @@ class BluePrint():
             ValueError: If durations are not specified for the blueprint
             ValueError: If too many or too few durations are given.
             ValueError: If no segment matches the name.
+            ValueError: If dur is not positive
+            ValueError: If SR is given for the blueprint and dur is less than
+                1/SR.
         """
 
         # Opt-out if blueprint is 'old' style
@@ -526,6 +545,16 @@ class BluePrint():
                                  ' {} has '.format(name) +
                                  '{} duration(s).'.format(oldlen) +
                                  ' Received {}.'.format(len(dur)))
+
+            for d in dur:
+                if d <= 0:
+                    raise ValueError('Duration must be strictly greater '
+                                     'than zero.')
+
+                if self.SR is not None:
+                    if d*self.SR < 1:
+                        raise ValueError('Duration too short! Must be at'
+                                         ' least 1/sample rate.')
 
             self._durslist[position] = dur
 
