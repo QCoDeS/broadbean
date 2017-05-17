@@ -1592,13 +1592,14 @@ class Sequence:
         AWG5014 driver. One may then construct an awg file as follows
         (assuming that seq is the sequence object):
 
-        package = seq.outputForAWGFile()
-        make_awg_file(*package[:], **kwargs)
+        ``package = seq.outputForAWGFile()``
 
-        The outputForAWGFile applies all specified signal corrections:
-          delay of channels
+        ``make_awg_file(*package[:], **kwargs)``
+
+        The outputForAWGFile applies delay of channels
+
+        TO-DO: implement corrections from ripasso
         """
-        # TODO: implement corrections from ripasso
 
         # Validation
         if not self.checkConsistency():
