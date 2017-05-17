@@ -441,10 +441,10 @@ class BluePrint():
         Raises:
             ValueError: If the argument can not be matched (either the argument
                 name does not match or the argument number is wrong).
+            ValueError: If the name can not be matched.
 
         """
         # TODO: is there any reason to use tuples internally?
-        # TODO: add input validation
 
         if replaceeverywhere:
             basename = BluePrint._basename
@@ -453,6 +453,11 @@ class BluePrint():
             replacelist = [nm for nm in nmlst if basename(nm) == name]
         else:
             replacelist = [name]
+
+        # Validation
+        if name not in self._namelist:
+            raise ValueError('No segment of that name in blueprint.'
+                             ' Contains segments: {}'.format(self._namelist))
 
         for name in replacelist:
 
@@ -466,11 +471,13 @@ class BluePrint():
                     raise ValueError('No such argument of function '
                                      '{}.'.format(function.__name__) +
                                      'Has arguments '
-                                     '{}.'.format(sig.parameters))
-            if isinstance(arg, int) and arg > len(sig.parameters):
+                                     '{}.'.format(sig.parameters.keys()))
+            # Each function has two 'secret' arguments, SR and dur
+            user_params = len(sig.parameters)-2
+            if isinstance(arg, int) and (arg not in range(user_params)):
                 raise ValueError('No argument {} '.format(arg) +
                                  'of function {}.'.format(function.__name__) +
-                                 'Has {} '.format(len(sig.parameters)) +
+                                 ' Has {} '.format(user_params) +
                                  'arguments.')
 
             # allow the user to input single values instead of (val,)
