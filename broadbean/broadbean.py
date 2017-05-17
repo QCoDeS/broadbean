@@ -245,7 +245,7 @@ class BluePrint():
     @staticmethod
     def _basename(string):
         """
-        Remove trailing numbers from a string. (currently removes all numbers)
+        Remove trailing numbers from a string.
         """
         if string == '':
             return string
