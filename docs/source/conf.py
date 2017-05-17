@@ -79,6 +79,8 @@ pygments_style = 'sphinx'
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
+# Extensions, here we enable napoleon to have Google style docstrings
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon', 'sphinx.ext.todo']
 
 # -- Options for HTML output ----------------------------------------------
 
@@ -156,7 +158,6 @@ texinfo_documents = [
      author, 'broadbean', 'One line description of project.',
      'Miscellaneous'),
 ]
-
 
 
 # -- Options for Epub output ----------------------------------------------

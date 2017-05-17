@@ -14,7 +14,11 @@ sequences.
    :maxdepth: 2
    :caption: Contents:
 
+.. automodule:: broadbean.broadbean
+    :members:
 
+.. automodule:: broadbean.ripasso
+    :members:
 
 Indices and tables
 ==================
