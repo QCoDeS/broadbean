@@ -4,6 +4,9 @@ language: python
 python:
   - "3.5"
 
+# be a good guy and potentially save time
+cache: pip
+
 # Don't receive notifications for now
 notifications:
   email: false
