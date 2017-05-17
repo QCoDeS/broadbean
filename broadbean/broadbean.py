@@ -2081,8 +2081,7 @@ def makeVaryingSequence(baseelement, channels, names, args, iters):
             values.
     """
 
-    # validation
-
+    # Validation
     baseelement.validateDurations()
 
     inputlengths = [len(channels), len(names), len(args), len(iters)]
