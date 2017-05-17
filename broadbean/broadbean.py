@@ -508,6 +508,9 @@ class BluePrint():
             ValueError: If durations are not specified for the blueprint
             ValueError: If too many or too few durations are given.
             ValueError: If no segment matches the name.
+            ValueError: If dur is not positive
+            ValueError: If SR is given for the blueprint and dur is less than
+                1/SR.
         """
 
         # Opt-out if blueprint is 'old' style
@@ -535,6 +538,16 @@ class BluePrint():
                                  ' {} has '.format(name) +
                                  '{} duration(s).'.format(oldlen) +
                                  ' Received {}.'.format(len(dur)))
+
+            for d in dur:
+                if d <= 0:
+                    raise ValueError('Duration must be strictly greater '
+                                     'than zero.')
+
+                if self.SR is not None:
+                    if d*self.SR < 1:
+                        raise ValueError('Duration too short! Must be at'
+                                         ' least 1/sample rate.')
 
             self._durslist[position] = dur
 
