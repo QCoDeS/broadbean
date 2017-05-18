@@ -32,9 +32,10 @@ gh-pages:
 	rm -rf ./*
 	git checkout master $(GH_PAGES_SOURCES)
 	git reset HEAD
-	cd docs/$(SOURCEDIR) && make -f ../Makefile html && \
+	cd docs/$(SOURCEDIR)
+        make -f ../Makefile html
 	mv -fv $(BUILDDIR)/html/* ../
 	rm -rf $(GH_PAGES_SOURCES) build
 	git add -A
-	git commit -m "Generated gh-pages for `git log master -1 --pretty=short \
+	git commit -m "Generated     gh-pages for `git log master -1 --pretty=short \
 	--abbrev-commit`" && git push https://${GITHUB_API_KEY}@github.com/QCoDeS/broadbean.git gh-pages ; git checkout master
