@@ -29,8 +29,11 @@ $ git clone https://github.com/QCoDeS/broadbean.git bbdir
 $ cd bbdir
 $ pip install .
 ```
-You can now fire up a python interpreter and do
+behind the scenes, `numpy`, `matplotlib`, and `PyQt5` are installed if
+not found.
+
+You can now fire up a python interpreter and go
 ```
 >>> import broadbean as bb
->>> import ripasso as rp
+>>> from broadbean import ripasso as rp
 ```
