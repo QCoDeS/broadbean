@@ -15,9 +15,16 @@ branches:
   only:
     - master
 
-install: "pip install ."
+install:
+  - pip install --upgrade pip
+  - pip install .
 
 # command sequence to run tests
 script:
   - cd tests
   - pytest
+
+after_succes:
+  - cd ..
+  - pip install -r docs_requirements.txt
+  - make -f docs/Makefile gh-pages
