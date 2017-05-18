@@ -1044,9 +1044,10 @@ class Element:
         Return arrays of the element. Heavily used by the Sequence.
 
         Returns:
-            dict: Dictionary with channel numbers (ints) as keys and forged
-                blueprints as values. A forged blueprint is a numpy
-                array given by np.array([wfm, m1, m2, time]).
+            dict:
+              Dictionary with channel numbers (ints) as keys and forged
+              blueprints as values. A forged blueprint is a numpy
+              array given by np.array([wfm, m1, m2, time]).
 
         """
 
@@ -1145,10 +1146,17 @@ class Element:
         Change the duration(s) of a segment of the blueprint on the specified
         channel
 
-        Args: go figure
+        Args:
+            channel (int): The channel holding the blueprint in question
+            name (str): The name of the segment to modify
+            newdur (Union[tuple, int, float]): The new duration(s). Must be a
+                tuple if more than one is provided.
+            replaceeverywhere (Optional[bool]): If True, all segments
+                matching the base
+                name given will have their duration changed. If False, only the
+                segment with an exact name match will have its duration
+                changed. Default: False.
         """
-
-        # TODO: docstring and dur(s) validation
 
         # avoid a KeyError in the next if statement
         if channel not in self.channels:
@@ -1592,13 +1600,15 @@ class Sequence:
         AWG5014 driver. One may then construct an awg file as follows
         (assuming that seq is the sequence object):
 
-        ``package = seq.outputForAWGFile()``
+        .. code:: python
 
-        ``make_awg_file(*package[:], **kwargs)``
+            package = seq.outputForAWGFile()
+            make_awg_file(*package[:], **kwargs)
 
         The outputForAWGFile applies delay of channels
 
-        TO-DO: implement corrections from ripasso
+        Todo:
+            Implement corrections from ripasso
         """
 
         # Validation
@@ -1856,7 +1866,8 @@ def elementBuilder(blueprints, SR, durations, channels=None,
             newdurations.
 
     Returns:
-        dict: Dictionary with channel numbers (ints) as keys and forged
+        dict:
+            Dictionary with channel numbers (ints) as keys and forged
             blueprints as values. A forged blueprint is a numpy array
             given by np.array([wfm, m1, m2, time]). If returnnewdurs is True,
             a list of [wfm, m1, m2, time, newdurs] is returned instead.
@@ -1912,9 +1923,8 @@ def bluePrintPlotter(blueprints, SR, durations, fig=None, axs=None):
         axs (Union[list, None]): A list of
             matplotlib.axes._subplots.AxesSubplot to plot onto. If None is
             given, a new list is created.
-
-    TODO: all sorts of validation on lengths of blueprint and the like
     """
+    #  Todo: All sorts of validation on lengths of blueprint and the like
 
     # Allow single blueprint
     if not isinstance(blueprints, list):
