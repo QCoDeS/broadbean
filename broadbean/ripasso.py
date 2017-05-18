@@ -58,10 +58,11 @@ def applyRCFilter(signal, SR, kind, f_cut, order, DCgain=0):
         order (int): The order of the filter. The first order filter is
             applied order times.
         DCgain (Optional[float]): The DC gain of the filter. ONLY used by the
-            high-pass filter. Default 0.
+            high-pass filter. Default: 0.
 
     Returns:
-        np.array: The filtered signal along the original time axis. Imaginary
+        np.array:
+            The filtered signal along the original time axis. Imaginary
             parts are discarded prior to return.
 
     Raises:
@@ -96,10 +97,11 @@ def applyInverseRCFilter(signal, SR, kind, f_cut, order, DCgain=1):
         order (int): The order of the filter. The first order filter is
             applied order times.
         DCgain (Optional[float]): The DC gain of the filter. ONLY used by the
-            high-pass filter. Default 1.
+            high-pass filter. Default: 1.
 
     Returns:
-        np.array: The filtered signal along the original time axis. Imaginary
+        np.array:
+            The filtered signal along the original time axis. Imaginary
             parts are discarded prior to return.
 
     Raises:
@@ -127,9 +129,22 @@ def applyCustomTransferFunction(signal, SR, tf_freqs, tf_amp, invert=False):
     """
     Apply custom transfer function
 
-    Given a signal, its sample rate, and a provided transfer func
+    Given a signal, its sample rate, and a provided transfer function, apply
+    the transfer function to the signal.
 
-    tf_freqs must be linearly increasing
+    Args:
+        signal (np.array): A numpy array containing the signal
+        SR (int): The sample rate of the signal (Sa/s)
+        tf_freqs (np.array): The frequencies of the transfer function. Must
+            be monotonically increasing.
+        tf_amp (np.array): The amplitude of the transfer function. Must be
+            dimensionless.
+        invert (Optional[bool]): If True, the inverse transfer function is
+            applied. Default: False.
+
+    Returns:
+        np.array:
+        The modified signal.
     """
 
     npts = len(signal)
