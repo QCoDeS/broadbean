@@ -23,7 +23,7 @@ help:
 
 .PHONY: html
 html:
-	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) "$(SOURCEDIR)"  $(BUILDDIR)/html
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
@@ -37,7 +37,7 @@ gh-pages:
 	rm -rf ./*
 	git checkout master $(GH_PAGES_SOURCES)
 	git reset HEAD
-	cd docs && make html && \
+	cd docs/source && make html && \
 	mv -fv $(BUILDDIR)/html/* ../
 	rm -rf $(GH_PAGES_SOURCES) build
 	git add -A
