@@ -32,7 +32,7 @@ gh-pages:
 	rm -rf ./*
 	git checkout master $(GH_PAGES_SOURCES)
 	git reset HEAD
-	cd docs/$(BUILDDIR) && make -f ../Makefile html && \
+	cd docs/$(SOURCEDIR) && make -f ../Makefile html && \
 	mv -fv $(BUILDDIR)/html/* ../
 	rm -rf $(GH_PAGES_SOURCES) build
 	git add -A
