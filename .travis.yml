@@ -27,4 +27,5 @@ script:
 after_success:
   - cd ..
   - pip install -r docs_requirements.txt
-  - make -f docs/Makefile gh-pages
+  - cd docs
+  - make -f Makefile gh-pages
