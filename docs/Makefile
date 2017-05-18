@@ -3,7 +3,7 @@
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
-SPHINXBUILD   = python -msphinx
+SPHINXBUILD   = sphinx-build
 SPHINXPROJ    = broadbean
 SOURCEDIR     = source
 BUILDDIR      = build
@@ -18,7 +18,7 @@ help:
 
 .PHONY: html
 html:
-	$(SPHINXBUILD) -b html   $(SPHINXOPTS) .  $(BUILDDIR)/html
+	$(SPHINXBUILD) -b html $(SPHINXOPTS) . $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
@@ -32,7 +32,7 @@ gh-pages:
 	rm -rf ./*
 	git checkout master $(GH_PAGES_SOURCES)
 	git reset HEAD
-	cd docs/$(SOURCEDIR) &&	make -f ../Makefile html
+	cd docs/$(SOURCEDIR) &&	echo $(pwd) && make -f ../Makefile html
 	mv -fv $(BUILDDIR)/html/* ../
 	rm -rf $(GH_PAGES_SOURCES) build
 	git add -A
