@@ -21,6 +21,10 @@ setting and is therefore factored out to its own module.
 
 The name: The broad bean is one of my favourite pulses.
 
+### Formal requirements
+
+The broadbean package only works with python 3.
+
 ### Installation
 
 On a good day, installation is as easy as
@@ -30,9 +34,10 @@ $ cd bbdir
 $ pip install .
 ```
 behind the scenes, `numpy`, `matplotlib`, and `PyQt5` are installed if
-not found.
+not found. If `pip` failed you, you may need to run it as root. But a
+better idea is to use a [virtual enviroment](https://github.com/pyenv/pyenv-virtualenv).
 
-You can now fire up a python interpreter and go
+You can now fire up a python 3 interpreter and go
 ```
 >>> import broadbean as bb
 >>> from broadbean import ripasso as rp
@@ -41,7 +46,8 @@ You can now fire up a python interpreter and go
 ### Documentation
 
 Apart from the example notebooks, auto-generated documentation is
-available.
+available. As for now, the user must built it herself, but that is
+luckily easy.
 
 In the `bbdir` folder, do:
 ```
@@ -49,4 +55,4 @@ $ pip install -r docs_requirements.txt
 $ cd docs
 $ make html
 ```
-then have a look at the file `bbdir/docs/build/html/index.html`.
+then ignore all warnings and just have a look at the file `bbdir/docs/build/html/index.html`.
