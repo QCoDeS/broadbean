@@ -37,3 +37,16 @@ You can now fire up a python interpreter and go
 >>> import broadbean as bb
 >>> from broadbean import ripasso as rp
 ```
+
+### Documentation
+
+Apart from the example notebooks, auto-generated documentation is
+available.
+
+In the `bbdir` folder, do:
+```
+$ pip install -r docs_requirements.txt
+$ cd docs
+$ make html
+```
+then have a look at the file `bbdir/docs/build/html/index.html`.
