@@ -1,5 +1,5 @@
 # Minimal makefile for Sphinx documentation
-#
+# Carefully tested on 18 May 2017
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
@@ -36,5 +36,5 @@ gh-pages:
 	mv -fv docs/$(BUILDDIR)/html/* ../
 	rm -rf $(GH_PAGES_SOURCES) build
 	git add -A
-	git commit -m "Generated     gh-pages for `git log master -1 --pretty=short \
+	git commit -m "Generated gh-pages for `git log master -1 --pretty=short \
 	--abbrev-commit`" && git push https://${GITHUB_API_KEY}@github.com/QCoDeS/broadbean.git gh-pages ; git checkout master
