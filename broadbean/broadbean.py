@@ -5,6 +5,9 @@ from copy import deepcopy
 import functools as ft
 import numpy as np
 import matplotlib.pyplot as plt
+
+from broadbean.ripasso import applyInverseRCFilter
+
 plt.ion()
 
 log = logging.getLogger(__name__)
@@ -15,6 +18,10 @@ class ElementDurationError(Exception):
 
 
 class SequenceConsistencyError(Exception):
+    pass
+
+
+class SpecificationInconsistencyError(Exception):
     pass
 
 
@@ -1219,10 +1226,11 @@ class Sequence:
 
         # The dictionary to store AWG settings
         # Keys will include:
-        # 'SR', 'channelXampl'
+        # 'SR', 'channelX_amplitude', 'channelX_offset', 'channelX_filter'
         self._awgspecs = {}
 
         # The metainfo to be extracted by measurements
+        # todo: I'm pretty sure this is obsolete now that description exists
         self._meta = {}
 
     def setSequenceSettings(self, pos, wait, nreps, jump, goto):
@@ -1291,6 +1299,46 @@ class Sequence:
                              'channel number.')
 
         self._awgspecs['channel{}_delay'.format(channel)] = delay
+
+    def setChannelFilterCompensation(self, channel, kind, order=1,
+                                     f_cut=None, tau=None):
+        """
+        Specify a filter to compensate for.
+
+        The specified channel will get a compensation (pre-distorion) to
+        compensate for the specified frequency filter. Just to be clear:
+        the INVERSE transfer function of the one you specify is applied.
+        Only compensation for simple RC-circuit type high pass and low
+        pass is supported.
+
+        Args:
+            channel (int): The channel to apply this to.
+            kind (str): Either 'LP' or 'HP'
+            order (Optional[int]): The order of the filter to compensate for.
+                May be negative. Default: 1.
+            f_cut (Optional[Union[float, int]]): The cut_off frequency (Hz).
+            tau (Optional[Union[float, int]]): The time constant (s). Note that
+                tau = 1/f_cut and that only one can be specified.
+
+        Raises:
+            ValueError: If kind is not 'LP' or 'HP'
+            ValueError: If order is not an int.
+            SpecificationInconsistencyError: If both f_cut and tau are given.
+        """
+
+        if kind not in ['HP', 'LP']:
+            raise ValueError('Filter kind must either be "LP" (low pass) or '
+                             '"HP" (high pass).')
+        if not isinstance(order, int):
+            raise ValueError('Filter order must be an integer.')
+        if (f_cut is not None) and (tau is not None):
+            raise SpecificationInconsistencyError('Can not specify BOTH a time'
+                                                  ' constant and a cut-off '
+                                                  'frequency.')
+
+        keystr = 'channel{}_filtercompensation'.format(channel)
+        self._awgspecs[keystr] = {'kind': kind, 'order': order, 'f_cut': f_cut,
+                                  'tau': tau}
 
     def addElement(self, position, element):
         """
@@ -1447,8 +1495,44 @@ class Sequence:
             # {channel: [wfm, m1, m2, time, newdurations]} structure
             elements.append(rawelem.getArrays())
 
-        # Now get the dimensions.
+        self._plotSequence(elements)
+
+    def plotAWGOutput(self):
+        """
+        Plot the actual output for an AWG. If not delays or filter
+        compensations are specified, this does the same as
+        plotSequence.
+        """
+
+        # TODO: channel scalings!
+
+
+        package = self.outputForAWGFile()
+
+        elements = []
+
+        for pos in range(self.length_sequenceelements):
+            element = {}
+            for chanind, chan in enumerate(self.channels):
+                npts = len(package[chanind][0][0][pos])
+
+                element[chan] = [package[chanind][0][0][pos],  # wfm
+                                 package[chanind][1][0][pos],  # m1
+                                 package[chanind][2][0][pos],  # m2
+                                 np.linspace(0, npts/self.SR, npts)  # time
+                                 ]
+            elements.append(element)
+
+        self._plotSequence(elements)
+
+    def _plotSequence(self, elements):
+        """
+        The heavy lifting plotter
+        """
+
+        # Get the dimensions.
         chans = self._data[1].channels  # All element have the same channels
+        seqlen = self.length_sequenceelements
 
         # Then figure out the figure scalings
         chanminmax = [[np.inf, -np.inf]]*len(chans)
@@ -1668,8 +1752,9 @@ class Sequence:
                     blueprint.insertSegment(0, 'waituntil', (delay,),
                                             'waituntil')
                     # add zeros at the end
-                    blueprint.insertSegment(-1, PulseAtoms.ramp, (0, 0),
-                                            durs=(maxdelay-delay,))
+                    if maxdelay-delay > 0:
+                        blueprint.insertSegment(-1, PulseAtoms.ramp, (0, 0),
+                                                durs=(maxdelay-delay,))
                     # TODO: is the next line even needed?
                     element.addBluePrint(chan, blueprint)
 
@@ -1681,16 +1766,31 @@ class Sequence:
                         arrays[ii] = np.concatenate((pre_wait, arr, post_wait))
 
         # Now forge all the elements as specified
-        SR = self._awgspecs['SR']
         elements = []  # the forged elements
         for pos in range(1, seqlen+1):
-            elements.append(self.element(pos).getArrays())
+            # There was a bug here
+            elements.append(data[pos].getArrays())
+
+        # Now that the numerical arrays exist, we can apply filter compensation
+        for chan in enumerate(channels):
+            keystr = 'channel{}_filtercompensation'.format(chan)
+            if keystr in self._awgspecs.keys():
+                kind = self._awgspecs[keystr]['kind']
+                order = self._awgspecs[keystr]['order']
+                f_cut = self._awgspecs[keystr]['f_cut']
+                tau = self._awgspecs[keystr]['tau']
+                if f_cut is None:
+                    f_cut = 1/tau
+                for pos in range(1, seqlen+1):
+                    elements[pos][chan][0] = applyInverseRCFilter(elements[pos][chan][0],
+                                                                  self.SR,
+                                                                  kind, f_cut, order,
+                                                                  DCgain=1)
 
         # Apply channel scaling
         # We must rescale to the interval -1, 1 where 1 is ampl/2+off and -1 is
         # -ampl/2+off.
         #
-
         def rescaler(val, ampl, off):
             return val/ampl*2-off
         for pos in range(1, seqlen+1):
@@ -1734,6 +1834,7 @@ class Sequence:
             jump_tos.append(self._sequencing[pos][2])
             goto_states.append(self._sequencing[pos][3])
 
+        # ...and make a sliceable object out of them
         output = _AWGOutput((waveforms, m1s, m2s, nreps,
                              trig_waits, goto_states,
                              jump_tos), self.channels)
