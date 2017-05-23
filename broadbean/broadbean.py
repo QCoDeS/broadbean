@@ -1741,14 +1741,10 @@ class Sequence:
                 delays.append(0)
         maxdelay = max(delays)
 
-        print(delays)
-
         for pos in range(1, seqlen+1):
             for chanind, chan in enumerate(channels):
                 element = data[pos]
                 delay = delays[chanind]
-
-                print('Channel {}, delay {}'.format(chan, delay))
 
                 if 'blueprint' in element._data[chan].keys():
                     blueprint = element._data[chan]['blueprint']
@@ -1760,12 +1756,10 @@ class Sequence:
                             blueprint._argslist[segpos] = (oldwait+delay,)
                     # insert delay before the waveform
                     if delay > 0:
-                        print('inserting wait BEFORE')
                         blueprint.insertSegment(0, 'waituntil', (delay,),
                                                 'waituntil')
                     # add zeros at the end
                     if maxdelay-delay > 0:
-                        print('inserting wait AFTER')
                         blueprint.insertSegment(-1, PulseAtoms.ramp, (0, 0),
                                                 durs=(maxdelay-delay,))
                     # TODO: is the next line even needed?
@@ -1785,7 +1779,7 @@ class Sequence:
             elements.append(data[pos].getArrays())
 
         # Now that the numerical arrays exist, we can apply filter compensation
-        for chan in enumerate(channels):
+        for chan in channels:
             keystr = 'channel{}_filtercompensation'.format(chan)
             if keystr in self._awgspecs.keys():
                 kind = self._awgspecs[keystr]['kind']
@@ -1794,11 +1788,13 @@ class Sequence:
                 tau = self._awgspecs[keystr]['tau']
                 if f_cut is None:
                     f_cut = 1/tau
-                for pos in range(1, seqlen+1):
-                    elements[pos][chan][0] = applyInverseRCFilter(elements[pos][chan][0],
-                                                                  self.SR,
-                                                                  kind, f_cut, order,
-                                                                  DCgain=1)
+                for pos in range(seqlen):
+                    prefilter = elements[pos][chan][0]
+                    postfilter = applyInverseRCFilter(prefilter,
+                                                      self.SR,
+                                                      kind, f_cut, order,
+                                                      DCgain=1)
+                    elements[pos][chan][0] = postfilter
 
         # Apply channel scaling
         # We must rescale to the interval -1, 1 where 1 is ampl/2+off and -1 is
@@ -1879,8 +1875,6 @@ def _subelementBuilder(blueprint, SR, durs):
     no_of_waits = funlist.count('waituntil')
 
     if sum(tslist) != len(durations):
-        print('-'*45)
-        print(tslist, durations)
 
         raise ValueError('The specified timesteps do not match the number ' +
                          'of durations. ({} and {})'.format(sum(tslist),
