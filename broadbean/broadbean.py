@@ -955,8 +955,11 @@ class Element:
             raise ValueError('Invalid blueprint given. Must be an instance'
                              ' of the BluePrint class.')
 
+        # important: make a copy of the blueprint
+        newprint = blueprint.copy()
+
         self._data[channel] = {}
-        self._data[channel]['blueprint'] = blueprint
+        self._data[channel]['blueprint'] = newprint
 
     def addArray(self, channel, array, SR, m1=None, m2=None):
         """
@@ -1735,10 +1738,14 @@ class Sequence:
                 delays.append(0)
         maxdelay = max(delays)
 
+        print(delays)
+
         for pos in range(1, seqlen+1):
             for chanind, chan in enumerate(channels):
                 element = data[pos]
                 delay = delays[chanind]
+
+                print('Channel {}, delay {}'.format(chan, delay))
 
                 if 'blueprint' in element._data[chan].keys():
                     blueprint = element._data[chan]['blueprint']
@@ -1749,10 +1756,13 @@ class Sequence:
                             oldwait = blueprint._argslist[segpos][0]
                             blueprint._argslist[segpos] = (oldwait+delay,)
                     # insert delay before the waveform
-                    blueprint.insertSegment(0, 'waituntil', (delay,),
-                                            'waituntil')
+                    if delay > 0:
+                        print('inserting wait BEFORE')
+                        blueprint.insertSegment(0, 'waituntil', (delay,),
+                                                'waituntil')
                     # add zeros at the end
                     if maxdelay-delay > 0:
+                        print('inserting wait AFTER')
                         blueprint.insertSegment(-1, PulseAtoms.ramp, (0, 0),
                                                 durs=(maxdelay-delay,))
                     # TODO: is the next line even needed?
