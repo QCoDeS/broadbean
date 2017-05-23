@@ -1358,8 +1358,11 @@ class Sequence:
         # Validation
         element.validateDurations()
 
+        # make a new copy of the element
+        newelement = element.copy()
+
         # Data mutation
-        self._data.update({position: element})
+        self._data.update({position: newelement})
 
     def checkConsistency(self, verbose=False):
         """
