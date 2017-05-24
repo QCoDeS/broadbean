@@ -2101,6 +2101,8 @@ def bluePrintPlotter(blueprints, SR, durations, fig=None, axs=None):
             voltageunit = 'nV'
             voltagescaling = 1e9
 
+        ax.locator_params(tight=True, nbins=3, prune='lower')
+
         yrange = voltagescaling * (wfm.max() - wfm.min())
         ax.set_ylim([voltagescaling*wfm.min()-0.05*yrange,
                      voltagescaling*wfm.max()+0.2*yrange])
@@ -2140,8 +2142,6 @@ def bluePrintPlotter(blueprints, SR, durations, fig=None, axs=None):
         ax.set_xticks([])
     axs[-1].set_xlabel('Time ({})'.format(timeunit))
     for ax in axs:
-        yt = ax.get_yticks()
-        ax.set_yticks(yt[2:-2])
         ax.set_ylabel('Signal ({})'.format(voltageunit))
     fig.subplots_adjust(hspace=0)
 
