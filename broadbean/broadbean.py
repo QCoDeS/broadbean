@@ -1512,17 +1512,27 @@ class Sequence:
 
         # TODO: channel scalings!
 
-
         package = self.outputForAWGFile()
 
         elements = []
+
+        def rescaler(val, ampl, off):
+            return ampl*(val+off)/2
 
         for pos in range(self.length_sequenceelements):
             element = {}
             for chanind, chan in enumerate(self.channels):
                 npts = len(package[chanind][0][0][pos])
 
-                element[chan] = [package[chanind][0][0][pos],  # wfm
+                keystr_a = 'channel{}_amplitude'.format(chan)
+                keystr_o = 'channel{}_offset'.format(chan)
+                amp = self._awgspecs[keystr_a]
+                off = self._awgspecs[keystr_o]
+
+                wfm_raw = package[chanind][0][0][pos]  # values from -1 to 1
+                wfm = rescaler(wfm_raw, amp, off)
+
+                element[chan] = [wfm,
                                  package[chanind][1][0][pos],  # m1
                                  package[chanind][2][0][pos],  # m2
                                  np.linspace(0, npts/self.SR, npts)  # time
