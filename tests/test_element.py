@@ -33,3 +33,20 @@ def test_bare_init(blueprint_tophat):
     elem = bb.Element()
     elem.addBluePrint(1, blueprint_tophat)
     assert list(elem._data.keys()) == [1]
+
+
+def test_equality_true(blueprint_tophat):
+    elem1 = bb.Element()
+    elem2 = bb.Element()
+    elem1.addBluePrint(1, blueprint_tophat)
+    elem2.addBluePrint(1, blueprint_tophat)
+    assert elem1 == elem2
+
+
+def test_equality_false(blueprint_tophat):
+    elem1 = bb.Element()
+    elem2 = bb.Element()
+    elem1.addBluePrint(1, blueprint_tophat)
+    elem2.addBluePrint(1, blueprint_tophat)
+    elem1.changeArg(1, 'ramp', 'start', 2)
+    assert elem1 != elem2
