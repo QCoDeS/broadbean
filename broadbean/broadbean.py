@@ -1208,6 +1208,16 @@ class Element:
             newlabel = oldlabel.replace('Signal', 'Ch {}'.format(channel))
             cur_fig.axes[ii].set_ylabel(newlabel)
 
+    def __eq__(self, other):
+        if not isinstance(other, Element):
+            return False
+        elif not self._data == other._data:
+            return False
+        elif not self._meta == other._meta:
+            return False
+        else:
+            return True
+
 
 class Sequence:
     """
@@ -1235,6 +1245,32 @@ class Sequence:
         # The metainfo to be extracted by measurements
         # todo: I'm pretty sure this is obsolete now that description exists
         self._meta = {}
+
+    def __eq__(self, other):
+        if not isinstance(other, Sequence):
+            return False
+        elif not self._data == other._data:
+            return False
+        elif not self._meta == other._meta:
+            return False
+        elif not self._awgspecs == other._awgspecs:
+            return False
+        elif not self._sequencing == other._sequencing:
+            return False
+        else:
+            return True
+
+    def copy(self):
+        """
+        Returns a copy of the sequence.
+        """
+        newseq = Sequence()
+        newseq._data = deepcopy(self._data)
+        newseq._meta = deepcopy(self._meta)
+        newseq._awgspecs = deepcopy(self._awgspecs)
+        newseq._sequencing = deepcopy(self._sequencing)
+
+        return newseq
 
     def setSequenceSettings(self, pos, wait, nreps, jump, goto):
         """
@@ -1509,8 +1545,6 @@ class Sequence:
         compensations are specified, this does the same as
         plotSequence.
         """
-
-        # TODO: channel scalings!
 
         package = self.outputForAWGFile()
 
