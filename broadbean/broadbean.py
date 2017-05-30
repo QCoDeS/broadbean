@@ -1332,7 +1332,7 @@ class Sequence:
             raise ValueError('Can not set wait to {}.'.format(wait) +
                              ' Must be either 0 or 1.')
 
-        if nreps not in [0, 65536]:
+        if nreps not in range(0, 65537):
             raise ValueError('Can not set nreps to {}.'.format(nreps) +
                              ' Must be either 0 (infinite) or 1-65,536.')
 
