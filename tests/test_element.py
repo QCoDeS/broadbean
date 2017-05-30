@@ -50,3 +50,10 @@ def test_equality_false(blueprint_tophat):
     elem2.addBluePrint(1, blueprint_tophat)
     elem1.changeArg(1, 'ramp', 'start', 2)
     assert elem1 != elem2
+
+
+def test_copy(blueprint_tophat):
+    elem1 = bb.Element()
+    elem1.addBluePrint(1, blueprint_tophat)
+    elem2 = elem1.copy()
+    assert elem1 == elem2
