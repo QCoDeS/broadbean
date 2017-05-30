@@ -21,6 +21,10 @@ class SequenceConsistencyError(Exception):
     pass
 
 
+class SequenceCompatibilityError(Exception):
+    pass
+
+
 class SpecificationInconsistencyError(Exception):
     pass
 
@@ -1260,6 +1264,43 @@ class Sequence:
         else:
             return True
 
+    def __add__(self, other):
+        """
+        Return a new sequence with is the right argument appended to the
+        left argument
+        """
+
+        # Validation
+        if not self.checkConsistency():
+            raise SequenceConsistencyError('Left hand sequence inconsistent!')
+        if not other.checkConsistency():
+            raise SequenceConsistencyError('Right hand sequence inconsistent!')
+
+        if not self._awgspecs == other._awgspecs:
+            raise SequenceCompatibilityError('Incompatible sequences: different '
+                                             'AWG specifications.')
+
+        newseq = Sequence()
+        N = len(self._data)
+
+        newdata1 = dict([(key, self.element(key).copy())
+                         for key in self._data.keys()])
+        newdata2 = dict([(key+N, other.element(key).copy())
+                         for key in other._data.keys()])
+        newdata1.update(newdata2)
+
+        newseq._data = newdata1
+
+        newsequencing1 = dict([(key, self._sequencing[key].copy())
+                               for key in self._sequencing.keys()])
+        newsequencing2 = dict([(key+N, other._sequencing[key].copy())
+                               for key in other._sequencing.keys()])
+        newsequencing1.update(newsequencing2)
+
+        newseq._sequencing = newsequencing1
+
+        return newseq
+
     def copy(self):
         """
         Returns a copy of the sequence.
@@ -1290,6 +1331,10 @@ class Sequence:
         if wait not in [0, 1]:
             raise ValueError('Can not set wait to {}.'.format(wait) +
                              ' Must be either 0 or 1.')
+
+        if nreps not in [0, 65536]:
+            raise ValueError('Can not set nreps to {}.'.format(nreps) +
+                             ' Must be either 0 (infinite) or 1-65,536.')
 
         self._sequencing[pos] = [wait, nreps, jump, goto]
 
