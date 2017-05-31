@@ -1349,10 +1349,10 @@ class Sequence:
                              ' Valid range -1 (next), 0 (off), '
                              '1-{}'.format(self.length_sequenceelements))
 
-        if goto not in range(1, self.length_sequenceelements+1):
+        if goto not in range(0, self.length_sequenceelements+1):
             raise ValueError('Invalid goto target, received: '
                              '{}.'.format(goto) +
-                             ' Valid range is '
+                             ' Valid range is 0 (off/next) or '
                              '1-{}'.format(self.length_sequenceelements))
 
         self._sequencing[pos] = [wait, nreps, jump, goto]

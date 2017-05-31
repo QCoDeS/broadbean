@@ -234,7 +234,7 @@ def test_addition_data_with_empty(protosequence1):
                                      ([0, 2.5, 0, 1]),
                                      ([0, 2, 0.5, 1]),
                                      ([0, 2, 3, 1]),
-                                     ([0, 1, 0, 0]),
+                                     ([0, 1, 0, 0.5]),
                                      ([0, 1, 0, 3]),
                                      ([0, 1, 0, -1])])
 def test_sequencing_input_fail(protosequence1, seqinfo):
