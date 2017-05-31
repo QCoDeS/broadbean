@@ -1266,8 +1266,9 @@ class Sequence:
 
     def __add__(self, other):
         """
+        Add two sequences.
         Return a new sequence with is the right argument appended to the
-        left argument
+        left argument.
         """
 
         # Validation
@@ -1298,6 +1299,8 @@ class Sequence:
         newsequencing1.update(newsequencing2)
 
         newseq._sequencing = newsequencing1
+
+        newseq._awgspecs = other._awgspecs.copy()
 
         return newseq
 
@@ -1469,13 +1472,15 @@ class Sequence:
         # TODO: Give helpful info if the check fails
 
         try:
-            SR = self._awgspecs['SR']
+            self._awgspecs['SR']
         except KeyError:
             raise KeyError('No sample rate specified. Can not perform check')
 
         # First check that all sample rates agree
         # Since all elements are validated on input, the SR exists
         SRs = [elem.SR for elem in self._data.values()]
+        if SRs == []:  # case of empty Sequence
+            SRs = [None]
         if SRs.count(SRs[0]) != len(SRs):
             failmssg = ('checkConsistency failed: inconsistent sample rates.')
             log.info(failmssg)
@@ -1488,6 +1493,9 @@ class Sequence:
         for elem in self._data.values():
             chans = elem.channels
             specchans.append(chans)
+        if specchans == []:  # case of empty Sequence
+            chans = None
+            specchans = [None]
         if specchans.count(chans) != len(specchans):
             failmssg = ('checkConsistency failed: different elements specify '
                         'different channels')
@@ -1500,6 +1508,8 @@ class Sequence:
 
         # Finally, check that all positions are filled
         positions = list(self._data.keys())
+        if positions == []:  # case of empty Sequence
+            positions = [1]
         if not positions == list(range(1, len(positions)+1)):
             failmssg = ('checkConsistency failed: inconsistent sequence'
                         'positions. Must be 1, 2, 3, ...')
@@ -2341,3 +2351,60 @@ def makeVaryingSequence(baseelement, channels, names, args, iters):
     else:
         log.info('Valid sequence')
         return sequence
+
+
+def repeatAndVarySequence(seq, poss, channels, names, args, iters):
+    """
+    Repeat a sequence and vary part(s) of it. Returns a new sequence.
+    Given N specifications of M steps, N parameters are varied in M
+    steps.
+
+    Args:
+        seq (Sequence): The sequence to be repeated.
+        poss (Union[list, tuple]): A length N list/tuple specifying at which
+            sequence position(s) the blueprint to change is.
+        channels (Union[list, tuple]): A length N list/tuple specifying on
+            which channel(s) the blueprint to change is.
+        names (Union[list, tuple]): A length N list/tuple specifying the name
+            of the segment to change.
+        args (Union[list, tuple]): A length N list/tuple specifying which
+            argument to change. A valid argument is also 'duration'.
+        iters (Union[list, tuple]): A length N list/tuple containing length
+            M indexable iterables with the values to step through.
+    """
+
+    if not seq.checkConsistency():
+        raise SequenceConsistencyError('Inconsistent input sequence! Can not '
+                                       'proceed. Check all positions '
+                                       'and channels.')
+
+    inputlens = [len(poss), len(channels), len(names), len(args), len(iters)]
+    if not inputlens.count(inputlens[0]) == len(inputlens):
+        raise ValueError('Inconsistent number of position, channel, name, args'
+                         ', and '
+                         'parameter sequences. Please specify the same number '
+                         'of each.')
+    noofvals = [len(itr) for itr in iters]
+    if not noofvals.count(noofvals[0]) == len(iters):
+        raise ValueError('Not the same number of values in each parameter '
+                         'value sequence (input argument: iters)')
+
+    newseq = Sequence()
+    newseq._awgspecs = seq._awgspecs
+
+    no_of_steps = noofvals[0]
+
+    for step in range(no_of_steps):
+        tempseq = seq.copy()
+        for (pos, chan, name, arg, vals) in zip(poss, channels, names,
+                                                args, iters):
+            element = tempseq.element(pos)
+            val = vals[step]
+
+            if arg == 'duration':
+                element.changeDuration(chan, name, val)
+            else:
+                element.changeArg(chan, name, arg, val)
+        newseq = newseq + tempseq
+
+    return newseq
