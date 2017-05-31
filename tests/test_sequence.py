@@ -120,6 +120,24 @@ def badseq_missing_pos():
 
     return seq
 
+
+@pytest.fixture
+def squarepulse_baseelem():
+
+    SR = 1e6
+
+    basebp = bb.BluePrint()
+    basebp.insertSegment(0, ramp, (0, 0), durs=0.5e-4)
+    basebp.insertSegment(1, ramp, (1, 1), durs=1e-4, name='varyme')
+    basebp.insertSegment(2, 'waituntil', 5e-4)
+    basebp.setSR(SR)
+
+    baseelem = bb.Element()
+    baseelem.addBluePrint(1, basebp)
+
+    return baseelem
+
+
 ##################################################
 # INIT and dunderdunder part
 
@@ -158,12 +176,12 @@ def test_copy_and_eq(protosequence1):
 
 def test_addition_fail_vrange(protosequence1, protosequence2):
     with pytest.raises(SequenceCompatibilityError):
-        newseq = protosequence1 + protosequence2
+        protosequence1 + protosequence2
 
 
 def test_addition_fail_position(protosequence1, badseq_missing_pos):
     with pytest.raises(SequenceConsistencyError):
-        newseq = protosequence1 + badseq_missing_pos
+        protosequence1 + badseq_missing_pos
 
 
 def test_addition_data(protosequence1, protosequence2):
@@ -187,3 +205,53 @@ def test_addition_sequencing(protosequence1, protosequence2):
                            3: [0, 2, 0, 2],
                            4: [1, 1, 0, 1]}
     assert newseq._sequencing == expected_sequencing
+
+
+##################################################
+# AWG settings
+
+@pytest.mark.parametrize('seqinfo', [([-1, 0, 0, 1]),
+                                     ([2, 1, 1, 1]),
+                                     ([1, -1, 0, 1]),
+                                     ([0, 65537, 0, 1]),
+                                     ([0, 2.5, 0, 1]),
+                                     ([0, 2, 0.5, 1]),
+                                     ([0, 2, 3, 1]),
+                                     ([0, 1, 0, 0]),
+                                     ([0, 1, 0, 3]),
+                                     ([0, 1, 0, -1])])
+def test_sequencing_input_fail(protosequence1, seqinfo):
+    with pytest.raises(ValueError):
+        protosequence1.setSequenceSettings(1, *seqinfo)
+
+
+def test_setSR(protosequence1):
+    protosequence1.setSR(1.2e9)
+    assert protosequence1._awgspecs['SR'] == 1.2e9
+
+
+##################################################
+# Highest level sequence variers
+
+@pytest.mark.parametrize('channels, names, args, iters',
+                         [([1], ['varyme'], ['start', 'stop'], [0.9, 1.0, 1.1]),
+                          ([1, 1], ['varyme', 'ramp'], ['start', 'start'], [(1,), (1,2)]),
+                          ([1], ['varyme'], ['crazyarg'], [0.9, 1.0, 1.1])])
+def test_makeVaryingSequence_fail(squarepulse_baseelem, channels, names,
+                                  args, iters):
+    with pytest.raises(ValueError):
+        bb.makeVaryingSequence(squarepulse_baseelem, channels,
+                               names, args, iters)
+
+
+@pytest.mark.parametrize('seqpos, argslist', [(1, [(0, 0), 2*(1,), (5e-4,)]),
+                                              (2, [(0, 0), 2*(1.2,), (5e-4,)]),
+                                              (3, [(0, 0), 2*(1.3,), (5e-4,)])])
+def test_makeVaryingSequence(squarepulse_baseelem, seqpos, argslist):
+    channels = [1, 1]
+    names = ['varyme', 'varyme']
+    args = ['start', 'stop']
+    iters = 2*[[1, 1.2, 1.3]]
+    sequence = bb.makeVaryingSequence(squarepulse_baseelem, channels,
+                                      names, args, iters)
+    assert sequence._data[seqpos]._data[1]['blueprint']._argslist == argslist

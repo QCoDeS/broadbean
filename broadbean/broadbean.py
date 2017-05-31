@@ -1328,13 +1328,29 @@ class Sequence:
         """
 
         # Validation (some validation 'postponed' and put in checkConsistency)
+        #
+        # Validation is important because the instrument will silently fail upon
+        # receiving an awg file with inconsistent specifications
+        #
         if wait not in [0, 1]:
-            raise ValueError('Can not set wait to {}.'.format(wait) +
+            raise ValueError('Can not set trigger wait state to {}.'.format(wait) +
                              ' Must be either 0 or 1.')
 
         if nreps not in range(0, 65537):
             raise ValueError('Can not set nreps to {}.'.format(nreps) +
                              ' Must be either 0 (infinite) or 1-65,536.')
+
+        if jump not in range(-1, self.length_sequenceelements+1):
+            raise ValueError('Invalid event jump target, received: '
+                             '{}.'.format(jump) +
+                             ' Valid range -1 (next), 0 (off), '
+                             '1-{}'.format(self.length_sequenceelements))
+
+        if goto not in range(1, self.length_sequenceelements+1):
+            raise ValueError('Invalid goto target, received: '
+                             '{}.'.format(goto) +
+                             ' Valid range is '
+                             '1-{}'.format(self.length_sequenceelements))
 
         self._sequencing[pos] = [wait, nreps, jump, goto]
 
