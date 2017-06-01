@@ -959,6 +959,10 @@ class Element:
             raise ValueError('Invalid blueprint given. Must be an instance'
                              ' of the BluePrint class.')
 
+        if [] in [blueprint._funlist, blueprint._argslist, blueprint._namelist,
+                  blueprint._tslist]:
+            raise ValueError('Received empty BluePrint. Can not proceed.')
+
         # important: make a copy of the blueprint
         newprint = blueprint.copy()
 

@@ -57,3 +57,13 @@ def test_copy(blueprint_tophat):
     elem1.addBluePrint(1, blueprint_tophat)
     elem2 = elem1.copy()
     assert elem1 == elem2
+
+
+##################################################
+# Input validation
+
+@pytest.mark.parametrize('improper_bp', [{1: 2}, 'blueprint', bb.BluePrint()])
+def test_input_fail1(improper_bp):
+    elem = bb.Element()
+    with pytest.raises(ValueError):
+        elem.addBluePrint(1, improper_bp)
