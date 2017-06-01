@@ -195,15 +195,27 @@ def test_addition_data(protosequence1, protosequence2):
     assert newseq._data == expected_data
 
 
-def test_addition_sequencing(protosequence1, protosequence2):
+def test_addition_sequencing1(protosequence1, protosequence2):
     protosequence2.setChannelVoltageRange(1, 2, 0)
     protosequence2.setChannelVoltageRange(2, 2, 0)
 
     newseq = protosequence1 + protosequence2
     expected_sequencing = {1: [1, 1, 1, 1],
                            2: [1, 1, 1, 1],
-                           3: [0, 2, 0, 2],
-                           4: [1, 1, 0, 1]}
+                           3: [0, 2, 0, 4],
+                           4: [1, 1, 0, 3]}
+    assert newseq._sequencing == expected_sequencing
+
+
+def test_addition_sequencing2(protosequence1, protosequence2):
+    protosequence2.setChannelVoltageRange(1, 2, 0)
+    protosequence2.setChannelVoltageRange(2, 2, 0)
+
+    newseq = protosequence2 + protosequence1
+    expected_sequencing = {3: [1, 1, 3, 3],
+                           4: [1, 1, 3, 3],
+                           1: [0, 2, 0, 2],
+                           2: [1, 1, 0, 1]}
     assert newseq._sequencing == expected_sequencing
 
 
