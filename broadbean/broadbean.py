@@ -1294,8 +1294,16 @@ class Sequence:
 
         newsequencing1 = dict([(key, self._sequencing[key].copy())
                                for key in self._sequencing.keys()])
-        newsequencing2 = dict([(key+N, other._sequencing[key].copy())
-                               for key in other._sequencing.keys()])
+        newsequencing2 = dict()
+        for key, item in other._sequencing.items():
+            newitem = item.copy()
+            # update goto and jump according to new sequence length
+            if newitem[2] > 0:
+                newitem[2] += N
+            if newitem[3] > 0:
+                newitem[3] += N
+            newsequencing2.update({key+N: newitem})
+
         newsequencing1.update(newsequencing2)
 
         newseq._sequencing = newsequencing1
