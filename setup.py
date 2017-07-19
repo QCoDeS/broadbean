@@ -7,8 +7,7 @@ setup(
     # We might as well require what we know will work
     # although older numpy and matplotlib version will probably work too
     install_requires=['numpy>=1.12.1',
-                      'matplotlib>=2.0.1',
-                      'PyQt5'],
+                      'matplotlib>=2.0.1'],
 
     author='William H.P. Nielsen',
     author_email='whpn@mailbox.org',
