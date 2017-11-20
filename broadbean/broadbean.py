@@ -1843,7 +1843,7 @@ class Sequence:
         data = deepcopy(self._data)
         seqlen = len(data.keys())
         # check if sequencing information is specified for each element
-        if not list(self._sequencing.keys()) == list(range(1, seqlen+1)):
+        if not sorted(list(self._sequencing.keys())) == list(range(1, seqlen+1)):
             raise ValueError('Can not generate output for .awg file; '
                              'incorrect sequencer information.')
 
