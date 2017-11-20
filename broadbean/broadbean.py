@@ -1794,15 +1794,17 @@ class Sequence:
                     try:
                         seq_info = self._sequencing[pos+1]
                     except KeyError:
-                        seq_info = [0, 0, 0, 0]
+                        seq_info = [0, -1, 0, 0]
                     titlestring = ''
-                    if seq_info[0] == 1:
+                    if seq_info[0] == 1:  # trigger wait
                         titlestring += 'T '
-                    if seq_info[1] > 1:
+                    if seq_info[1] > 1:  # nreps
                         titlestring += '\u21BB{} '.format(seq_info[1])
+                    if seq_info[1] == 0:
+                        titlestring += '\u221E '
                     if seq_info[2] != 0:
                         if seq_info[2] == -1:
-                            titlestring += 'E next '
+                            titlestring += 'E\u2192 '
                         else:
                             titlestring += 'E{} '.format(seq_info[2])
                     if seq_info[3] > 0:
