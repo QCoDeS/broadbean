@@ -2049,7 +2049,7 @@ def _subelementBuilder(blueprint, SR, durs):
             extra = 0
         else:
             extra = 1
-        newdurations[ii] = (int_dur + extra)/SR
+        newdurations[ii] = (int_dur + extra)/SR  # Here is a float division!
 
     # The actual forging of the waveform
     parts = [ft.partial(fun, *args) for (fun, args) in zip(funlist, argslist)]
@@ -2057,7 +2057,7 @@ def _subelementBuilder(blueprint, SR, durs):
     output = [block for sl in blocks for block in sl]
 
     # now make the markers
-    time = np.linspace(0, sum(newdurations), int(sum(newdurations)*SR))
+    time = np.linspace(0, sum(newdurations), len(output))
     m1 = np.zeros_like(time)
     m2 = m1.copy()
     dt = time[1] - time[0]
