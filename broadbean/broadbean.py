@@ -155,19 +155,19 @@ class BluePrint():
     them into numpy arrays.
     """
 
-    def __init__(self, funlist=None, argslist=None, namelist=None, tslist=None,
+    def __init__(self, funlist=None, argslist=None, namelist=None,
                  marker1=None, marker2=None, segmentmarker1=None,
-                 segmentmarker2=None, SR=None, durations=None):
+                 segmentmarker2=None, SR=None, durslist=None):
         """
-        Create a BluePrint instance.
+        Create a BluePrint instance.y
 
         Args:
             funlist (list): List of functions
             argslist (list): List of tuples of arguments
             namelist (list): List of names for the functions
-            tslist (list): List of timesteps for each segment
             marker1 (list): List of marker1 specification tuples
             marker2 (list): List of marker2 specifiation tuples
+            durslist (list): List of durations
 
         Returns:
             BluePrint
@@ -181,11 +181,12 @@ class BluePrint():
             argslist = []
         if namelist is None:
             namelist = []
+        if durslist is None:
+            durslist = []
 
         # Are the lists of matching lengths?
-        lenlist = [len(funlist), len(argslist), len(namelist)]
-        if tslist is not None:
-            lenlist.append(len(tslist))
+        lenlist = [len(funlist), len(argslist), len(namelist), len(durslist)]
+
         if len(set(lenlist)) is not 1:
             raise ValueError('All input lists must be of same length. '
                              'Received lengths: {}'.format(lenlist))
@@ -220,11 +221,6 @@ class BluePrint():
         self._namelist = namelist
         namelist = self._make_names_unique(namelist)
 
-        if tslist is None:
-            self._tslist = [1]*len(namelist)
-        else:
-            self._tslist = tslist
-
         # initialise markers
         if marker1 is None:
             self.marker1 = []
@@ -243,11 +239,8 @@ class BluePrint():
         else:
             self._segmark2 = segmentmarker2
 
-        if durations is not None:
-            self._durslist = []
-            steps = [0] + list(np.cumsum(self._tslist))
-            for ii in range(len(steps)-1):
-                self._durslist.append(tuple(durations[steps[ii]:steps[ii+1]]))
+        if durslist is not None:
+            self._durslist = list(durslist)
         else:
             self._durslist = None
 
@@ -309,13 +302,6 @@ class BluePrint():
         return lst
 
     @property
-    def length_timesteps(self):
-        """
-        Returns the number of assigned time steps currently in the blueprint.
-        """
-        return len(self._tslist)
-
-    @property
     def length_segments(self):
         """
         Returns the number of segments in the blueprint
@@ -334,7 +320,6 @@ class BluePrint():
             # take care of 'waituntils'
             waitinds = [ind for (ind, fun) in enumerate(self._funlist) if
                         fun == 'waituntil']
-            durlist = self._durslist[max(waitinds + [0]):]
             durs = [d for dur in self._durslist for d in dur]
             length_secs = self.getLength(self._SR, durs)/self._SR
 
@@ -361,13 +346,12 @@ class BluePrint():
 
         (legacy for old API where durations where specified independently)
         """
-        durs = [d for dur in self._durslist for d in dur]
-        return durs
+        return self._durslist
 
     @property
     def SR(self):
         """
-        Sample rate of the element
+        Sample rate of the blueprint
         """
         return self._SR
 
@@ -390,7 +374,6 @@ class BluePrint():
                 funname = str(self._funlist[sn])[1:]
                 funname = funname[:funname.find(' at')]
                 desc[segkey]['function'] = funname
-            desc[segkey]['timesteps'] = self._tslist[sn]
             desc[segkey]['durations'] = self._durslist[sn]
             if desc[segkey]['function'] == 'waituntil':
                 desc[segkey]['arguments'] = {'waittime': self._argslist[sn]}
@@ -418,20 +401,20 @@ class BluePrint():
             dl = self._durslist
 
         datalists = [self._namelist, self._funlist, self._argslist,
-                     self._tslist, dl]
+                     dl]
 
         lzip = zip(*datalists)
 
         print('Legend: Name, function, arguments, timesteps, durations')
 
-        for ind, (name, fun, args, ts, durs) in enumerate(lzip):
+        for ind, (name, fun, args, durs) in enumerate(lzip):
             ind_p = ind+1
             if fun == 'waituntil':
                 fun_p = fun
             else:
                 fun_p = fun.__str__().split(' ')[1]
 
-            list_p = [ind_p, name, fun_p, args, ts, durs]
+            list_p = [ind_p, name, fun_p, args, durs]
             print('Segment {}: "{}", {}, {}, {}, {}'.format(*list_p))
         print('-'*10)
 
@@ -531,10 +514,6 @@ class BluePrint():
                 1/SR.
         """
 
-        # Opt-out if blueprint is 'old' style
-        if self._durslist is None:
-            raise ValueError('Not that kind of blueprint! No durations')
-
         if replaceeverywhere:
             basename = BluePrint._basename
             name = basename(name)
@@ -542,6 +521,11 @@ class BluePrint():
             replacelist = [nm for nm in nmlst if basename(nm) == name]
         else:
             replacelist = [name]
+
+        # Validation
+        if name not in self._namelist:
+            raise ValueError('No segment of that name in blueprint.'
+                             ' Contains segments: {}'.format(self._namelist))
 
         for name in replacelist:
             position = self._namelist.index(name)
@@ -646,24 +630,17 @@ class BluePrint():
         # Needed because of input validation in __init__
         namelist = [self._basename(name) for name in self._namelist.copy()]
 
-        # needed because of __init__'s internal workings
-        if self._durslist is not None:
-            flatdurlist = [d for dur in self._durslist for d in dur]
-        else:
-            flatdurlist = None
-
         return BluePrint(self._funlist.copy(),
                          self._argslist.copy(),
                          namelist,
-                         self._tslist.copy(),
                          self.marker1.copy(),
                          self.marker2.copy(),
                          self._segmark1.copy(),
                          self._segmark2.copy(),
                          self._SR,
-                         flatdurlist)
+                         self._durslist)
 
-    def insertSegment(self, pos, func, args=(), name=None, ts=1, durs=None):
+    def insertSegment(self, pos, func, args=(), dur=None, name=None):
         """
         Insert a segment into the bluePrint.
 
@@ -673,15 +650,13 @@ class BluePrint():
                 not allowed, though.
             func (function): Function describing the segment. Must have its
                duration as the last argument (unless its a special function).
-            args (tuple): Tuple of arguments BESIDES duration. Default: ()
-            name (str): Name of the segment. If none is given, the segment
+            args (Optional[Tuple[Any]]): Tuple of arguments BESIDES duration.
+                Default: ()
+            dur (Optional[Union[int, float]]): The duration of the segment. Must be
+                given UNLESS the segment is 'waituntil' or 'ensureaverage_fixed_level'
+            name Optional[str]: Name of the segment. If none is given, the segment
                 will receive the name of its function, possibly with a number
                 appended.
-            ts (int): Number of time segments this segment should last.
-                Default: 1.
-            durs (Optional[Union[float, tuple]]): The duration(s) of the
-                segment. Must be a tuple if more than one is specified,
-                else both a float and a tuple is acceptable.
 
         Raises:
             ValueError: If the position is negative
@@ -689,15 +664,14 @@ class BluePrint():
         """
 
         # Validation
-        if (durs is not None) and not isinstance(durs, tuple):
-            durs = (durs,)
-        if isinstance(durs, tuple) and (len(durs) != ts):
-            raise ValueError('Inconsistent number of timesteps and'
-                             ' durations')
+        has_ensureavg = ('ensureaverage_fixed_level' in self._funlist or
+                         'ensureaverage_fixed_dur' in self._funlist)
+        if func == 'ensureaverage_fixed_level' and has_ensureavg:
+            raise ValueError('Can not have more than one "ensureaverage"'
+                             ' segment in a blueprint.')
 
         # Take care of 'waituntil'
-        if func == 'waituntil':
-            durs = (None,)
+
 
         # allow users to input single values
         if not isinstance(args, tuple):
@@ -716,32 +690,22 @@ class BluePrint():
                 if name[-1].isdigit():
                     raise ValueError('Segment name must not end in a number')
 
-        # Unfortunate side effect of having durations non-mandatory
-        if (durs is not None) and (self._durslist is None):
-            self._durslist = []
-
         if pos == -1:
             self._namelist.append(name)
             self._namelist = self._make_names_unique(self._namelist)
             self._funlist.append(func)
             self._argslist.append(args)
-            self._tslist.append(ts)
             self._segmark1.append((0, 0))
             self._segmark2.append((0, 0))
-            # allow for old-style duration specification
-            if self._durslist is not None:
-                self._durslist.append(durs)
+            self._durslist.append(dur)
         else:
             self._namelist.insert(pos, name)
             self._namelist = self._make_names_unique(self._namelist)
             self._funlist.insert(pos, func)
             self._argslist.insert(pos, args)
-            self._tslist.insert(pos, ts)
             self._segmark1.insert(pos, (0, 0))
             self._segmark2.insert(pos, (0, 0))
-            # allow for old-style duration specifiation
-            if self._durslist is not None:
-                self._durslist.insert(pos, durs)
+            self._durslist.insert(pos, dur)
 
     def removeSegment(self, name):
         """
