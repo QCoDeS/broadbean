@@ -29,9 +29,9 @@ def blueprint_tophat():
     similar to a tophat
     """
     th = bb.BluePrint()
-    th.insertSegment(0, ramp, args=(0, 0), name='ramp', durs=1)
-    th.insertSegment(1, ramp, args=(1, 1), name='ramp', durs=0.5)
-    th.insertSegment(2, ramp, args=(0, 0), name='ramp', durs=1)
+    th.insertSegment(0, ramp, args=(0, 0), name='ramp', dur=1)
+    th.insertSegment(1, ramp, args=(1, 1), name='ramp', dur=0.5)
+    th.insertSegment(2, ramp, args=(0, 0), name='ramp', dur=1)
     th.setSR(tophat_SR)
 
     return th
@@ -111,8 +111,7 @@ def test_creation(virgin_blueprint):
 @pytest.mark.parametrize("attribute, expected", [('_funlist', []),
                                                  ('_namelist', []),
                                                  ('_argslist', []),
-                                                 ('_tslist', []),
-                                                 ('_durslist', None),
+                                                 ('_durslist', []),
                                                  ('marker1', []),
                                                  ('marker2', []),
                                                  ('_segmark1', []),
@@ -129,9 +128,8 @@ def test_bare_init(virgin_blueprint, attribute, expected):
                                              ['ramp', 'ramp2', 'ramp3']),
                                             ('_argslist',
                                              [(0, 0), (1, 1), (0, 0)]),
-                                            ('_tslist', [1, 1, 1]),
                                             ('_durslist',
-                                             [(1,), (0.5,), (1,)]),
+                                             [1, 0.5, 1]),
                                             ('marker1', []),
                                             ('marker2', []),
                                             ('_segmark1', [(0, 0)]*3),
@@ -145,9 +143,8 @@ def test_tophat_init(blueprint_tophat, attribute, val):
                                              ['ramp', 'ramp2', 'ramp3']),
                                             ('_argslist',
                                              [(0, 0), (1, 1), (0, 0)]),
-                                            ('_tslist', [1, 1, 1]),
                                             ('_durslist',
-                                             [(1,), (0.5,), (1,)]),
+                                             [1, 0.5, 1]),
                                             ('marker1', []),
                                             ('marker2', []),
                                             ('_segmark1', [(0, 0)]*3),
@@ -158,9 +155,9 @@ def test_tophat_copy(blueprint_tophat, attribute, val):
 
 
 @pytest.mark.parametrize('name, newdur, durslist',
-                         [('ramp', 0.1, [(0.1,), (0.5,), (1,)]),
-                          ('ramp2', 0.1, [(1,), (0.1,), (1,)]),
-                          ('ramp3', 0.1, [(1,), (0.5,), (0.1,)])])
+                         [('ramp', 0.1, [0.1, 0.5, 1]),
+                          ('ramp2', 0.1, [1, 0.1, 1]),
+                          ('ramp3', 0.1, [1, 0.5, 0.1])])
 def test_tophat_changeduration(blueprint_tophat, name, newdur, durslist):
     blueprint_tophat.changeDuration(name, newdur)
     assert blueprint_tophat._durslist == durslist
@@ -168,11 +165,10 @@ def test_tophat_changeduration(blueprint_tophat, name, newdur, durslist):
 
 def test_tophat_changeduration_everywhere(blueprint_tophat):
     blueprint_tophat.changeDuration('ramp', 0.2, replaceeverywhere=True)
-    assert blueprint_tophat._durslist == [(0.2,)]*3
+    assert blueprint_tophat._durslist == [0.2]*3
 
 
-@pytest.mark.parametrize('newdur', [(-1,), (0.0,), (1/(tophat_SR+1),),
-                                    (), (1, 2)])
+@pytest.mark.parametrize('newdur', [-1, 0.0, 1/(tophat_SR+1), None])
 def test_tophat_changeduration_valueerror(blueprint_tophat, newdur):
     with pytest.raises(ValueError):
         blueprint_tophat.changeDuration('ramp', newdur)
@@ -205,7 +201,7 @@ def test_tophat_changeargument_valueerror(blueprint_tophat, name, arg):
                           (2, sine, [ramp, ramp, sine, ramp]),
                           (3, sine, [ramp, ramp, ramp, sine])])
 def test_tophat_insert_funlist(blueprint_tophat, pos, func, funlist):
-    blueprint_tophat.insertSegment(pos, func, args=(1, 0), durs=(1,))
+    blueprint_tophat.insertSegment(pos, func, args=(1, 0), dur=1)
     assert blueprint_tophat._funlist == funlist
 
 
@@ -217,7 +213,7 @@ newargs = (5, 5)
                           (-1, [(0, 0), (1, 1), (0, 0), newargs]),
                           (2, [(0, 0), (1, 1), newargs, (0, 0)])])
 def test_tophat_insert_argslist(blueprint_tophat, pos, argslist):
-    blueprint_tophat.insertSegment(pos, ramp, newargs, durs=(1,))
+    blueprint_tophat.insertSegment(pos, ramp, newargs, dur=1)
     assert blueprint_tophat._argslist == argslist
 
 
@@ -226,7 +222,7 @@ def test_tophat_insert_argslist(blueprint_tophat, pos, argslist):
                           (-1, 'myramp', ['ramp', 'ramp2', 'ramp3', 'myramp']),
                           (2, 'ramp', ['ramp', 'ramp2', 'ramp3', 'ramp4'])])
 def test_tophat_insert_namelist(blueprint_tophat, pos, name, namelist):
-    blueprint_tophat.insertSegment(pos, ramp, newargs, name=name, durs=(0.5,))
+    blueprint_tophat.insertSegment(pos, ramp, newargs, name=name, dur=0.5)
     assert blueprint_tophat._namelist == namelist
 
 # More to come...

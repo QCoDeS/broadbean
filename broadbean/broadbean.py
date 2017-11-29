@@ -558,6 +558,10 @@ class BluePrint():
                 1/SR.
         """
 
+        if (not(isinstance(dur, float)) and not(isinstance(dur, int))):
+            raise ValueError('New duration must be an int or a float. '
+                             'Received {}'.format(type(dur)))
+
         if replaceeverywhere:
             basename = BluePrint._basename
             name = basename(name)
@@ -690,7 +694,6 @@ class BluePrint():
             else:
                 raise ValueError('You can not specify "durs" AND "dur"!')
         # Take care of 'waituntil'
-
 
         # allow users to input single values
         if not isinstance(args, tuple):
