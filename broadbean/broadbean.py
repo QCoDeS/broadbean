@@ -310,39 +310,47 @@ class BluePrint():
         return len(self._namelist)
 
     @property
-    def length_seconds(self):
+    def duration(self):
         """
-        If possible, returns the length of the blueprint in seconds.
-        Returns -1 if insufficient information is specified.
+        The total duration of the BluePrint. If necessary, all the arrays
+        are built.
         """
-        # TODO: update with ensureaverage_fixed_level, since that segment
-        # makes the duration undefined
-        if (self._SR is None):
-            length_secs = -1
-        else:
-            # take care of 'waituntils'
-            waitinds = [ind for (ind, fun) in enumerate(self._funlist) if
-                        fun == 'waituntil']
-            length_secs = sum(self._durslist)
+        waits = 'waituntil' in self._funlist
+        ensavgs = 'ensureaverage_fixed_level' in self._funlist
 
-        return length_secs
+        if (not(waits) and not(ensavgs)):
+            return sum(self._durslist)
+        elif (waits and not(ensavgs)):
+            waitdurations = self._makeWaitDurations()
+            return sum(waitdurations)
+            pass
+        elif ensavgs:
+            # TODO: call the forger
+            pass
 
     @property
-    def length_numpoints(self):
+    def points(self):
         """
-        If possible, returns the length of the blueprint in seconds.
-        Returns -1 if insufficient information is specified.
+        The total number of points in the BluePrint. If necessary,
+        all the arrays are built.
         """
-        # TODO: make this function call the forger
+        waits = 'waituntil' in self._funlist
+        ensavgs = 'ensureaverage_fixed_level' in self._funlist
+        SR = self.SR
 
-        # TODO: update with condition that ensureaverage_fixed_level
-        # is in self._namelist
-        if (self._SR is None):
-            length_npts = -1
-        else:
-            length_npts = int(sum(self._durslist)*self.SR)
+        if SR is None:
+            raise ValueError('No sample rate specified, can not '
+                             'return the number of points.')
 
-        return length_npts
+        if (not(waits) and not(ensavgs)):
+            return int(sum(self._durslist)*SR)
+        elif (waits and not(ensavgs)):
+            waitdurations = self._makeWaitDurations()
+            return int(sum(waitdurations)*SR)
+            pass
+        elif ensavgs:
+            # TODO: call the forger
+            pass
 
     @property
     def durations(self):
@@ -391,6 +399,41 @@ class BluePrint():
         desc['marker2_rel'] = self._segmark2
 
         return desc
+
+    def _makeWaitDurations(self):
+        """
+        Translate waituntills into durations and return that list.
+        """
+
+        if 'ensureaverage_fixed_level' in self._funlist:
+            raise NotImplementedError('There is an "ensureaverage_fixed_level"'
+                                      ' in this BluePrint. Cannot compute.')
+
+        funlist = self._funlist.copy()
+        durations = self._durslist.copy()
+        argslist = self._argslist
+
+        no_of_waits = funlist.count('waituntil')
+
+        waitpositions = [ii for ii, el in enumerate(funlist)
+                         if el == 'waituntil']
+
+        # Calculate elapsed times
+
+        for nw in range(no_of_waits):
+            pos = waitpositions[nw]
+            funlist[pos] = PulseAtoms.waituntil
+            elapsed_time = sum(durations[:pos])
+            wait_time = argslist[pos][0]
+            dur = wait_time - elapsed_time
+            if dur < 0:
+                raise ValueError('Inconsistent timing. Can not wait until ' +
+                                 '{} at position {}.'.format(wait_time, pos) +
+                                 ' {} elapsed already'.format(elapsed_time))
+            else:
+                durations[pos] = dur
+
+        return durations
 
     def showPrint(self):
         """
@@ -919,7 +962,7 @@ class Element:
         durations = []
         for channel in channels:
             if 'blueprint' in channel.keys():
-                durations.append(channel['blueprint'].length_seconds)
+                durations.append(channel['blueprint'].duration)
             elif 'array' in channel.keys():
                 length = len(channel['array'])/channel['SR']
                 durations.append(length)
@@ -934,7 +977,7 @@ class Element:
         npts = []
         for channel in channels:
             if 'blueprint' in channel.keys():
-                npts.append(channel['blueprint'].length_numpoints)
+                npts.append(channel['blueprint'].points)
             elif 'array' in channel.keys():
                 length = len(channel['array'])
                 npts.append(length)
