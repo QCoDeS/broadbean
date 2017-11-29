@@ -1,5 +1,6 @@
 import logging
 import math
+import warnings
 from inspect import signature
 from copy import deepcopy
 import functools as ft
@@ -314,14 +315,15 @@ class BluePrint():
         If possible, returns the length of the blueprint in seconds.
         Returns -1 if insufficient information is specified.
         """
-        if (self._SR is None) or (self._durslist is None):
+        # TODO: update with ensureaverage_fixed_level, since that segment
+        # makes the duration undefined
+        if (self._SR is None):
             length_secs = -1
         else:
             # take care of 'waituntils'
             waitinds = [ind for (ind, fun) in enumerate(self._funlist) if
                         fun == 'waituntil']
-            durs = [d for dur in self._durslist for d in dur]
-            length_secs = self.getLength(self._SR, durs)/self._SR
+            length_secs = sum(self._durslist)
 
         return length_secs
 
@@ -331,20 +333,21 @@ class BluePrint():
         If possible, returns the length of the blueprint in seconds.
         Returns -1 if insufficient information is specified.
         """
-        if (self._SR is None) or (self._durslist is None):
+        # TODO: make this function call the forger
+
+        # TODO: update with condition that ensureaverage_fixed_level
+        # is in self._namelist
+        if (self._SR is None):
             length_npts = -1
         else:
-            durs = [d for dur in self._durslist for d in dur]
-            length_npts = self.getLength(self._SR, durs)
+            length_npts = int(sum(self._durslist)*self.SR)
 
         return length_npts
 
     @property
     def durations(self):
         """
-        The flattened list of durations
-
-        (legacy for old API where durations where specified independently)
+        The list of durations
         """
         return self._durslist
 
@@ -407,15 +410,15 @@ class BluePrint():
 
         print('Legend: Name, function, arguments, timesteps, durations')
 
-        for ind, (name, fun, args, durs) in enumerate(lzip):
+        for ind, (name, fun, args, dur) in enumerate(lzip):
             ind_p = ind+1
             if fun == 'waituntil':
                 fun_p = fun
             else:
                 fun_p = fun.__str__().split(' ')[1]
 
-            list_p = [ind_p, name, fun_p, args, durs]
-            print('Segment {}: "{}", {}, {}, {}, {}'.format(*list_p))
+            list_p = [ind_p, name, fun_p, args, dur]
+            print('Segment {}: "{}", {}, {}, {}'.format(*list_p))
         print('-'*10)
 
     def changeArg(self, name, arg, value, replaceeverywhere=False):
@@ -492,13 +495,11 @@ class BluePrint():
 
     def changeDuration(self, name, dur, replaceeverywhere=False):
         """
-        Change the duration(s) of one or more segments in the blueprint
+        Change the duration of one or more segments in the blueprint
 
         Args:
             name (str): The name of the segment in which to change duration
-            dur (Union[float, tuple]): The new duration(s). If the segment has
-                multiple durations assigned to it, dur must be a tuple. For
-                single durations, both a float and a tuple is acceptable.
+            dur (Union[float, int]): The new duration.
             replaceeverywhere (Optional[bool]): If True, the duration(s)
                 is(are) overwritten in ALL segments where the name matches.
                 E.g. 'gaussian1' will match 'gaussian', 'gaussian2',
@@ -530,26 +531,14 @@ class BluePrint():
         for name in replacelist:
             position = self._namelist.index(name)
 
-            # Validation and sanitising
-            oldlen = len(self._durslist[position])
-            if not isinstance(dur, tuple):
-                dur = (dur,)
+            if dur <= 0:
+                raise ValueError('Duration must be strictly greater '
+                                 'than zero.')
 
-            if not len(dur) == oldlen:
-                raise ValueError('Wrong number of durations! Segment named'
-                                 ' {} has '.format(name) +
-                                 '{} duration(s).'.format(oldlen) +
-                                 ' Received {}.'.format(len(dur)))
-
-            for d in dur:
-                if d <= 0:
-                    raise ValueError('Duration must be strictly greater '
-                                     'than zero.')
-
-                if self.SR is not None:
-                    if d*self.SR < 1:
-                        raise ValueError('Duration too short! Must be at'
-                                         ' least 1/sample rate.')
+            if self.SR is not None:
+                if dur*self.SR < 1:
+                    raise ValueError('Duration too short! Must be at'
+                                     ' least 1/sample rate.')
 
             self._durslist[position] = dur
 
@@ -600,28 +589,6 @@ class BluePrint():
         position = self._namelist.index(name)
         markerselect[markerID][position] = (0, 0)
 
-    def changeTimeSteps(self, name, n):
-        """
-        Change the duration (in number of timesteps) of the blueprint segment
-        with the specified name.
-
-        Args:
-            name (str): The name of a segment of the blueprint.
-            n (int): The number of timesteps for this segment to last.
-        """
-        position = self._namelist.index(name)
-
-        if self._funlist[position] == 'waituntil':
-            raise ValueError('Special function waituntil can not last more' +
-                             'than one time step')
-
-        n_is_whole_number = float(n).is_integer()
-        if not (n >= 1 and n_is_whole_number):
-            raise ValueError('n must be a whole number strictly' +
-                             ' greater than 0.')
-
-        self._tslist[position] = n
-
     def copy(self):
         """
         Returns a copy of the BluePrint
@@ -640,7 +607,8 @@ class BluePrint():
                          self._SR,
                          self._durslist)
 
-    def insertSegment(self, pos, func, args=(), dur=None, name=None):
+    def insertSegment(self, pos, func, args=(), dur=None, name=None,
+                      durs=None):
         """
         Insert a segment into the bluePrint.
 
@@ -671,6 +639,13 @@ class BluePrint():
             raise ValueError('Can not have more than one "ensureaverage"'
                              ' segment in a blueprint.')
 
+        if durs is not None:
+            warnings.warn('Deprecation warning: please specify "dur" rather '
+                          'than "durs" when inserting a segment')
+            if dur is None:
+                dur = durs
+            else:
+                raise ValueError('You can not specify "durs" AND "dur"!')
         # Take care of 'waituntil'
 
 
@@ -719,7 +694,6 @@ class BluePrint():
 
         del self._funlist[position]
         del self._argslist[position]
-        del self._tslist[position]
         del self._namelist[position]
         del self._segmark1[position]
         del self._segmark2[position]
@@ -730,20 +704,21 @@ class BluePrint():
         Plot the blueprint.
 
         Args:
-            SR (Optional[Union[int, None]]): The sample rate. If None, the sample rate
-                of the blueprint is used.
+            SR (Optional[Union[int, None]]): The sample rate. If None,
+                the sample rate of the blueprint is used.
 
         Raises:
             ValueError: If no sample rate is provided as argument nor set for
             the blueprint.
         """
 
-        if self.SR is None:
+        if self.SR is None and SR is None:
             raise ValueError('No sample rate specified. Please provide one!')
 
-        # bluePrintPlotter needs a flat list of durations
-        flatdurs = [d for dur in self._durslist for d in dur]
-        bluePrintPlotter(self, self.SR, flatdurs)
+        if SR is None:
+            SR = self.SR
+
+        bluePrintPlotter(self)
 
     def _validateDurations(self, durations):
         """
@@ -763,49 +738,6 @@ class BluePrint():
                              'of durations. '
                              '({} and {})'.format(sum(self._tslist),
                                                   len(durations)))
-
-    def getLength(self, SR, durs):
-        """
-        Calculate the length of the BluePrint, where it to be forged with
-        the specified durations.
-
-        Args:
-            durs (list): List of durations
-
-        Returns:
-            int: The number of points of the element
-
-        Raises:
-            ValueError: If the length of durations does not match the
-                blueprint.
-        """
-        durations = durs.copy()
-
-        self._validateDurations(durations)
-
-        no_of_waits = self._funlist.count('waituntil')
-        waitpositions = [ii for ii, el in enumerate(self._funlist)
-                         if el == 'waituntil']
-
-        # TODO: This is reuse of elementBuilder code... Refactor?
-
-        # Note: the durations here are the flattened list of tuples of
-        # durations, therefore we have pos and flatpos
-
-        for nw in range(no_of_waits):
-            flatpos = np.cumsum(self._tslist)[waitpositions[nw]]-1
-            pos = waitpositions[nw]
-            elapsed_time = sum(durations[:flatpos])
-            wait_time = self._argslist[pos][0]
-            dur = wait_time - elapsed_time
-            if dur < 0:
-                raise ValueError('Inconsistent timing. Can not wait until ' +
-                                 '{} at position {}.'.format(wait_time, pos) +
-                                 ' {} elapsed already'.format(elapsed_time))
-            else:
-                durations[flatpos] = dur
-
-        return(int(sum(durations)*SR))
 
     def __add__(self, other):
         """
@@ -831,7 +763,6 @@ class BluePrint():
         nl += [self._basename(name) for name in other._namelist]
         al = self._argslist + other._argslist
         fl = self._funlist + other._funlist
-        tl = self._tslist + other._tslist
         m1 = self.marker1 + other.marker1
         m2 = self.marker2 + other.marker2
         sm1 = self._segmark1 + other._segmark1
@@ -843,7 +774,6 @@ class BluePrint():
         new_bp._namelist = new_bp._make_names_unique(nl.copy())
         new_bp._funlist = fl.copy()
         new_bp._argslist = al.copy()
-        new_bp._tslist = tl.copy()
         new_bp.marker1 = m1.copy()
         new_bp.marker2 = m2.copy()
         new_bp._segmark1 = sm1.copy()
@@ -881,8 +811,6 @@ class BluePrint():
         if not self._funlist == other._funlist:
             return False
         if not self._argslist == other._argslist:
-            return False
-        if not self._tslist == other._tslist:
             return False
         if not self.marker1 == other.marker2:
             return False
@@ -925,7 +853,7 @@ class Element:
                              ' of the BluePrint class.')
 
         if [] in [blueprint._funlist, blueprint._argslist, blueprint._namelist,
-                  blueprint._tslist]:
+                  blueprint._durslist]:
             raise ValueError('Received empty BluePrint. Can not proceed.')
 
         # important: make a copy of the blueprint
@@ -1170,9 +1098,8 @@ class Element:
         self.validateDurations()
 
         blueprints = [val['blueprint'] for val in self._data.values()]
-        durs = [bp.durations for bp in blueprints]
 
-        bluePrintPlotter(blueprints, self.SR, durs)
+        bluePrintPlotter(blueprints)
 
         # hack the ylabels
         cur_fig = plt.gcf()
@@ -1855,7 +1782,7 @@ class Sequence:
                     # add zeros at the end
                     if maxdelay-delay > 0:
                         blueprint.insertSegment(-1, PulseAtoms.ramp, (0, 0),
-                                                durs=(maxdelay-delay,))
+                                                dur=maxdelay-delay)
                     # TODO: is the next line even needed?
                     element.addBluePrint(chan, blueprint)
 
@@ -1983,9 +1910,11 @@ def _subelementBuilder(blueprint, SR, durs):
                              '{} at position {}.'.format(wait_time, pos) +
                              ' {} elapsed already'.format(elapsed_time))
         else:
-            durations[flatpos] = dur
+            durations[pos] = dur
 
-    # line ensuring backwards-compatibility
+    # When special segments like 'waituntil' and 'ensureaverage' get
+    # evaluated, the list of durations gets updated. That new list
+    # is newdurations
     newdurations = durations
 
     # then round all durations to an integer number of time resolution
@@ -2094,39 +2023,45 @@ def elementBuilder(blueprints, SR, durations, channels=None,
     return outdict
 
 
-def bluePrintPlotter(blueprints, SR, durations, fig=None, axs=None):
+def bluePrintPlotter(blueprints, fig=None, axs=None):
     """
     Plots a bluePrint or list of blueprints for easy overview.
 
     Args:
-        blueprints (Union[BluePrint, list]): A single BluePrint or a
+        blueprints (Union[BluePrint, list[BluePrint]]): A single BluePrint or a
             list of blueprints to plot.
-        SR (int): The sample rate (Sa/s)
-        durations (list): Either a list of durations or a list of lists
-            of durations in case the blueprints have different durations.
-            If only a single list of durations is given, this list is used
-            for all blueprints.
         fig (Union[matplotlib.figure.Figure, None]): The figure on which to
             plot. If None is given, a new instance is created.
         axs (Union[list, None]): A list of
             matplotlib.axes._subplots.AxesSubplot to plot onto. If None is
             given, a new list is created.
     """
+
     #  Todo: All sorts of validation on lengths of blueprint and the like
 
     # Allow single blueprint
     if not isinstance(blueprints, list):
         blueprints = [blueprints]
-    # Allow a single durations list for all blueprint
-    if not isinstance(durations[0], list):
-        durations = [durations]*len(blueprints)
 
-    # Validation
-    if not len(durations) == len(blueprints):
-        raise ValueError('Number of specified blueprints does not match '
-                         'number of specified (sets of) durations '
-                         '({} and {})'.format(len(blueprints),
-                                              len(durations)))
+    SRs = []
+    for blueprint in blueprints:
+        if blueprint.SR is None:
+            raise ValueError('No sample rate specified for blueprint.'
+                             ' Can not create plot. Please specify a'
+                             ' sample rate.')
+        else:
+            SRs.append(blueprint.SR)
+
+    if len(set(SRs)) != 1:
+        raise ValueError('Blueprints do not have matching sample '
+                         'rates. Received {}. Can not proceed.'
+                         ''.format(SRs))
+    else:
+        SR = SRs[0]
+
+    durations = []
+    for blueprint in blueprints:
+        durations.append(blueprint._durslist)
 
     if fig is None:
         fig = plt.figure()
@@ -2137,7 +2072,8 @@ def bluePrintPlotter(blueprints, SR, durations, fig=None, axs=None):
 
     for ii in range(N):
         ax = axs[ii]
-        arrays, newdurs = _subelementBuilder(blueprints[ii], SR, durations[ii])
+        arrays, newdurs = _subelementBuilder(blueprints[ii], SR,
+                                             durations[ii])
         wfm = arrays[0, :]
         m1 = arrays[1, :]
         m2 = arrays[2, :]
