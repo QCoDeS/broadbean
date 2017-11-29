@@ -652,11 +652,12 @@ class BluePrint():
                duration as the last argument (unless its a special function).
             args (Optional[Tuple[Any]]): Tuple of arguments BESIDES duration.
                 Default: ()
-            dur (Optional[Union[int, float]]): The duration of the segment. Must be
-                given UNLESS the segment is 'waituntil' or 'ensureaverage_fixed_level'
-            name Optional[str]: Name of the segment. If none is given, the segment
-                will receive the name of its function, possibly with a number
-                appended.
+            dur (Optional[Union[int, float]]): The duration of the
+                segment. Must be given UNLESS the segment is
+                'waituntil' or 'ensureaverage_fixed_level'
+            name Optional[str]: Name of the segment. If none is given,
+                the segment will receive the name of its function,
+                possibly with a number appended.
 
         Raises:
             ValueError: If the position is negative
@@ -1957,7 +1958,6 @@ def _subelementBuilder(blueprint, SR, durs):
     funlist = blueprint._funlist.copy()
     argslist = blueprint._argslist.copy()
     namelist = blueprint._namelist.copy()
-    tslist = blueprint._tslist.copy()
     marker1 = blueprint.marker1.copy()
     marker2 = blueprint.marker2.copy()
     segmark1 = blueprint._segmark1.copy()
@@ -1967,23 +1967,15 @@ def _subelementBuilder(blueprint, SR, durs):
 
     no_of_waits = funlist.count('waituntil')
 
-    if sum(tslist) != len(durations):
-
-        raise ValueError('The specified timesteps do not match the number ' +
-                         'of durations. ({} and {})'.format(sum(tslist),
-                                                            len(durations)))
-
     # handle waituntil by translating it into a normal function
     waitpositions = [ii for ii, el in enumerate(funlist) if el == 'waituntil']
 
-    # Note: the durations here are the flattened list of tuples of
-    # durations, therefore we have pos and flatpos
+    # Calculate elapsed times
 
     for nw in range(no_of_waits):
-        flatpos = np.cumsum(tslist)[waitpositions[nw]]-1
         pos = waitpositions[nw]
         funlist[pos] = PulseAtoms.waituntil
-        elapsed_time = sum(durations[:flatpos])
+        elapsed_time = sum(durations[:pos])
         wait_time = argslist[pos][0]
         dur = wait_time - elapsed_time
         if dur < 0:
@@ -1993,13 +1985,8 @@ def _subelementBuilder(blueprint, SR, durs):
         else:
             durations[flatpos] = dur
 
-    # update the durations to accomodate for some segments having
-    # timesteps larger than 1
-    newdurations = []
-    steps = [0] + list(np.cumsum(blueprint._tslist))
-    for ii in range(len(steps)-1):
-        dur = sum(durations[steps[ii]:steps[ii+1]])
-        newdurations.append(dur)
+    # line ensuring backwards-compatibility
+    newdurations = durations
 
     # then round all durations to an integer number of time resolution
     # (time resolution = 1/SR)
