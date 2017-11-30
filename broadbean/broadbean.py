@@ -160,7 +160,7 @@ class BluePrint():
                  marker1=None, marker2=None, segmentmarker1=None,
                  segmentmarker2=None, SR=None, durslist=None):
         """
-        Create a BluePrint instance.y
+        Create a BluePrint instance
 
         Args:
             funlist (list): List of functions
@@ -323,10 +323,10 @@ class BluePrint():
         elif (waits and not(ensavgs)):
             waitdurations = self._makeWaitDurations()
             return sum(waitdurations)
-            pass
         elif ensavgs:
             # TODO: call the forger
-            pass
+            raise NotImplementedError('ensureaverage_fixed_level does not'
+                                      ' exist yet. Cannot proceed')
 
     @property
     def points(self):
@@ -347,10 +347,10 @@ class BluePrint():
         elif (waits and not(ensavgs)):
             waitdurations = self._makeWaitDurations()
             return int(np.round(sum(waitdurations)*SR))
-            pass
         elif ensavgs:
             # TODO: call the forger
-            pass
+            raise NotImplementedError('ensureaverage_fixed_level does not'
+                                      ' exist yet. Cannot proceed')
 
     @property
     def durations(self):
