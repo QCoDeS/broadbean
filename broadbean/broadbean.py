@@ -343,10 +343,10 @@ class BluePrint():
                              'return the number of points.')
 
         if (not(waits) and not(ensavgs)):
-            return int(sum(self._durslist)*SR)
+            return int(np.round(sum(self._durslist)*SR))
         elif (waits and not(ensavgs)):
             waitdurations = self._makeWaitDurations()
-            return int(sum(waitdurations)*SR)
+            return int(np.round(sum(waitdurations)*SR))
             pass
         elif ensavgs:
             # TODO: call the forger
@@ -766,24 +766,6 @@ class BluePrint():
 
         bluePrintPlotter(self)
 
-    def _validateDurations(self, durations):
-        """
-        Checks wether the number of durations matches the number of segments
-        and their specified lengths (including 'waituntils')
-
-        Args:
-            durations (list): List of durations
-
-        Raises:
-            ValueError: If the length of durations does not match the
-                blueprint.
-        """
-
-        if sum(self._tslist) != len(durations):
-            raise ValueError('The specified timesteps do not match the number '
-                             'of durations. '
-                             '({} and {})'.format(sum(self._tslist),
-                                                  len(durations)))
 
     def __add__(self, other):
         """
@@ -970,7 +952,12 @@ class Element:
                 length = len(channel['array'])/channel['SR']
                 durations.append(length)
 
-        if not durations.count(durations[0]) == len(durations):
+        if None not in SRs:
+            atol = min(SRs)
+        else:
+            atol = 1e-9
+                
+        if not np.allclose(durations, durations[0], atol=atol):
             errmssglst = zip(list(self._data.keys()), durations)
             raise ElementDurationError('Different channels have different '
                                        'durations. Channel, duration: '
