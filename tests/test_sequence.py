@@ -19,17 +19,17 @@ def protosequence1():
     SR = 1e9
 
     th = bb.BluePrint()
-    th.insertSegment(0, ramp, args=(0, 0), name='ramp', durs=10e-6)
-    th.insertSegment(1, ramp, args=(1, 1), name='ramp', durs=5e-6)
-    th.insertSegment(2, ramp, args=(0, 0), name='ramp', durs=10e-6)
+    th.insertSegment(0, ramp, args=(0, 0), name='ramp', dur=10e-6)
+    th.insertSegment(1, ramp, args=(1, 1), name='ramp', dur=5e-6)
+    th.insertSegment(2, ramp, args=(0, 0), name='ramp', dur=10e-6)
     th.setSR(SR)
 
     wiggle1 = bb.BluePrint()
-    wiggle1.insertSegment(0, sine, args=(4e6, 0.5, 0), durs=25e-6)
+    wiggle1.insertSegment(0, sine, args=(4e6, 0.5, 0), dur=25e-6)
     wiggle1.setSR(SR)
 
     wiggle2 = bb.BluePrint()
-    wiggle2.insertSegment(0, sine, args=(8e6, 0.5, 0), durs=25e-6)
+    wiggle2.insertSegment(0, sine, args=(8e6, 0.5, 0), dur=25e-6)
     wiggle2.setSR(SR)
 
     elem1 = bb.Element()
@@ -59,12 +59,14 @@ def protosequence2():
     SR = 1e9
 
     saw = bb.BluePrint()
-    saw.insertSegment(0, ramp, args=(0, 100e-3), durs=11e-6)
+    saw.insertSegment(0, ramp, args=(0, 100e-3), dur=11e-6)
     saw.insertSegment(1, 'waituntil', args=(25e-6))
-
+    saw.setSR(SR)
+    
     lineandwiggle = bb.BluePrint()
     lineandwiggle.insertSegment(0, 'waituntil', args=(11e-6))
-    lineandwiggle.insertSegment(1, sine, args=(10e6, 50e-6, 10e-6), durs=14e-6)
+    lineandwiggle.insertSegment(1, sine, args=(10e6, 50e-6, 10e-6), dur=14e-6)
+    lineandwiggle.setSR(SR)
 
     elem1 = bb.Element()
     elem1.addBluePrint(1, saw)
@@ -93,13 +95,15 @@ def badseq_missing_pos():
     SR = 1e9
 
     saw = bb.BluePrint()
-    saw.insertSegment(0, ramp, args=(0, 100e-3), durs=11e-6)
+    saw.insertSegment(0, ramp, args=(0, 100e-3), dur=11e-6)
     saw.insertSegment(1, 'waituntil', args=(25e-6))
+    saw.setSR(SR)
 
     lineandwiggle = bb.BluePrint()
     lineandwiggle.insertSegment(0, 'waituntil', args=(11e-6))
-    lineandwiggle.insertSegment(1, sine, args=(10e6, 50e-6, 10e-6), durs=14e-6)
-
+    lineandwiggle.insertSegment(1, sine, args=(10e6, 50e-6, 10e-6), dur=14e-6)
+    lineandwiggle.setSR(SR)
+    
     elem1 = bb.Element()
     elem1.addBluePrint(1, saw)
     elem1.addBluePrint(2, lineandwiggle)
@@ -127,8 +131,8 @@ def squarepulse_baseelem():
     SR = 1e6
 
     basebp = bb.BluePrint()
-    basebp.insertSegment(0, ramp, (0, 0), durs=0.5e-4)
-    basebp.insertSegment(1, ramp, (1, 1), durs=1e-4, name='varyme')
+    basebp.insertSegment(0, ramp, (0, 0), dur=0.5e-4)
+    basebp.insertSegment(1, ramp, (1, 1), dur=1e-4, name='varyme')
     basebp.insertSegment(2, 'waituntil', 5e-4)
     basebp.setSR(SR)
 

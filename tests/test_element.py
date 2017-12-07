@@ -18,9 +18,9 @@ def blueprint_tophat():
     similar to a tophat
     """
     th = bb.BluePrint()
-    th.insertSegment(0, ramp, args=(0, 0), name='ramp', durs=1)
-    th.insertSegment(1, ramp, args=(1, 1), name='ramp', durs=0.5)
-    th.insertSegment(2, ramp, args=(0, 0), name='ramp', durs=1)
+    th.insertSegment(0, ramp, args=(0, 0), name='ramp', dur=1)
+    th.insertSegment(1, ramp, args=(1, 1), name='ramp', dur=0.5)
+    th.insertSegment(2, ramp, args=(0, 0), name='ramp', dur=1)
     th.setSR(tophat_SR)
 
     return th
