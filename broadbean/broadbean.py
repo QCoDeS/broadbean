@@ -1318,8 +1318,36 @@ class Sequence:
             ampl (float): The channel peak-to-peak amplitude (V)
             offset (float): The channel offset (V)
         """
+        warnings.warn('Deprecation warning. This function is deprecated.'
+                      ' Use setChannelAmplitude and SetChannelOffset '
+                      'instead.')
+
         keystr = 'channel{}_amplitude'.format(channel)
         self._awgspecs[keystr] = ampl
+        keystr = 'channel{}_offset'.format(channel)
+        self._awgspecs[keystr] = offset
+
+    def setChannelAmplitude(self, channel: int, ampl: float) -> None:
+        """
+        Assign the physical voltage amplitude of the channel. This is used
+        when making output for real instruments.
+
+        Args:
+            channel: The channel number
+            ampl: The channel peak-to-peak amplitude (V)
+        """
+        keystr = 'channel{}_amplitude'.format(channel)
+        self._awgspecs[keystr] = ampl
+
+    def setChannelOffset(self, channel: int, offset: float) -> None:
+        """
+        Assign the physical voltage offset of the channel. This is used
+        by some backends when making output for real instruments
+
+        Args:
+            channel: The channel number
+            offset: The channel offset (V)
+        """
         keystr = 'channel{}_offset'.format(channel)
         self._awgspecs[keystr] = offset
 
@@ -1781,15 +1809,11 @@ class Sequence:
             raise ValueError('Can not generate output for .awg file; '
                              'incorrect sequencer information.')
 
-        # Verify physical amplitude and offset specifiations
+        # Verify physical amplitude specifiations
         for chan in channels:
             ampkey = 'channel{}_amplitude'.format(chan)
             if ampkey not in self._awgspecs.keys():
                 raise KeyError('No amplitude specified for channel '
-                               '{}. Can not continue.'.format(chan))
-            offkey = 'channel{}_offset'.format(chan)
-            if offkey not in self._awgspecs.keys():
-                raise KeyError('No offset specified for channel '
                                '{}. Can not continue.'.format(chan))
 
         # Apply channel delays. This is most elegantly done before forging.
@@ -1878,6 +1902,24 @@ class Sequence:
         """
 
         elements = self._prepareForOutputting()
+        # _prepareForOutputting asserts that channel amplitudes and
+        # full sequencing is specified
+        seqlen = len(elements)
+        # all elements have ident. chans since _prepareForOutputting
+        # did not raise an exception
+        channels = self.element(1).channels
+
+        for chan in channels:
+            offkey = 'channel{}_offset'.format(chan)
+            if offkey in self._awgspecs.keys():
+                log.warning("Found a specified offset for channel "
+                            "{}, but .seqx files can't contain offset "
+                            "information. Will ignore the offset."
+                            "".format(chan))
+
+        # now check the amplitudes and rescale the waveforms to
+        # the (-1, 1) range
+        return
 
     def outputForAWGFile(self):
         """
@@ -1899,6 +1941,13 @@ class Sequence:
         # all elements have ident. chans since _prepareForOutputting
         # did not raise an exception
         channels = self.element(1).channels
+
+        for chan in channels:
+            offkey = 'channel{}_offset'.format(chan)
+            if offkey not in self._awgspecs.keys():
+                raise ValueError("No specified offset for channel "
+                                 "{}, can not continue."
+                                 "".format(chan))
 
         # Apply channel scaling
         # We must rescale to the interval -1, 1 where 1 is ampl/2+off and -1 is
