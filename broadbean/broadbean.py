@@ -1,6 +1,7 @@
 import logging
 import math
 import warnings
+from typing import Tuple
 from inspect import signature
 from copy import deepcopy
 import functools as ft
@@ -956,7 +957,7 @@ class Element:
             atol = min(SRs)
         else:
             atol = 1e-9
-                
+
         if not np.allclose(durations, durations[0], atol=atol):
             errmssglst = zip(list(self._data.keys()), durations)
             raise ElementDurationError('Different channels have different '
@@ -1178,6 +1179,10 @@ class Sequence:
         # The metainfo to be extracted by measurements
         # todo: I'm pretty sure this is obsolete now that description exists
         self._meta = {}
+
+        # some backends (seqx files) allow for a sequence to have a name
+        # we make the name a property of the sequence
+        self._name = ''
 
     def __eq__(self, other):
         if not isinstance(other, Sequence):
@@ -1481,6 +1486,16 @@ class Sequence:
         return desc
 
     @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, newname):
+        if not isinstance(newname, str):
+            raise ValueError('The sequence name must be a string')
+        self._name = newname
+
+    @property
     def length_sequenceelements(self):
         """
         Returns the current number of specified sequence elements
@@ -1736,6 +1751,29 @@ class Sequence:
                         titlestring += '\u21b1{}'.format(seq_info[3])
 
                     ax.set_title(titlestring)
+
+    def outputForSEQXFile(self) -> Tuple:
+        """
+        Generate a tuple matching the call signature of the QCoDeS
+        AWG70000A driver's `makeSEQXFile` function. If channel delays
+        have been specified, they are added to the ouput before exporting.
+        The intended use of this function together with the QCoDeS driver is
+
+        .. code:: python
+
+            pkg = seq.outputForSEQXFile()
+            seqx = awg70000A.makeSEQXFile(*pkg)
+
+        Returns:
+            A tuple holding (trig_waits, nreps, event_jumps, event_jump_to,
+                go_to, wfms, amplitudes, seqname)
+        """
+
+        # Validation
+        if not self.checkConsistency():
+            raise ValueError('Can not generate output. Something is '
+                             'inconsistent. Please run '
+                             'checkConsistency(verbose=True) for more details')
 
     def outputForAWGFile(self):
         """
