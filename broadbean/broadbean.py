@@ -1,7 +1,7 @@
 import logging
 import math
 import warnings
-from typing import Tuple
+from typing import Tuple, List, Dict
 from inspect import signature
 from copy import deepcopy
 import functools as ft
@@ -1752,47 +1752,18 @@ class Sequence:
 
                     ax.set_title(titlestring)
 
-    def outputForSEQXFile(self) -> Tuple:
+    def _prepareForOutputting(self) -> List[Dict[int, np.ndarray]]:
         """
-        Generate a tuple matching the call signature of the QCoDeS
-        AWG70000A driver's `makeSEQXFile` function. If channel delays
-        have been specified, they are added to the ouput before exporting.
-        The intended use of this function together with the QCoDeS driver is
-
-        .. code:: python
-
-            pkg = seq.outputForSEQXFile()
-            seqx = awg70000A.makeSEQXFile(*pkg)
+        The preparser for numerical output. Applies delay and ripasso
+        corrections.
 
         Returns:
-            A tuple holding (trig_waits, nreps, event_jumps, event_jump_to,
-                go_to, wfms, amplitudes, seqname)
+            A list of outputs of the Element's getArrays functions, i.e.
+                a list of dictionaries with key position (int) and value
+                an np.ndarray of array([wfm, m1, m2, time]), where the
+                wfm values are still in V. The particular backend output
+                function must rescale to the specific format it adheres to.
         """
-
-        # Validation
-        if not self.checkConsistency():
-            raise ValueError('Can not generate output. Something is '
-                             'inconsistent. Please run '
-                             'checkConsistency(verbose=True) for more details')
-
-    def outputForAWGFile(self):
-        """
-        Returns a sliceable object with items matching the call
-        signature of the 'make_*_awg_file' functions of the QCoDeS
-        AWG5014 driver. One may then construct an awg file as follows
-        (assuming that seq is the sequence object):
-
-        .. code:: python
-
-            package = seq.outputForAWGFile()
-            make_awg_file(*package[:], **kwargs)
-
-        The outputForAWGFile applies delay of channels
-
-        Todo:
-            Implement corrections from ripasso
-        """
-
         # Validation
         if not self.checkConsistency():
             raise ValueError('Can not generate output. Something is '
@@ -1867,7 +1838,6 @@ class Sequence:
         # Now forge all the elements as specified
         elements = []  # the forged elements
         for pos in range(1, seqlen+1):
-            # There was a bug here
             elements.append(data[pos].getArrays())
 
         # Now that the numerical arrays exist, we can apply filter compensation
@@ -1887,6 +1857,48 @@ class Sequence:
                                                       kind, f_cut, order,
                                                       DCgain=1)
                     elements[pos][chan][0] = postfilter
+
+        return elements
+
+    def outputForSEQXFile(self) -> Tuple:
+        """
+        Generate a tuple matching the call signature of the QCoDeS
+        AWG70000A driver's `makeSEQXFile` function. If channel delays
+        have been specified, they are added to the ouput before exporting.
+        The intended use of this function together with the QCoDeS driver is
+
+        .. code:: python
+
+            pkg = seq.outputForSEQXFile()
+            seqx = awg70000A.makeSEQXFile(*pkg)
+
+        Returns:
+            A tuple holding (trig_waits, nreps, event_jumps, event_jump_to,
+                go_to, wfms, amplitudes, seqname)
+        """
+
+        elements = self._prepareForOutputting()
+
+    def outputForAWGFile(self):
+        """
+        Returns a sliceable object with items matching the call
+        signature of the 'make_*_awg_file' functions of the QCoDeS
+        AWG5014 driver. One may then construct an awg file as follows
+        (assuming that seq is the sequence object):
+
+        .. code:: python
+
+            package = seq.outputForAWGFile()
+            make_awg_file(*package[:], **kwargs)
+
+
+        """
+
+        elements = self._prepareForOutputting()
+        seqlen = len(elements)
+        # all elements have ident. chans since _prepareForOutputting
+        # did not raise an exception
+        channels = self.element(1).channels
 
         # Apply channel scaling
         # We must rescale to the interval -1, 1 where 1 is ampl/2+off and -1 is
