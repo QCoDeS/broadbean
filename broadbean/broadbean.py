@@ -2013,17 +2013,6 @@ class Sequence:
         jump_states = []
         jump_tos = []
 
-        for pos in range(1, seqlen+1):
-            for chanind, chan in enumerate(channels):
-                waveforms[chanind].append(elements[pos-1][chan][0])
-                m1s[chanind].append(elements[pos-1][chan][1])
-                m2s[chanind].append(elements[pos-1][chan][2])
-
-            nreps.append(self._sequencing[pos][1])
-            trig_waits.append(self._sequencing[pos][0])
-            jump_tos.append(self._sequencing[pos][2])
-            gotos.append(self._sequencing[pos][3])
-
         # Since sequencing options are valid/invalid differently for
         # different backends, we make the validation here
         for pos in range(1, seqlen+1):
