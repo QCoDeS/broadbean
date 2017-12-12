@@ -1983,10 +1983,13 @@ class Sequence:
         # now check the amplitudes and rescale the waveforms to
         # the (-1, 1) range
 
+        amplitudes = []
+
         for pos in range(1, seqlen+1):
             element = elements[pos-1]
             for chan in channels:
                 ampl = self._awgspecs['channel{}_amplitude'.format(chan)]
+                amplitudes.append(ampl)
                 wfm = element[chan][0]
                 # check whether the waveform voltages can be realised
                 if wfm.max() > ampl/2:
@@ -2032,18 +2035,23 @@ class Sequence:
                 m1s[chanind].append(elements[pos-1][chan][1])
                 m2s[chanind].append(elements[pos-1][chan][2])
 
-            twait = self._sequencing[pos][0]
-            nrep = self._sequencing[pos][1]
-            jump_to = self._sequencing[pos][2]
-            jump_state = 0 if (jump_to == 0) else 1
-            goto = self._sequencing[pos][3]
+            twait = self._sequencing[pos]['twait']
+            nrep = self._sequencing[pos]['nrep']
+            jump_to = self._sequencing[pos]['jump_target']
+            jump_state = self._sequencing[pos]['jump_input']
+            goto = self._sequencing[pos]['goto']
 
             if twait not in [0, 1, 2, 3]:
-                raise SequencingError('Invalid trigger wait state at position'
-                                      '{}: {}. Must be either 0 or 1.'
+                raise SequencingError('Invalid trigger input at position'
+                                      '{}: {}. Must be 0, 1, 2, or 3.'
                                       ''.format(pos, twait))
 
-            if nrep not in range(0, 16383):
+            if jump_state not in [0, 1, 2, 3]:
+                raise SequencingError('Invalid event jump input at position'
+                                      '{}: {}. Must be either 0, 1, 2, or 3.'
+                                      ''.format(pos, twait))
+
+            if nrep not in range(0, 16384):
                 raise SequencingError('Invalid number of repetions at position'
                                       '{}: {}. Must be either 0 (infinite) '
                                       'or 1-16,383.'.format(pos, nrep))
@@ -2066,8 +2074,8 @@ class Sequence:
             jump_states.append(jump_state)
             gotos.append(goto)
 
-        # TODO: make the return correct
-        return (trig_waits, nreps, jump_states)
+        return (trig_waits, nreps, jump_states, jump_tos, gotos,
+                waveforms, amplitudes, self.name)
 
     def outputForAWGFile(self):
         """
