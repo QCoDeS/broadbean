@@ -1819,25 +1819,22 @@ class Sequence:
                     ax.set_yticks([])
                 fig.subplots_adjust(hspace=0, wspace=0)
 
-                # display sequencer information (if any)
+                # display sequencer information
                 if chanind == 0:
-                    try:
-                        seq_info = self._sequencing[pos+1]
-                    except KeyError:
-                        seq_info = [0, -1, 0, 0]
+                    seq_info = self._sequencing[pos+1]
                     titlestring = ''
-                    if seq_info[0] == 1:  # trigger wait
+                    if seq_info['twait'] == 1:  # trigger wait
                         titlestring += 'T '
-                    if seq_info[1] > 1:  # nreps
+                    if seq_info['nrep'] > 1:  # nreps
                         titlestring += '\u21BB{} '.format(seq_info[1])
-                    if seq_info[1] == 0:
+                    if seq_info['nrep'] == 0:
                         titlestring += '\u221E '
-                    if seq_info[2] != 0:
-                        if seq_info[2] == -1:
+                    if seq_info['jump_input'] != 0:
+                        if seq_info['jump_input'] == -1:
                             titlestring += 'E\u2192 '
                         else:
                             titlestring += 'E{} '.format(seq_info[2])
-                    if seq_info[3] > 0:
+                    if seq_info['goto'] > 0:
                         titlestring += '\u21b1{}'.format(seq_info[3])
 
                     ax.set_title(titlestring)
