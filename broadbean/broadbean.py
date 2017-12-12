@@ -1996,6 +1996,7 @@ class Sequence:
 
         # now check the amplitudes and rescale the waveforms to
         # the (-1, 1) range
+        # also verify that all waveforms are at least 2400 points
 
         amplitudes = []
 
@@ -2005,6 +2006,12 @@ class Sequence:
                 ampl = self._awgspecs['channel{}_amplitude'.format(chan)]
                 amplitudes.append(ampl)
                 wfm = element[chan][0]
+                # check the waveform length
+                if len(wfm) < 2400:
+                    raise ValueError('Waveform too short on channel '
+                                     '{} at step {}; only {} points. '
+                                     'The required minimum is 2400 points.'
+                                     ''.format(chan, pos, len(wfm)))
                 # check whether the waveform voltages can be realised
                 if wfm.max() > ampl/2:
                     raise ValueError('Waveform voltages exceed channel range '
