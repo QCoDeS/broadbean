@@ -2394,7 +2394,7 @@ def bluePrintPlotter(blueprints, fig=None, axs=None):
         wfm = arrays[0, :]
         m1 = arrays[1, :]
         m2 = arrays[2, :]
-        time = np.linspace(0, np.sum(newdurs), np.sum(newdurs)*SR)
+        time = np.linspace(0, np.sum(newdurs), len(wfm))
 
         # Figure out time axis scaling
         exponent = np.log10(time.max())
