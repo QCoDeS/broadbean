@@ -15,6 +15,10 @@ plt.ion()
 log = logging.getLogger(__name__)
 
 
+class SequencingError(Exception):
+    pass
+
+
 class ElementDurationError(Exception):
     pass
 
@@ -1167,8 +1171,13 @@ class Sequence:
         # the key is sequence position (int), the value is element (Element)
         self._data = {}
 
-        # Here goes the sequencing info. Key: position, value: list
-        # where list = [wait, nrep, jump, goto]
+        # Here goes the sequencing info. Key: position
+        # value: dict with keys 'twait', 'nrep', 'jump_input',
+        # 'jump_target', 'goto'
+        #
+        # the sequencing is filled out automatically with default values
+        # when an element is added
+        # Note that not all output backends use all items in the list
         self._sequencing = {}
 
         # The dictionary to store AWG settings
@@ -1212,8 +1221,9 @@ class Sequence:
             raise SequenceConsistencyError('Right hand sequence inconsistent!')
 
         if not self._awgspecs == other._awgspecs:
-            raise SequenceCompatibilityError('Incompatible sequences: different '
-                                             'AWG specifications.')
+            raise SequenceCompatibilityError('Incompatible sequences: '
+                                             'different AWG'
+                                             'specifications.')
 
         newseq = Sequence()
         N = len(self._data)
@@ -1229,6 +1239,7 @@ class Sequence:
         newsequencing1 = dict([(key, self._sequencing[key].copy())
                                for key in self._sequencing.keys()])
         newsequencing2 = dict()
+        # TODO: changing sequencing from a list to a dict broke this
         for key, item in other._sequencing.items():
             newitem = item.copy()
             # update goto and jump according to new sequence length
@@ -1265,39 +1276,30 @@ class Sequence:
         Args:
             pos (int): The sequence element (counting from 1)
             wait (int): The wait state specifying whether to wait for a
-                trigger. 0: OFF, don't wait, 1: ON, wait.
+                trigger. 0: OFF, don't wait, 1: ON, wait. For some backends,
+                additional integers are allowed to specify the trigger input.
+                0 always means off.
             nreps (int): Number of repetitions. 0 corresponds to infinite
                 repetitions
-            jump (int): Jump target, the position of a sequence element
-            goto (int): Goto target, the position of a sequence element
+            jump (int): Event jump target, the position of a sequence element.
+                If 0, the event jump state is off.
+            goto (int): Goto target, the position of a sequence element.
+                0 means next.
         """
+
+        warnings.warn('Deprecation warning. This function is only compatible '
+                      'with AWG5014 output and will be removed. '
+                      'Please use the specific setSequencingXXX methods.')
 
         # Validation (some validation 'postponed' and put in checkConsistency)
         #
-        # Validation is important because the instrument will silently fail upon
-        # receiving an awg file with inconsistent specifications
-        #
-        if wait not in [0, 1]:
-            raise ValueError('Can not set trigger wait state to {}.'.format(wait) +
-                             ' Must be either 0 or 1.')
+        # Because of different compliances for different backends,
+        # most validation of these settings is deferred and performed
+        # in the outputForXXX methods
 
-        if nreps not in range(0, 65537):
-            raise ValueError('Can not set nreps to {}.'.format(nreps) +
-                             ' Must be either 0 (infinite) or 1-65,536.')
-
-        if jump not in range(-1, self.length_sequenceelements+1):
-            raise ValueError('Invalid event jump target, received: '
-                             '{}.'.format(jump) +
-                             ' Valid range -1 (next), 0 (off), '
-                             '1-{}'.format(self.length_sequenceelements))
-
-        if goto not in range(0, self.length_sequenceelements+1):
-            raise ValueError('Invalid goto target, received: '
-                             '{}.'.format(goto) +
-                             ' Valid range is 0 (off/next) or '
-                             '1-{}'.format(self.length_sequenceelements))
-
-        self._sequencing[pos] = [wait, nreps, jump, goto]
+        self._sequencing[pos] = {'twait': wait, 'nrep': nreps,
+                                 'jump_target': jump, 'goto': goto,
+                                 'jump_input': None}
 
     def setSR(self, SR):
         """
@@ -1433,6 +1435,11 @@ class Sequence:
 
         # Data mutation
         self._data.update({position: newelement})
+
+        # insert default sequencing settings
+        self._sequencing[position] = {'twait': 0, 'nrep': 1,
+                                      'jump_input': 0, 'jump_target': 0,
+                                      'goto': 0}
 
     def checkConsistency(self, verbose=False):
         """
@@ -1901,6 +1908,7 @@ class Sequence:
                 go_to, wfms, amplitudes, seqname)
         """
 
+        # most of the footwork is done by the following function
         elements = self._prepareForOutputting()
         # _prepareForOutputting asserts that channel amplitudes and
         # full sequencing is specified
@@ -1919,7 +1927,92 @@ class Sequence:
 
         # now check the amplitudes and rescale the waveforms to
         # the (-1, 1) range
-        return
+
+        for pos in range(1, seqlen+1):
+            element = elements[pos-1]
+            for chan in channels:
+                ampl = self._awgspecs['channel{}_amplitude'.format(chan)]
+                wfm = element[chan][0]
+                # check whether the waveform voltages can be realised
+                if wfm.max() > ampl/2:
+                    raise ValueError('Waveform voltages exceed channel range '
+                                     'on channel {}'.format(chan) +
+                                     ' sequence element {}.'.format(pos) +
+                                     ' {} > {}!'.format(wfm.max(), ampl/2))
+                if wfm.min() < -ampl/2:
+                    raise ValueError('Waveform voltages exceed channel range '
+                                     'on channel {}'.format(chan) +
+                                     ' sequence element {}. '.format(pos) +
+                                     '{} < {}!'.format(wfm.min(), -ampl/2))
+                wfm = wfm/ampl*2
+                element[chan][0] = wfm
+            elements[pos-1] = element
+
+        # Finally cast the lists into the shapes required by the AWG driver
+        waveforms = [[] for dummy in range(len(channels))]
+        m1s = [[] for dummy in range(len(channels))]
+        m2s = [[] for dummy in range(len(channels))]
+        nreps = []
+        trig_waits = []
+        gotos = []
+        jump_states = []
+        jump_tos = []
+
+        for pos in range(1, seqlen+1):
+            for chanind, chan in enumerate(channels):
+                waveforms[chanind].append(elements[pos-1][chan][0])
+                m1s[chanind].append(elements[pos-1][chan][1])
+                m2s[chanind].append(elements[pos-1][chan][2])
+
+            nreps.append(self._sequencing[pos][1])
+            trig_waits.append(self._sequencing[pos][0])
+            jump_tos.append(self._sequencing[pos][2])
+            gotos.append(self._sequencing[pos][3])
+
+        # Since sequencing options are valid/invalid differently for
+        # different backends, we make the validation here
+        for pos in range(1, seqlen+1):
+            for chanind, chan in enumerate(channels):
+                waveforms[chanind].append(elements[pos-1][chan][0])
+                m1s[chanind].append(elements[pos-1][chan][1])
+                m2s[chanind].append(elements[pos-1][chan][2])
+
+            twait = self._sequencing[pos][0]
+            nrep = self._sequencing[pos][1]
+            jump_to = self._sequencing[pos][2]
+            jump_state = 0 if (jump_to == 0) else 1
+            goto = self._sequencing[pos][3]
+
+            if twait not in [0, 1, 2, 3]:
+                raise SequencingError('Invalid trigger wait state at position'
+                                      '{}: {}. Must be either 0 or 1.'
+                                      ''.format(pos, twait))
+
+            if nrep not in range(0, 16383):
+                raise SequencingError('Invalid number of repetions at position'
+                                      '{}: {}. Must be either 0 (infinite) '
+                                      'or 1-16,383.'.format(pos, nrep))
+
+            if jump_to not in range(-1, seqlen+1):
+                raise SequencingError('Invalid event jump target at position'
+                                      '{}: {}. Must be either -1 (next),'
+                                      ' 0 (off), or 1-{}.'
+                                      ''.format(pos, jump_to, seqlen))
+
+            if goto not in range(0, seqlen+1):
+                raise SequencingError('Invalid goto target at position'
+                                      '{}: {}. Must be either 0 (next),'
+                                      ' or 1-{}.'
+                                      ''.format(pos, goto, seqlen))
+
+            trig_waits.append(twait)
+            nreps.append(nrep)
+            jump_tos.append(jump_to)
+            jump_states.append(jump_state)
+            gotos.append(goto)
+
+        # TODO: make the return correct
+        return (trig_waits, nreps, jump_states)
 
     def outputForAWGFile(self):
         """
@@ -1982,23 +2075,52 @@ class Sequence:
         m2s = [[] for dummy in range(len(channels))]
         nreps = []
         trig_waits = []
-        goto_states = []
+        gotos = []
         jump_tos = []
 
+        # Since sequencing options are valid/invalid differently for
+        # different backends, we make the validation here
         for pos in range(1, seqlen+1):
             for chanind, chan in enumerate(channels):
                 waveforms[chanind].append(elements[pos-1][chan][0])
                 m1s[chanind].append(elements[pos-1][chan][1])
                 m2s[chanind].append(elements[pos-1][chan][2])
 
-            nreps.append(self._sequencing[pos][1])
-            trig_waits.append(self._sequencing[pos][0])
-            jump_tos.append(self._sequencing[pos][2])
-            goto_states.append(self._sequencing[pos][3])
+            twait = self._sequencing[pos]['twait']
+            nrep = self._sequencing[pos]['nrep']
+            jump_to = self._sequencing[pos]['jump_target']
+            goto = self._sequencing[pos]['goto']
+
+            if twait not in [0, 1]:
+                raise SequencingError('Invalid trigger wait state at position'
+                                      '{}: {}. Must be either 0 or 1.'
+                                      ''.format(pos, twait))
+
+            if nrep not in range(0, 65537):
+                raise SequencingError('Invalid number of repetions at position'
+                                      '{}: {}. Must be either 0 (infinite) '
+                                      'or 1-65,536.'.format(pos, nrep))
+
+            if jump_to not in range(-1, seqlen+1):
+                raise SequencingError('Invalid event jump target at position'
+                                      '{}: {}. Must be either -1 (next),'
+                                      ' 0 (off), or 1-{}.'
+                                      ''.format(pos, jump_to, seqlen))
+
+            if goto not in range(0, seqlen+1):
+                raise SequencingError('Invalid goto target at position'
+                                      '{}: {}. Must be either 0 (next),'
+                                      ' or 1-{}.'
+                                      ''.format(pos, goto, seqlen))
+
+            trig_waits.append(twait)
+            nreps.append(nrep)
+            jump_tos.append(jump_to)
+            gotos.append(goto)
 
         # ...and make a sliceable object out of them
         output = _AWGOutput((waveforms, m1s, m2s, nreps,
-                             trig_waits, goto_states,
+                             trig_waits, gotos,
                              jump_tos), self.channels)
 
         return output
