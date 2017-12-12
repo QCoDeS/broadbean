@@ -1025,6 +1025,23 @@ class Element:
         return self._meta['SR']
 
     @property
+    def points(self):
+        """
+        Returns the number of points of each channel if that number is
+        well-defined. Else an error is raised.
+        """
+        self.validateDurations()
+
+        # pick out what is on the channels
+        channels = self._data.values()
+
+        for channel in channels:
+            if 'blueprint' in channel.keys():
+                return channel['blueprint'].points
+            elif 'array' in channel.keys():
+                return len(channel['array'][0])
+
+    @property
     def duration(self):
         """
         Returns the duration in seconds of the element, if said duration is
