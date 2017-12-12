@@ -1239,14 +1239,14 @@ class Sequence:
         newsequencing1 = dict([(key, self._sequencing[key].copy())
                                for key in self._sequencing.keys()])
         newsequencing2 = dict()
-        # TODO: changing sequencing from a list to a dict broke this
+
         for key, item in other._sequencing.items():
             newitem = item.copy()
             # update goto and jump according to new sequence length
-            if newitem[2] > 0:
-                newitem[2] += N
-            if newitem[3] > 0:
-                newitem[3] += N
+            if newitem['goto'] > 0:
+                newitem['goto'] += N
+            if newitem['jump_target'] > 0:
+                newitem['jump_target'] += N
             newsequencing2.update({key+N: newitem})
 
         newsequencing1.update(newsequencing2)
@@ -1299,7 +1299,62 @@ class Sequence:
 
         self._sequencing[pos] = {'twait': wait, 'nrep': nreps,
                                  'jump_target': jump, 'goto': goto,
-                                 'jump_input': None}
+                                 'jump_input': 0}
+
+    def setSequencingTriggerWait(self, pos: int, wait: int) -> None:
+        """
+        Set the trigger wait for the sequence element at pos. For
+        AWG 5014 out, this can be 0 or 1, For AWG 70000A output, this
+        can be 0, 1, 2, or 3.
+
+        Args:
+            pos: The sequence element (counting from 1)
+            wait: The wait state/input depending on backend.
+        """
+        self._sequencing[pos]['twait'] = wait
+
+    def setSequencingNumberOfRepetitions(self, pos: int, nrep: int) -> None:
+        """
+        Set the number of repetitions for the sequence element at pos.
+
+        Args:
+            pos: The sequence element (counting from 1)
+            nrep: The number of repetitions (0 means infinite)
+        """
+        self._sequencing[pos]['nrep'] = nrep
+
+    def setSequencingEventInput(self, pos: int, jump_input: int) -> None:
+        """
+        Set the event input for the sequence element at pos. This setting is
+        ignored by the AWG 5014.
+
+        Args:
+            pos: The sequence element (counting from 1)
+            jump_input: The input specifier,  0 for off,
+                1 for 'TrigA', 2 for 'TrigB', 3 for 'Internal'.
+        """
+        self._sequencing[pos]['jump_input'] = jump_input
+
+    def setSequencingEventJumpTarget(self, pos: int, jump_target: int) -> None:
+        """
+        Set the event jump target for the sequence element at pos.
+
+        Args:
+            pos: The sequence element (counting from 1)
+            jump_target: The sequence element to jump to (counting from 1)
+        """
+        self._sequencing[pos]['jump_target'] = jump_target
+
+    def setSequencingGoto(self, pos: int, goto: int) -> None:
+        """
+        Set the goto target (which element to play after the current one ends)
+        for the sequence element at pos.
+
+        Args:
+            pos: The sequence element (counting from 1)
+            goto: The position of the element to play. 0 means 'next in line'
+        """
+        self._sequencing[pos]['goto'] = goto
 
     def setSR(self, SR):
         """

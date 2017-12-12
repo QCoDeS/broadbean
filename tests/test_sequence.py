@@ -45,10 +45,16 @@ def protosequence1():
     seq.addElement(2, elem2)
     seq.setSR(SR)
 
-    seq.setChannelVoltageRange(1, 2, 0)
-    seq.setChannelVoltageRange(2, 2, 0)
-    seq.setSequenceSettings(1, 1, 1, 1, 1)
-    seq.setSequenceSettings(2, 1, 1, 1, 1)
+    seq.setChannelAmplitude(1, 2)
+    seq.setChannelOffset(1, 0)
+    seq.setChannelAmplitude(2, 2)
+    seq.setChannelOffset(2, 0)
+    seq.setSequencingTriggerWait(1, 1)
+    seq.setSequencingEventJumpTarget(1, 1)
+    seq.setSequencingGoto(1, 1)
+    seq.setSequencingTriggerWait(2, 1)
+    seq.setSequencingEventJumpTarget(2, 1)
+    seq.setSequencingGoto(2, 1)
 
     return seq
 
@@ -62,7 +68,7 @@ def protosequence2():
     saw.insertSegment(0, ramp, args=(0, 100e-3), dur=11e-6)
     saw.insertSegment(1, 'waituntil', args=(25e-6))
     saw.setSR(SR)
-    
+
     lineandwiggle = bb.BluePrint()
     lineandwiggle.insertSegment(0, 'waituntil', args=(11e-6))
     lineandwiggle.insertSegment(1, sine, args=(10e6, 50e-6, 10e-6), dur=14e-6)
@@ -81,10 +87,17 @@ def protosequence2():
     seq.addElement(1, elem1)
     seq.addElement(2, elem2)
 
-    seq.setChannelVoltageRange(1, 1.5, 0)
-    seq.setChannelVoltageRange(2, 1, 0)
-    seq.setSequenceSettings(1, 0, 2, 0, 2)
-    seq.setSequenceSettings(2, 1, 1, 0, 1)
+    seq.setChannelAmplitude(1, 1.5)
+    seq.setChannelOffset(1, 0)
+    seq.setChannelAmplitude(2, 1)
+    seq.setChannelOffset(2, 0)
+    seq.setSequencingTriggerWait(1, 0)
+    seq.setSequencingTriggerWait(2, 1)
+    seq.setSequencingNumberOfRepetitions(1, 2)
+    seq.setSequencingEventJumpTarget(1, 0)
+    seq.setSequencingEventJumpTarget(2, 0)
+    seq.setSequencingGoto(1, 2)
+    seq.setSequencingGoto(2, 1)
 
     return seq
 
@@ -103,7 +116,7 @@ def badseq_missing_pos():
     lineandwiggle.insertSegment(0, 'waituntil', args=(11e-6))
     lineandwiggle.insertSegment(1, sine, args=(10e6, 50e-6, 10e-6), dur=14e-6)
     lineandwiggle.setSR(SR)
-    
+
     elem1 = bb.Element()
     elem1.addBluePrint(1, saw)
     elem1.addBluePrint(2, lineandwiggle)
@@ -117,10 +130,16 @@ def badseq_missing_pos():
     seq.addElement(1, elem1)
     seq.addElement(3, elem2)  # <--- A gap in the sequence
 
-    seq.setChannelVoltageRange(1, 1.5, 0)
-    seq.setChannelVoltageRange(2, 1, 0)
-    seq.setSequenceSettings(1, 0, 2, 0, 2)
-    seq.setSequenceSettings(2, 1, 1, 0, 1)
+    seq.setChannelAmplitude(1, 1.5)
+    seq.setChannelOffset(1, 0)
+    seq.setChannelAmplitude(2, 1)
+    seq.setChannelOffset(2, 0)
+    seq.setSequencingTriggerWait(3, 1)
+    seq.setSequencingNumberOfRepetitions(1, 2)
+    seq.setSequencingGoto(1, 2)
+    seq.setSequencingGoto(3, 1)
+    # seq.setSequenceSettings(1, 0, 2, 0, 2)
+    # seq.setSequenceSettings(2, 1, 1, 0, 1)
 
     return seq
 
@@ -157,13 +176,17 @@ def test_copy_positively(protosequence1, attribute):
 
 def test_copy_negatively_01(protosequence1):
     new_seq = protosequence1.copy()
-    new_seq.setSequenceSettings(1, 0, 1, 1, 1)
+    new_seq.setSequencingTriggerWait(1, 0)
+    new_seq.setSequencingNumberOfRepetitions(1, 1)
+    new_seq.setSequencingEventJumpTarget(1, 1)
+    new_seq.setSequencingGoto(1, 1)
+
     assert new_seq != protosequence1
 
 
 def test_copy_negatively_02(protosequence1):
     new_seq = protosequence1.copy()
-    new_seq.setChannelVoltageRange(1, 1.9, 0)
+    new_seq.setChannelAmplitude(1, 1.9)
     assert new_seq != protosequence1
 
 
@@ -189,8 +212,10 @@ def test_addition_fail_position(protosequence1, badseq_missing_pos):
 
 
 def test_addition_data(protosequence1, protosequence2):
-    protosequence2.setChannelVoltageRange(1, 2, 0)
-    protosequence2.setChannelVoltageRange(2, 2, 0)
+    protosequence2.setChannelAmplitude(1, 2)
+    protosequence2.setChannelOffset(1, 0)
+    protosequence2.setChannelAmplitude(2, 2)
+    protosequence2.setChannelOffset(2, 0)
     newseq = protosequence1 + protosequence2
     expected_data = {1: protosequence1.element(1),
                      2: protosequence1.element(2),
@@ -200,32 +225,46 @@ def test_addition_data(protosequence1, protosequence2):
 
 
 def test_addition_sequencing1(protosequence1, protosequence2):
-    protosequence2.setChannelVoltageRange(1, 2, 0)
-    protosequence2.setChannelVoltageRange(2, 2, 0)
+    protosequence2.setChannelAmplitude(1, 2)
+    protosequence2.setChannelOffset(1, 0)
+    protosequence2.setChannelAmplitude(2, 2)
+    protosequence2.setChannelOffset(2, 0)
 
     newseq = protosequence1 + protosequence2
-    expected_sequencing = {1: [1, 1, 1, 1],
-                           2: [1, 1, 1, 1],
-                           3: [0, 2, 0, 4],
-                           4: [1, 1, 0, 3]}
+    expected_sequencing = {1: {'twait': 1, 'nrep': 1, 'jump_target': 1,
+                               'goto': 1, 'jump_input': 0},
+                           2: {'twait': 1, 'nrep': 1, 'jump_target': 1,
+                               'goto': 1, 'jump_input': 0},
+                           3: {'twait': 0, 'nrep': 2, 'jump_target': 0,
+                               'goto': 4, 'jump_input': 0},
+                           4: {'twait': 1, 'nrep': 1, 'jump_target': 0,
+                               'goto': 3, 'jump_input': 0}}
     assert newseq._sequencing == expected_sequencing
 
 
 def test_addition_sequencing2(protosequence1, protosequence2):
-    protosequence2.setChannelVoltageRange(1, 2, 0)
-    protosequence2.setChannelVoltageRange(2, 2, 0)
+    protosequence2.setChannelAmplitude(1, 2)
+    protosequence2.setChannelOffset(1, 0)
+    protosequence2.setChannelAmplitude(2, 2)
+    protosequence2.setChannelOffset(2, 0)
 
     newseq = protosequence2 + protosequence1
-    expected_sequencing = {3: [1, 1, 3, 3],
-                           4: [1, 1, 3, 3],
-                           1: [0, 2, 0, 2],
-                           2: [1, 1, 0, 1]}
+    expected_sequencing = {3: {'twait': 1, 'nrep': 1, 'jump_target': 3,
+                               'goto': 3, 'jump_input': 0},
+                           4: {'twait': 1, 'nrep': 1, 'jump_target': 3,
+                               'goto': 3, 'jump_input': 0},
+                           1: {'twait': 0, 'nrep': 2, 'jump_target': 0,
+                               'goto': 2, 'jump_input': 0},
+                           2: {'twait': 1, 'nrep': 1, 'jump_target': 0,
+                               'goto': 1, 'jump_input': 0}}
     assert newseq._sequencing == expected_sequencing
 
 
 def test_addition_awgspecs(protosequence1, protosequence2):
-    protosequence2.setChannelVoltageRange(1, 2, 0)
-    protosequence2.setChannelVoltageRange(2, 2, 0)
+    protosequence2.setChannelAmplitude(1, 2)
+    protosequence2.setChannelOffset(1, 0)
+    protosequence2.setChannelAmplitude(2, 2)
+    protosequence2.setChannelOffset(2, 0)
 
     newseq = protosequence1 + protosequence2
 
@@ -242,20 +281,6 @@ def test_addition_data_with_empty(protosequence1):
 
 ##################################################
 # AWG settings
-
-@pytest.mark.parametrize('seqinfo', [([-1, 0, 0, 1]),
-                                     ([2, 1, 1, 1]),
-                                     ([1, -1, 0, 1]),
-                                     ([0, 65537, 0, 1]),
-                                     ([0, 2.5, 0, 1]),
-                                     ([0, 2, 0.5, 1]),
-                                     ([0, 2, 3, 1]),
-                                     ([0, 1, 0, 0.5]),
-                                     ([0, 1, 0, 3]),
-                                     ([0, 1, 0, -1])])
-def test_sequencing_input_fail(protosequence1, seqinfo):
-    with pytest.raises(ValueError):
-        protosequence1.setSequenceSettings(1, *seqinfo)
 
 
 def test_setSR(protosequence1):

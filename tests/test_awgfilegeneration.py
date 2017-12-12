@@ -3,6 +3,8 @@
 # that a valid .awg file is actually generated
 
 import pytest
+from hypothesis import given, settings
+import hypothesis.strategies as hst
 
 import broadbean as bb
 
@@ -43,10 +45,16 @@ def protosequence1():
     seq.setSR(SR)
     seq.name = 'protoSequence'
 
-    seq.setChannelVoltageRange(1, 2, 0)
-    seq.setChannelVoltageRange(2, 2, 0)
-    seq.setSequenceSettings(1, 1, 1, 1, 1)
-    seq.setSequenceSettings(2, 1, 1, 1, 1)
+    seq.setChannelAmplitude(1, 2)
+    seq.setChannelAmplitude(2, 2)
+    seq.setChannelOffset(1, 0)
+    seq.setChannelOffset(2, 0)
+    seq.setSequencingTriggerWait(1, 1)
+    seq.setSequencingTriggerWait(2, 1)
+    seq.setSequencingEventJumpTarget(1, 1)
+    seq.setSequencingEventJumpTarget(2, 1)
+    seq.setSequencingGoto(1, 1)
+    seq.setSequencingGoto(2, 1)
 
     return seq
 
@@ -60,3 +68,37 @@ def test_awg_output(protosequence1):
 
     assert isinstance(tst, tuple)
     assert len(tst) == 7
+
+
+def should_raise_sequencingerror(wait, nrep, jump_to, goto, num_elms):
+    """
+    Function to tell us whether a SequencingError should be raised
+    """
+    if wait not in [0, 1]:
+        return True
+    if nrep not in range(0, num_elms+1):
+        return True
+    if jump_to not in range(-1, num_elms+1):
+        return True
+    if goto not in range(0, num_elms+1):
+        return True
+    return False
+
+
+@settings(max_examples=25)
+@given(wait=hst.integers(), nrep=hst.integers(), jump_to=hst.integers(),
+       goto=hst.integers())
+def test_awg_output_validations(protosequence1, wait, nrep, jump_to, goto):
+
+    protosequence1.setSequencingTriggerWait(1, wait)
+    protosequence1.setSequencingNumberOfRepetitions(1, nrep)
+    protosequence1.setSequencingEventJumpTarget(1, jump_to)
+    protosequence1.setSequencingGoto(1, goto)
+
+    N = protosequence1.length_sequenceelements
+
+    if should_raise_sequencingerror(wait, nrep, jump_to, goto, N):
+        with pytest.raises(bb.SequencingError):
+            protosequence1.outputForAWGFile()
+    else:
+        protosequence1.outputForAWGFile()
