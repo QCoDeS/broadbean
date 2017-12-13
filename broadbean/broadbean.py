@@ -1,7 +1,7 @@
 import logging
 import math
 import warnings
-from typing import Tuple, List, Dict
+from typing import Tuple, List, Dict, cast
 from inspect import signature
 from copy import deepcopy
 import functools as ft
@@ -2035,7 +2035,9 @@ class Sequence:
             elements[pos-1] = element
 
         # Finally cast the lists into the shapes required by the AWG driver
-        waveforms = [[] for dummy in range(len(channels))]
+
+        waveforms = cast(List[List[np.ndarray]],
+                         [[] for dummy in range(len(channels))])
         nreps = []
         trig_waits = []
         gotos = []
