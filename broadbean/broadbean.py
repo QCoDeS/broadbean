@@ -1,6 +1,7 @@
 import logging
 import math
 import warnings
+from typing import Tuple, List, Dict, cast
 from inspect import signature
 from copy import deepcopy
 import functools as ft
@@ -12,6 +13,10 @@ from broadbean.ripasso import applyInverseRCFilter
 plt.ion()
 
 log = logging.getLogger(__name__)
+
+
+class SequencingError(Exception):
+    pass
 
 
 class ElementDurationError(Exception):
@@ -956,7 +961,7 @@ class Element:
             atol = min(SRs)
         else:
             atol = 1e-9
-                
+
         if not np.allclose(durations, durations[0], atol=atol):
             errmssglst = zip(list(self._data.keys()), durations)
             raise ElementDurationError('Different channels have different '
@@ -1018,6 +1023,23 @@ class Element:
         self.validateDurations()
 
         return self._meta['SR']
+
+    @property
+    def points(self):
+        """
+        Returns the number of points of each channel if that number is
+        well-defined. Else an error is raised.
+        """
+        self.validateDurations()
+
+        # pick out what is on the channels
+        channels = self._data.values()
+
+        for channel in channels:
+            if 'blueprint' in channel.keys():
+                return channel['blueprint'].points
+            elif 'array' in channel.keys():
+                return len(channel['array'][0])
 
     @property
     def duration(self):
@@ -1166,8 +1188,13 @@ class Sequence:
         # the key is sequence position (int), the value is element (Element)
         self._data = {}
 
-        # Here goes the sequencing info. Key: position, value: list
-        # where list = [wait, nrep, jump, goto]
+        # Here goes the sequencing info. Key: position
+        # value: dict with keys 'twait', 'nrep', 'jump_input',
+        # 'jump_target', 'goto'
+        #
+        # the sequencing is filled out automatically with default values
+        # when an element is added
+        # Note that not all output backends use all items in the list
         self._sequencing = {}
 
         # The dictionary to store AWG settings
@@ -1178,6 +1205,10 @@ class Sequence:
         # The metainfo to be extracted by measurements
         # todo: I'm pretty sure this is obsolete now that description exists
         self._meta = {}
+
+        # some backends (seqx files) allow for a sequence to have a name
+        # we make the name a property of the sequence
+        self._name = ''
 
     def __eq__(self, other):
         if not isinstance(other, Sequence):
@@ -1207,8 +1238,9 @@ class Sequence:
             raise SequenceConsistencyError('Right hand sequence inconsistent!')
 
         if not self._awgspecs == other._awgspecs:
-            raise SequenceCompatibilityError('Incompatible sequences: different '
-                                             'AWG specifications.')
+            raise SequenceCompatibilityError('Incompatible sequences: '
+                                             'different AWG'
+                                             'specifications.')
 
         newseq = Sequence()
         N = len(self._data)
@@ -1224,13 +1256,14 @@ class Sequence:
         newsequencing1 = dict([(key, self._sequencing[key].copy())
                                for key in self._sequencing.keys()])
         newsequencing2 = dict()
+
         for key, item in other._sequencing.items():
             newitem = item.copy()
             # update goto and jump according to new sequence length
-            if newitem[2] > 0:
-                newitem[2] += N
-            if newitem[3] > 0:
-                newitem[3] += N
+            if newitem['goto'] > 0:
+                newitem['goto'] += N
+            if newitem['jump_target'] > 0:
+                newitem['jump_target'] += N
             newsequencing2.update({key+N: newitem})
 
         newsequencing1.update(newsequencing2)
@@ -1260,39 +1293,85 @@ class Sequence:
         Args:
             pos (int): The sequence element (counting from 1)
             wait (int): The wait state specifying whether to wait for a
-                trigger. 0: OFF, don't wait, 1: ON, wait.
+                trigger. 0: OFF, don't wait, 1: ON, wait. For some backends,
+                additional integers are allowed to specify the trigger input.
+                0 always means off.
             nreps (int): Number of repetitions. 0 corresponds to infinite
                 repetitions
-            jump (int): Jump target, the position of a sequence element
-            goto (int): Goto target, the position of a sequence element
+            jump (int): Event jump target, the position of a sequence element.
+                If 0, the event jump state is off.
+            goto (int): Goto target, the position of a sequence element.
+                0 means next.
         """
+
+        warnings.warn('Deprecation warning. This function is only compatible '
+                      'with AWG5014 output and will be removed. '
+                      'Please use the specific setSequencingXXX methods.')
 
         # Validation (some validation 'postponed' and put in checkConsistency)
         #
-        # Validation is important because the instrument will silently fail upon
-        # receiving an awg file with inconsistent specifications
-        #
-        if wait not in [0, 1]:
-            raise ValueError('Can not set trigger wait state to {}.'.format(wait) +
-                             ' Must be either 0 or 1.')
+        # Because of different compliances for different backends,
+        # most validation of these settings is deferred and performed
+        # in the outputForXXX methods
 
-        if nreps not in range(0, 65537):
-            raise ValueError('Can not set nreps to {}.'.format(nreps) +
-                             ' Must be either 0 (infinite) or 1-65,536.')
+        self._sequencing[pos] = {'twait': wait, 'nrep': nreps,
+                                 'jump_target': jump, 'goto': goto,
+                                 'jump_input': 0}
 
-        if jump not in range(-1, self.length_sequenceelements+1):
-            raise ValueError('Invalid event jump target, received: '
-                             '{}.'.format(jump) +
-                             ' Valid range -1 (next), 0 (off), '
-                             '1-{}'.format(self.length_sequenceelements))
+    def setSequencingTriggerWait(self, pos: int, wait: int) -> None:
+        """
+        Set the trigger wait for the sequence element at pos. For
+        AWG 5014 out, this can be 0 or 1, For AWG 70000A output, this
+        can be 0, 1, 2, or 3.
 
-        if goto not in range(0, self.length_sequenceelements+1):
-            raise ValueError('Invalid goto target, received: '
-                             '{}.'.format(goto) +
-                             ' Valid range is 0 (off/next) or '
-                             '1-{}'.format(self.length_sequenceelements))
+        Args:
+            pos: The sequence element (counting from 1)
+            wait: The wait state/input depending on backend.
+        """
+        self._sequencing[pos]['twait'] = wait
 
-        self._sequencing[pos] = [wait, nreps, jump, goto]
+    def setSequencingNumberOfRepetitions(self, pos: int, nrep: int) -> None:
+        """
+        Set the number of repetitions for the sequence element at pos.
+
+        Args:
+            pos: The sequence element (counting from 1)
+            nrep: The number of repetitions (0 means infinite)
+        """
+        self._sequencing[pos]['nrep'] = nrep
+
+    def setSequencingEventInput(self, pos: int, jump_input: int) -> None:
+        """
+        Set the event input for the sequence element at pos. This setting is
+        ignored by the AWG 5014.
+
+        Args:
+            pos: The sequence element (counting from 1)
+            jump_input: The input specifier,  0 for off,
+                1 for 'TrigA', 2 for 'TrigB', 3 for 'Internal'.
+        """
+        self._sequencing[pos]['jump_input'] = jump_input
+
+    def setSequencingEventJumpTarget(self, pos: int, jump_target: int) -> None:
+        """
+        Set the event jump target for the sequence element at pos.
+
+        Args:
+            pos: The sequence element (counting from 1)
+            jump_target: The sequence element to jump to (counting from 1)
+        """
+        self._sequencing[pos]['jump_target'] = jump_target
+
+    def setSequencingGoto(self, pos: int, goto: int) -> None:
+        """
+        Set the goto target (which element to play after the current one ends)
+        for the sequence element at pos.
+
+        Args:
+            pos: The sequence element (counting from 1)
+            goto: The position of the element to play. 0 means 'next in line'
+        """
+        self._sequencing[pos]['goto'] = goto
 
     def setSR(self, SR):
         """
@@ -1313,8 +1392,36 @@ class Sequence:
             ampl (float): The channel peak-to-peak amplitude (V)
             offset (float): The channel offset (V)
         """
+        warnings.warn('Deprecation warning. This function is deprecated.'
+                      ' Use setChannelAmplitude and SetChannelOffset '
+                      'instead.')
+
         keystr = 'channel{}_amplitude'.format(channel)
         self._awgspecs[keystr] = ampl
+        keystr = 'channel{}_offset'.format(channel)
+        self._awgspecs[keystr] = offset
+
+    def setChannelAmplitude(self, channel: int, ampl: float) -> None:
+        """
+        Assign the physical voltage amplitude of the channel. This is used
+        when making output for real instruments.
+
+        Args:
+            channel: The channel number
+            ampl: The channel peak-to-peak amplitude (V)
+        """
+        keystr = 'channel{}_amplitude'.format(channel)
+        self._awgspecs[keystr] = ampl
+
+    def setChannelOffset(self, channel: int, offset: float) -> None:
+        """
+        Assign the physical voltage offset of the channel. This is used
+        by some backends when making output for real instruments
+
+        Args:
+            channel: The channel number
+            offset: The channel offset (V)
+        """
         keystr = 'channel{}_offset'.format(channel)
         self._awgspecs[keystr] = offset
 
@@ -1401,6 +1508,11 @@ class Sequence:
         # Data mutation
         self._data.update({position: newelement})
 
+        # insert default sequencing settings
+        self._sequencing[position] = {'twait': 0, 'nrep': 1,
+                                      'jump_input': 0, 'jump_target': 0,
+                                      'goto': 0}
+
     def checkConsistency(self, verbose=False):
         """
         Checks wether the sequence can be built, i.e. wether all elements
@@ -1479,6 +1591,16 @@ class Sequence:
                 desc[str(pos)]['sequencing'] = 'Not set'
 
         return desc
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, newname):
+        if not isinstance(newname, str):
+            raise ValueError('The sequence name must be a string')
+        self._name = newname
 
     @property
     def length_sequenceelements(self):
@@ -1714,47 +1836,38 @@ class Sequence:
                     ax.set_yticks([])
                 fig.subplots_adjust(hspace=0, wspace=0)
 
-                # display sequencer information (if any)
+                # display sequencer information
                 if chanind == 0:
-                    try:
-                        seq_info = self._sequencing[pos+1]
-                    except KeyError:
-                        seq_info = [0, -1, 0, 0]
+                    seq_info = self._sequencing[pos+1]
                     titlestring = ''
-                    if seq_info[0] == 1:  # trigger wait
+                    if seq_info['twait'] == 1:  # trigger wait
                         titlestring += 'T '
-                    if seq_info[1] > 1:  # nreps
+                    if seq_info['nrep'] > 1:  # nreps
                         titlestring += '\u21BB{} '.format(seq_info[1])
-                    if seq_info[1] == 0:
+                    if seq_info['nrep'] == 0:
                         titlestring += '\u221E '
-                    if seq_info[2] != 0:
-                        if seq_info[2] == -1:
+                    if seq_info['jump_input'] != 0:
+                        if seq_info['jump_input'] == -1:
                             titlestring += 'E\u2192 '
                         else:
                             titlestring += 'E{} '.format(seq_info[2])
-                    if seq_info[3] > 0:
+                    if seq_info['goto'] > 0:
                         titlestring += '\u21b1{}'.format(seq_info[3])
 
                     ax.set_title(titlestring)
 
-    def outputForAWGFile(self):
+    def _prepareForOutputting(self) -> List[Dict[int, np.ndarray]]:
         """
-        Returns a sliceable object with items matching the call
-        signature of the 'make_*_awg_file' functions of the QCoDeS
-        AWG5014 driver. One may then construct an awg file as follows
-        (assuming that seq is the sequence object):
+        The preparser for numerical output. Applies delay and ripasso
+        corrections.
 
-        .. code:: python
-
-            package = seq.outputForAWGFile()
-            make_awg_file(*package[:], **kwargs)
-
-        The outputForAWGFile applies delay of channels
-
-        Todo:
-            Implement corrections from ripasso
+        Returns:
+            A list of outputs of the Element's getArrays functions, i.e.
+                a list of dictionaries with key position (int) and value
+                an np.ndarray of array([wfm, m1, m2, time]), where the
+                wfm values are still in V. The particular backend output
+                function must rescale to the specific format it adheres to.
         """
-
         # Validation
         if not self.checkConsistency():
             raise ValueError('Can not generate output. Something is '
@@ -1772,15 +1885,11 @@ class Sequence:
             raise ValueError('Can not generate output for .awg file; '
                              'incorrect sequencer information.')
 
-        # Verify physical amplitude and offset specifiations
+        # Verify physical amplitude specifiations
         for chan in channels:
             ampkey = 'channel{}_amplitude'.format(chan)
             if ampkey not in self._awgspecs.keys():
                 raise KeyError('No amplitude specified for channel '
-                               '{}. Can not continue.'.format(chan))
-            offkey = 'channel{}_offset'.format(chan)
-            if offkey not in self._awgspecs.keys():
-                raise KeyError('No offset specified for channel '
                                '{}. Can not continue.'.format(chan))
 
         # Apply channel delays. This is most elegantly done before forging.
@@ -1829,7 +1938,6 @@ class Sequence:
         # Now forge all the elements as specified
         elements = []  # the forged elements
         for pos in range(1, seqlen+1):
-            # There was a bug here
             elements.append(data[pos].getArrays())
 
         # Now that the numerical arrays exist, we can apply filter compensation
@@ -1849,6 +1957,171 @@ class Sequence:
                                                       kind, f_cut, order,
                                                       DCgain=1)
                     elements[pos][chan][0] = postfilter
+
+        return elements
+
+    def outputForSEQXFile(self) -> Tuple[List[int], List[int], List[int],
+                                         List[int], List[int],
+                                         List[List[np.ndarray]],
+                                         List[float], str]:
+        """
+        Generate a tuple matching the call signature of the QCoDeS
+        AWG70000A driver's `makeSEQXFile` function. If channel delays
+        have been specified, they are added to the ouput before exporting.
+        The intended use of this function together with the QCoDeS driver is
+
+        .. code:: python
+
+            pkg = seq.outputForSEQXFile()
+            seqx = awg70000A.makeSEQXFile(*pkg)
+
+        Returns:
+            A tuple holding (trig_waits, nreps, event_jumps, event_jump_to,
+                go_to, wfms, amplitudes, seqname)
+        """
+
+        # most of the footwork is done by the following function
+        elements = self._prepareForOutputting()
+        # _prepareForOutputting asserts that channel amplitudes and
+        # full sequencing is specified
+        seqlen = len(elements)
+        # all elements have ident. chans since _prepareForOutputting
+        # did not raise an exception
+        channels = self.element(1).channels
+
+        for chan in channels:
+            offkey = 'channel{}_offset'.format(chan)
+            if offkey in self._awgspecs.keys():
+                log.warning("Found a specified offset for channel "
+                            "{}, but .seqx files can't contain offset "
+                            "information. Will ignore the offset."
+                            "".format(chan))
+
+        # now check that the amplitudes are within the allowed limits
+        # also verify that all waveforms are at least 2400 points
+        # No rescaling because the driver's _makeWFMXBinaryData does
+        # the rescaling
+
+        amplitudes = []
+        for chan in channels:
+            ampl = self._awgspecs['channel{}_amplitude'.format(chan)]
+            amplitudes.append(ampl)
+        if len(amplitudes) == 1:
+            amplitudes.append(0)
+
+        for pos in range(1, seqlen+1):
+            element = elements[pos-1]
+            for chan in channels:
+                ampl = self._awgspecs['channel{}_amplitude'.format(chan)]
+                wfm = element[chan][0]
+                # check the waveform length
+                if len(wfm) < 2400:
+                    raise ValueError('Waveform too short on channel '
+                                     '{} at step {}; only {} points. '
+                                     'The required minimum is 2400 points.'
+                                     ''.format(chan, pos, len(wfm)))
+                # check whether the waveform voltages can be realised
+                if wfm.max() > ampl/2:
+                    raise ValueError('Waveform voltages exceed channel range '
+                                     'on channel {}'.format(chan) +
+                                     ' sequence element {}.'.format(pos) +
+                                     ' {} > {}!'.format(wfm.max(), ampl/2))
+                if wfm.min() < -ampl/2:
+                    raise ValueError('Waveform voltages exceed channel range '
+                                     'on channel {}'.format(chan) +
+                                     ' sequence element {}. '.format(pos) +
+                                     '{} < {}!'.format(wfm.min(), -ampl/2))
+                element[chan][0] = wfm
+            elements[pos-1] = element
+
+        # Finally cast the lists into the shapes required by the AWG driver
+
+        waveforms = cast(List[List[np.ndarray]],
+                         [[] for dummy in range(len(channels))])
+        nreps = []
+        trig_waits = []
+        gotos = []
+        jump_states = []
+        jump_tos = []
+
+        # Since sequencing options are valid/invalid differently for
+        # different backends, we make the validation here
+        for pos in range(1, seqlen+1):
+            for chanind, chan in enumerate(channels):
+                wfm = elements[pos-1][chan][0]
+                m1 = elements[pos-1][chan][1]
+                m2 = elements[pos-1][chan][2]
+                waveforms[chanind].append(np.array([wfm, m1, m2]))
+
+            twait = self._sequencing[pos]['twait']
+            nrep = self._sequencing[pos]['nrep']
+            jump_to = self._sequencing[pos]['jump_target']
+            jump_state = self._sequencing[pos]['jump_input']
+            goto = self._sequencing[pos]['goto']
+
+            if twait not in [0, 1, 2, 3]:
+                raise SequencingError('Invalid trigger input at position'
+                                      '{}: {}. Must be 0, 1, 2, or 3.'
+                                      ''.format(pos, twait))
+
+            if jump_state not in [0, 1, 2, 3]:
+                raise SequencingError('Invalid event jump input at position'
+                                      '{}: {}. Must be either 0, 1, 2, or 3.'
+                                      ''.format(pos, twait))
+
+            if nrep not in range(0, 16384):
+                raise SequencingError('Invalid number of repetions at position'
+                                      '{}: {}. Must be either 0 (infinite) '
+                                      'or 1-16,383.'.format(pos, nrep))
+
+            if jump_to not in range(-1, seqlen+1):
+                raise SequencingError('Invalid event jump target at position'
+                                      '{}: {}. Must be either -1 (next),'
+                                      ' 0 (off), or 1-{}.'
+                                      ''.format(pos, jump_to, seqlen))
+
+            if goto not in range(0, seqlen+1):
+                raise SequencingError('Invalid goto target at position'
+                                      '{}: {}. Must be either 0 (next),'
+                                      ' or 1-{}.'
+                                      ''.format(pos, goto, seqlen))
+
+            trig_waits.append(twait)
+            nreps.append(nrep)
+            jump_tos.append(jump_to)
+            jump_states.append(jump_state)
+            gotos.append(goto)
+
+        return (trig_waits, nreps, jump_states, jump_tos, gotos,
+                waveforms, amplitudes, self.name)
+
+    def outputForAWGFile(self):
+        """
+        Returns a sliceable object with items matching the call
+        signature of the 'make_*_awg_file' functions of the QCoDeS
+        AWG5014 driver. One may then construct an awg file as follows
+        (assuming that seq is the sequence object):
+
+        .. code:: python
+
+            package = seq.outputForAWGFile()
+            make_awg_file(*package[:], **kwargs)
+
+
+        """
+
+        elements = self._prepareForOutputting()
+        seqlen = len(elements)
+        # all elements have ident. chans since _prepareForOutputting
+        # did not raise an exception
+        channels = self.element(1).channels
+
+        for chan in channels:
+            offkey = 'channel{}_offset'.format(chan)
+            if offkey not in self._awgspecs.keys():
+                raise ValueError("No specified offset for channel "
+                                 "{}, can not continue."
+                                 "".format(chan))
 
         # Apply channel scaling
         # We must rescale to the interval -1, 1 where 1 is ampl/2+off and -1 is
@@ -1883,23 +2156,52 @@ class Sequence:
         m2s = [[] for dummy in range(len(channels))]
         nreps = []
         trig_waits = []
-        goto_states = []
+        gotos = []
         jump_tos = []
 
+        # Since sequencing options are valid/invalid differently for
+        # different backends, we make the validation here
         for pos in range(1, seqlen+1):
             for chanind, chan in enumerate(channels):
                 waveforms[chanind].append(elements[pos-1][chan][0])
                 m1s[chanind].append(elements[pos-1][chan][1])
                 m2s[chanind].append(elements[pos-1][chan][2])
 
-            nreps.append(self._sequencing[pos][1])
-            trig_waits.append(self._sequencing[pos][0])
-            jump_tos.append(self._sequencing[pos][2])
-            goto_states.append(self._sequencing[pos][3])
+            twait = self._sequencing[pos]['twait']
+            nrep = self._sequencing[pos]['nrep']
+            jump_to = self._sequencing[pos]['jump_target']
+            goto = self._sequencing[pos]['goto']
+
+            if twait not in [0, 1]:
+                raise SequencingError('Invalid trigger wait state at position'
+                                      '{}: {}. Must be either 0 or 1.'
+                                      ''.format(pos, twait))
+
+            if nrep not in range(0, 65537):
+                raise SequencingError('Invalid number of repetions at position'
+                                      '{}: {}. Must be either 0 (infinite) '
+                                      'or 1-65,536.'.format(pos, nrep))
+
+            if jump_to not in range(-1, seqlen+1):
+                raise SequencingError('Invalid event jump target at position'
+                                      '{}: {}. Must be either -1 (next),'
+                                      ' 0 (off), or 1-{}.'
+                                      ''.format(pos, jump_to, seqlen))
+
+            if goto not in range(0, seqlen+1):
+                raise SequencingError('Invalid goto target at position'
+                                      '{}: {}. Must be either 0 (next),'
+                                      ' or 1-{}.'
+                                      ''.format(pos, goto, seqlen))
+
+            trig_waits.append(twait)
+            nreps.append(nrep)
+            jump_tos.append(jump_to)
+            gotos.append(goto)
 
         # ...and make a sliceable object out of them
         output = _AWGOutput((waveforms, m1s, m2s, nreps,
-                             trig_waits, goto_states,
+                             trig_waits, gotos,
                              jump_tos), self.channels)
 
         return output
@@ -2110,7 +2412,7 @@ def bluePrintPlotter(blueprints, fig=None, axs=None):
         wfm = arrays[0, :]
         m1 = arrays[1, :]
         m2 = arrays[2, :]
-        time = np.linspace(0, np.sum(newdurs), np.sum(newdurs)*SR)
+        time = np.linspace(0, np.sum(newdurs), len(wfm))
 
         # Figure out time axis scaling
         exponent = np.log10(time.max())

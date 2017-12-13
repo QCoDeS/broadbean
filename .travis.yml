@@ -17,6 +17,7 @@ branches:
 
 install:
   - pip install --upgrade pip
+  - pip install -r test_requirements.txt
   - pip install .
 
 # command sequence to run tests
