@@ -1960,7 +1960,10 @@ class Sequence:
 
         return elements
 
-    def outputForSEQXFile(self) -> Tuple:
+    def outputForSEQXFile(self) -> Tuple[List[int], List[int], List[int],
+                                         List[int], List[int],
+                                         List[List[np.ndarray]],
+                                         List[float], str]:
         """
         Generate a tuple matching the call signature of the QCoDeS
         AWG70000A driver's `makeSEQXFile` function. If channel delays
@@ -1994,9 +1997,10 @@ class Sequence:
                             "information. Will ignore the offset."
                             "".format(chan))
 
-        # now check the amplitudes and rescale the waveforms to
-        # the (-1, 1) range
+        # now check that the amplitudes are within the allowed limits
         # also verify that all waveforms are at least 2400 points
+        # No rescaling because the driver's _makeWFMXBinaryData does
+        # the rescaling
 
         amplitudes = []
         for chan in channels:
@@ -2027,15 +2031,11 @@ class Sequence:
                                      'on channel {}'.format(chan) +
                                      ' sequence element {}. '.format(pos) +
                                      '{} < {}!'.format(wfm.min(), -ampl/2))
-                # No rescaling because the driver's _makeWFMXBinaryData does that
-                # wfm = wfm/(ampl/2)
                 element[chan][0] = wfm
             elements[pos-1] = element
 
         # Finally cast the lists into the shapes required by the AWG driver
         waveforms = [[] for dummy in range(len(channels))]
-        m1s = [[] for dummy in range(len(channels))]
-        m2s = [[] for dummy in range(len(channels))]
         nreps = []
         trig_waits = []
         gotos = []
@@ -2046,9 +2046,10 @@ class Sequence:
         # different backends, we make the validation here
         for pos in range(1, seqlen+1):
             for chanind, chan in enumerate(channels):
-                waveforms[chanind].append(elements[pos-1][chan][0])
-                m1s[chanind].append(elements[pos-1][chan][1])
-                m2s[chanind].append(elements[pos-1][chan][2])
+                wfm = elements[pos-1][chan][0]
+                m1 = elements[pos-1][chan][1]
+                m2 = elements[pos-1][chan][2]
+                waveforms[chanind].append(np.array([wfm, m1, m2]))
 
             twait = self._sequencing[pos]['twait']
             nrep = self._sequencing[pos]['nrep']
