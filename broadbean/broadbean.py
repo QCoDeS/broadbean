@@ -1999,12 +1999,16 @@ class Sequence:
         # also verify that all waveforms are at least 2400 points
 
         amplitudes = []
+        for chan in channels:
+            ampl = self._awgspecs['channel{}_amplitude'.format(chan)]
+            amplitudes.append(ampl)
+        if len(amplitudes) == 1:
+            amplitudes.append(0)
 
         for pos in range(1, seqlen+1):
             element = elements[pos-1]
             for chan in channels:
                 ampl = self._awgspecs['channel{}_amplitude'.format(chan)]
-                amplitudes.append(ampl)
                 wfm = element[chan][0]
                 # check the waveform length
                 if len(wfm) < 2400:
@@ -2023,7 +2027,8 @@ class Sequence:
                                      'on channel {}'.format(chan) +
                                      ' sequence element {}. '.format(pos) +
                                      '{} < {}!'.format(wfm.min(), -ampl/2))
-                wfm = wfm/ampl*2
+                # No rescaling because the driver's _makeWFMXBinaryData does that
+                # wfm = wfm/(ampl/2)
                 element[chan][0] = wfm
             elements[pos-1] = element
 
