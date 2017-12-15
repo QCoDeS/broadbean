@@ -2211,7 +2211,8 @@ class Sequence:
         return output
 
 
-def _subelementBuilder(blueprint, SR, durs):
+def _subelementBuilder(blueprint: BluePrint, SR: int,
+                       durs: List[float]) -> Tuple[np.ndarray, List[float]]:
     """
     The function building a blueprint, returning a numpy array.
 
@@ -2298,7 +2299,7 @@ def _subelementBuilder(blueprint, SR, durs):
     dt = time[1] - time[0]
     # update the 'absolute time' marker list with 'relative time'
     # (segment bound) markers converted to absolute time
-    elapsed_times = np.cumsum([0] + newdurations)
+    elapsed_times = np.cumsum([0.0] + newdurations)
     for pos, spec in enumerate(segmark1):
         if spec[1] is not 0:
             ontime = elapsed_times[pos] + spec[0]  # spec is (delay, duration)
