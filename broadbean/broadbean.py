@@ -2282,9 +2282,9 @@ def _subelementBuilder(blueprint: BluePrint, SR: int,
         if len(block) < 2:
             raise SegmentDurationError('Too short segment detected! '
                                        'Segment "{}" at position {} '
-                                       'has a duration of {} which at'
-                                       'an SR of {} leads to just {} '
-                                       'points(s). There must be at least'
+                                       'has a duration of {} which at '
+                                       'an SR of {:.3E} leads to just {} '
+                                       'points(s). There must be at least '
                                        '2 points in each segment.'
                                        ''.format(namelist[index],
                                                  index,
