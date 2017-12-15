@@ -19,6 +19,10 @@ class SequencingError(Exception):
     pass
 
 
+class SegmentDurationError(Exception):
+    pass
+
+
 class ElementDurationError(Exception):
     pass
 
@@ -2270,6 +2274,22 @@ def _subelementBuilder(blueprint, SR, durs):
     parts = [ft.partial(fun, *args) for (fun, args) in zip(funlist, argslist)]
     blocks = [list(p(SR, d)) for (p, d) in zip(parts, newdurations)]
     output = [block for sl in blocks for block in sl]
+
+    # Ensure that no empty or 1-point segments are forged
+    # (which would happen if the duration is too short)
+    for index, block in enumerate(blocks):
+        if len(block) < 2:
+            raise SegmentDurationError('Too short segment detected! '
+                                       'Segment "{}" at position {} '
+                                       'has a duration of {} which at'
+                                       'an SR of {} leads to just {} '
+                                       'points(s). There must be at least'
+                                       '2 points in each segment.'
+                                       ''.format(namelist[index],
+                                                 index,
+                                                 newdurations[index],
+                                                 SR,
+                                                 len(block)))
 
     # now make the markers
     time = np.linspace(0, sum(newdurations), len(output))
