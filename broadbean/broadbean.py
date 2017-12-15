@@ -1540,7 +1540,7 @@ class Sequence:
         # Then check that elements use the same channels
         specchans = []
         for elem in self._data.values():
-            chans = elem.channels
+            chans = sorted(elem.channels)
             specchans.append(chans)
         if specchans == []:  # case of empty Sequence
             chans = None
