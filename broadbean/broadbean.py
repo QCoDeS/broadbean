@@ -19,6 +19,10 @@ class SequencingError(Exception):
     pass
 
 
+class SegmentDurationError(Exception):
+    pass
+
+
 class ElementDurationError(Exception):
     pass
 
@@ -41,34 +45,42 @@ class PulseAtoms:
     The basic pulse shapes.
 
     Any pulse shape function should return a list or an np.array
-    and have SR, duration as its final two arguments.
+    and have SR, npoints as its final two arguments.
+
+    Rounding errors are a real concern/pain in the business of
+    making waveforms of short duration (few samples). Therefore,
+    the PulseAtoms take the number of points rather than the
+    duration as input argument, so that all ambiguity can be handled
+    in one place (the _subelementBuilder)
     """
 
     @staticmethod
-    def sine(freq, ampl, off, SR, dur):
-        time = np.linspace(0, dur, int(dur*SR))
+    def sine(freq, ampl, off, SR, npts):
+        time = np.linspace(0, npts/SR, npts)
         freq *= 2*np.pi
         return (ampl*np.sin(freq*time)+off)
 
     @staticmethod
-    def ramp(start, stop, SR, dur):
+    def ramp(start, stop, SR, npts):
+        dur = npts/SR
         slope = (stop-start)/dur
-        time = np.linspace(0, dur, int(dur*SR))
+        time = np.linspace(0, dur, npts)
         return (slope*time+start)
 
     @staticmethod
-    def waituntil(dummy, SR, dur):
+    def waituntil(dummy, SR, npts):
         # for internal call signature consistency, a dummy variable is needed
-        return (np.zeros(int(dur*SR)))
+        return np.zeros(npts)
 
     @staticmethod
-    def gaussian(ampl, sigma, mu, offset, SR, dur):
+    def gaussian(ampl, sigma, mu, offset, SR, npts):
         """
         Returns a Gaussian of integral ampl (when offset==0)
 
         Is by default centred in the middle of the interval
         """
-        time = np.linspace(0, dur, int(dur*SR))
+        dur = npts/SR
+        time = np.linspace(0, dur, npts)
         centre = dur/2
         baregauss = np.exp((-(time-mu-centre)**2/(2*sigma**2)))
         normalisation = 1/np.sqrt(2*sigma**2*np.pi)
@@ -2207,7 +2219,8 @@ class Sequence:
         return output
 
 
-def _subelementBuilder(blueprint, SR, durs):
+def _subelementBuilder(blueprint: BluePrint, SR: int,
+                       durs: List[float]) -> Tuple[np.ndarray, List[float]]:
     """
     The function building a blueprint, returning a numpy array.
 
@@ -2252,23 +2265,36 @@ def _subelementBuilder(blueprint, SR, durs):
     # is newdurations
     newdurations = durations
 
-    # then round all durations to an integer number of time resolution
-    # (time resolution = 1/SR)
-    # We try to be clever and not perform division to avoid float. point errors
-    # We always round up to avoid losing small features
+    # All waveforms must ultimately have an integer number of samples
+    # Now figure out from the durations what these integers are
+    #
+    # The most honest thing to do is to simply round off dur*SR
+    # and raise an exception if the segment ends up with less than
+    # two points
+
+    intdurations = np.zeros(len(newdurations))
 
     for ii, dur in enumerate(newdurations):
-        dec_dur, int_dur = math.modf(dur*SR)
-        # round up unless there is nothing to round
-        if dec_dur == 0:
-            extra = 0
+        int_dur = round(dur*SR)
+        if int_dur < 2:
+            raise SegmentDurationError('Too short segment detected! '
+                                       'Segment "{}" at position {} '
+                                       'has a duration of {} which at '
+                                       'an SR of {:.3E} leads to just {} '
+                                       'points(s). There must be at least '
+                                       '2 points in each segment.'
+                                       ''.format(namelist[ii],
+                                                 ii,
+                                                 newdurations[ii],
+                                                 SR,
+                                                 int_dur))
         else:
-            extra = 1
-        newdurations[ii] = (int_dur + extra)/SR  # Here is a float division!
+            intdurations[ii] = int_dur
+            newdurations[ii] = int_dur/SR
 
     # The actual forging of the waveform
     parts = [ft.partial(fun, *args) for (fun, args) in zip(funlist, argslist)]
-    blocks = [list(p(SR, d)) for (p, d) in zip(parts, newdurations)]
+    blocks = [list(p(SR, d)) for (p, d) in zip(parts, intdurations)]
     output = [block for sl in blocks for block in sl]
 
     # now make the markers
@@ -2278,7 +2304,7 @@ def _subelementBuilder(blueprint, SR, durs):
     dt = time[1] - time[0]
     # update the 'absolute time' marker list with 'relative time'
     # (segment bound) markers converted to absolute time
-    elapsed_times = np.cumsum([0] + newdurations)
+    elapsed_times = np.cumsum([0.0] + newdurations)
     for pos, spec in enumerate(segmark1):
         if spec[1] is not 0:
             ontime = elapsed_times[pos] + spec[0]  # spec is (delay, duration)
