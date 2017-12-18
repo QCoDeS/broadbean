@@ -23,6 +23,7 @@ install:
 
 # command sequence to run tests
 script:
+  - mypy broadbean --ignore-missing-imports
   - cd tests
   - pytest
 
