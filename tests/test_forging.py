@@ -25,7 +25,7 @@ def test_too_short_durations_rejected(SR, ratio):
     bp.setSR(SR)
     bp.insertSegment(0, ramp, (0, 1), dur=shortdur)
 
-    if ratio <= 1:
+    if ratio < 1.5:
         with pytest.raises(SegmentDurationError):
             _subelementBuilder(bp, SR, [shortdur])
     else:
