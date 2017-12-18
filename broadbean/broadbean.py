@@ -45,34 +45,42 @@ class PulseAtoms:
     The basic pulse shapes.
 
     Any pulse shape function should return a list or an np.array
-    and have SR, duration as its final two arguments.
+    and have SR, npoints as its final two arguments.
+
+    Rounding errors are a real concern/pain in the business of
+    making waveforms of short duration (few samples). Therefore,
+    the PulseAtoms take the number of points rather than the
+    duration as input argument, so that all ambiguity can be handled
+    in one place (the _subelementBuilder)
     """
 
     @staticmethod
-    def sine(freq, ampl, off, SR, dur):
-        time = np.linspace(0, dur, int(dur*SR))
+    def sine(freq, ampl, off, SR, npts):
+        time = np.linspace(0, npts/SR, npts)
         freq *= 2*np.pi
         return (ampl*np.sin(freq*time)+off)
 
     @staticmethod
-    def ramp(start, stop, SR, dur):
+    def ramp(start, stop, SR, npts):
+        dur = npts/SR
         slope = (stop-start)/dur
-        time = np.linspace(0, dur, int(dur*SR))
+        time = np.linspace(0, dur, npts)
         return (slope*time+start)
 
     @staticmethod
-    def waituntil(dummy, SR, dur):
+    def waituntil(dummy, SR, npts):
         # for internal call signature consistency, a dummy variable is needed
-        return (np.zeros(int(dur*SR)))
+        return np.zeros(npts)
 
     @staticmethod
-    def gaussian(ampl, sigma, mu, offset, SR, dur):
+    def gaussian(ampl, sigma, mu, offset, SR, npts):
         """
         Returns a Gaussian of integral ampl (when offset==0)
 
         Is by default centred in the middle of the interval
         """
-        time = np.linspace(0, dur, int(dur*SR))
+        dur = npts/SR
+        time = np.linspace(0, dur, npts)
         centre = dur/2
         baregauss = np.exp((-(time-mu-centre)**2/(2*sigma**2)))
         normalisation = 1/np.sqrt(2*sigma**2*np.pi)
@@ -2257,40 +2265,37 @@ def _subelementBuilder(blueprint: BluePrint, SR: int,
     # is newdurations
     newdurations = durations
 
-    # then round all durations to an integer number of time resolution
-    # (time resolution = 1/SR)
-    # We try to be clever and not perform division to avoid float. point errors
-    # We always round up to avoid losing small features
+    # All waveforms must ultimately have an integer number of samples
+    # Now figure out from the durations what these integers are
+    #
+    # The most honest thing to do is to simply round off dur*SR
+    # and raise an exception if the segment ends up with less than
+    # two points
+
+    intdurations = np.zeros(len(newdurations))
 
     for ii, dur in enumerate(newdurations):
-        dec_dur, int_dur = math.modf(dur*SR)
-        # round up unless there is nothing to round
-        if dec_dur == 0:
-            extra = 0
-        else:
-            extra = 1
-        newdurations[ii] = (int_dur + extra)/SR  # Here is a float division!
-
-    # The actual forging of the waveform
-    parts = [ft.partial(fun, *args) for (fun, args) in zip(funlist, argslist)]
-    blocks = [list(p(SR, d)) for (p, d) in zip(parts, newdurations)]
-    output = [block for sl in blocks for block in sl]
-
-    # Ensure that no empty or 1-point segments are forged
-    # (which would happen if the duration is too short)
-    for index, block in enumerate(blocks):
-        if len(block) < 2:
+        int_dur = round(dur*SR)
+        if int_dur < 2:
             raise SegmentDurationError('Too short segment detected! '
                                        'Segment "{}" at position {} '
                                        'has a duration of {} which at '
                                        'an SR of {:.3E} leads to just {} '
                                        'points(s). There must be at least '
                                        '2 points in each segment.'
-                                       ''.format(namelist[index],
-                                                 index,
-                                                 newdurations[index],
+                                       ''.format(namelist[ii],
+                                                 ii,
+                                                 newdurations[ii],
                                                  SR,
-                                                 len(block)))
+                                                 int_dur))
+        else:
+            intdurations[ii] = int_dur
+            newdurations[ii] = int_dur/SR
+
+    # The actual forging of the waveform
+    parts = [ft.partial(fun, *args) for (fun, args) in zip(funlist, argslist)]
+    blocks = [list(p(SR, d)) for (p, d) in zip(parts, intdurations)]
+    output = [block for sl in blocks for block in sl]
 
     # now make the markers
     time = np.linspace(0, sum(newdurations), len(output))
