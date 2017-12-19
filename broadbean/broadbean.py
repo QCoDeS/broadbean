@@ -756,7 +756,7 @@ class BluePrint():
         try:
             position = self._namelist.index(name)
         except ValueError:
-            raise KeyError('No segment called {} in blueprint.')
+            raise KeyError('No segment called {} in blueprint.'.format(name))
 
         del self._funlist[position]
         del self._argslist[position]
