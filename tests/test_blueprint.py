@@ -225,4 +225,14 @@ def test_tophat_insert_namelist(blueprint_tophat, pos, name, namelist):
     blueprint_tophat.insertSegment(pos, ramp, newargs, name=name, dur=0.5)
     assert blueprint_tophat._namelist == namelist
 
+
+@pytest.mark.parametrize('name', ['ramp', 'ramp2', 'ramp3', 'ramp4'])
+def test_tophat_remove_namelist(blueprint_tophat, name):
+    if name in blueprint_tophat._namelist:
+        blueprint_tophat.removeSegment(name)
+        assert blueprint_tophat._namelist == ['ramp', 'ramp2']
+    else:
+        with pytest.raises(KeyError):
+            blueprint_tophat.removeSegment(name)
+
 # More to come...

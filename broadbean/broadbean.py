@@ -753,7 +753,10 @@ class BluePrint():
         Args:
             name (str): The name of the segment to remove.
         """
-        position = self._namelist.index(name)
+        try:
+            position = self._namelist.index(name)
+        except ValueError:
+            raise KeyError('No segment called {} in blueprint.'.format(name))
 
         del self._funlist[position]
         del self._argslist[position]
@@ -761,6 +764,8 @@ class BluePrint():
         del self._segmark1[position]
         del self._segmark2[position]
         del self._durslist[position]
+
+        self._namelist = self._make_names_unique(self._namelist)
 
     def plot(self, SR=None):
         """
