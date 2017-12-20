@@ -5,6 +5,8 @@
 
 import pytest
 import broadbean as bb
+import numpy as np
+from broadbean.broadbean import ElementDurationError
 
 ramp = bb.PulseAtoms.ramp
 sine = bb.PulseAtoms.sine
@@ -58,9 +60,42 @@ def test_copy(blueprint_tophat):
     elem2 = elem1.copy()
     assert elem1 == elem2
 
+##################################################
+# Adding things to the Element
+
+
+def test_addArray():
+
+    SR = 1e9
+    N = 2500
+
+    wfm = np.linspace(0, N/SR, N)
+    m1 = np.zeros(N)
+    m2 = np.ones(N)
+
+    elem = bb.Element()
+    elem.addArray(1, wfm, SR, m1, m2)
+    elem.addArray(2, wfm, SR, m1)
+    elem.addArray(3, wfm, SR, m2=m2)
+
+    elem.validateDurations()
+
+    M = 2400
+    wfm2 = np.linspace(0, M/SR, M)
+    elem.addArray(3, wfm2, SR)
+
+    with pytest.raises(ElementDurationError):
+        elem.validateDurations()
+
+    with pytest.raises(ValueError):
+        elem.addArray(1, wfm, SR, m1[:-1])
+
+    with pytest.raises(ValueError):
+        elem.addArray(2, wfm, SR, m2=m2[3:])
 
 ##################################################
 # Input validation
+
 
 @pytest.mark.parametrize('improper_bp', [{1: 2}, 'blueprint', bb.BluePrint()])
 def test_input_fail1(improper_bp):

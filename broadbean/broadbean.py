@@ -933,7 +933,7 @@ class Element:
         # TODO: this is very Tektronix AWG-centric, that a channel has a
         # waveform and two markers. Think about generalising.
 
-        time = np.linspace(0, int(len(array)/SR), len(array))
+        time = np.linspace(0, len(array)/SR, len(array))
         if m1 is None:
             m1 = np.zeros_like(time)
         elif len(m1) != len(array):
@@ -969,8 +969,8 @@ class Element:
         if not SRs.count(SRs[0]) == len(SRs):
             errmssglst = zip(list(self._data.keys()), SRs)
             raise ElementDurationError('Different channels have different '
-                                       'SRs. Channel, SR: '
-                                       '{}, {} s'.format(*errmssglst))
+                                       'SRs. (Channel, SR): '
+                                       '{}'.format(list(errmssglst)))
 
         # Next the total time
         durations = []
@@ -989,8 +989,8 @@ class Element:
         if not np.allclose(durations, durations[0], atol=atol):
             errmssglst = zip(list(self._data.keys()), durations)
             raise ElementDurationError('Different channels have different '
-                                       'durations. Channel, duration: '
-                                       '{}, {} s'.format(*errmssglst))
+                                       'durations. (Channel, duration): '
+                                       '{}s'.format(list(errmssglst)))
 
         # Finally the number of points
         npts = []
@@ -998,14 +998,14 @@ class Element:
             if 'blueprint' in channel.keys():
                 npts.append(channel['blueprint'].points)
             elif 'array' in channel.keys():
-                length = len(channel['array'])
+                length = len(channel['array'][0])
                 npts.append(length)
 
         if not npts.count(npts[0]) == len(npts):
             errmssglst = zip(list(self._data.keys()), npts)
             raise ElementDurationError('Different channels have different '
-                                       'npts. Channel, npts: '
-                                       '{}, {}'.format(*errmssglst))
+                                       'npts. (Channel, npts): '
+                                       '{}'.format(list(errmssglst)))
 
         # If these three tests pass, we equip the dictionary with convenient
         # info used by Sequence
