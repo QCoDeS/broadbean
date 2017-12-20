@@ -1050,7 +1050,7 @@ class Element:
         return self._meta['SR']
 
     @property
-    def points(self):
+    def points(self) -> int:
         """
         Returns the number of points of each channel if that number is
         well-defined. Else an error is raised.
@@ -1060,6 +1060,8 @@ class Element:
         # pick out what is on the channels
         channels = self._data.values()
 
+        # if validateDurations did not raise an error, all channels
+        # have the same number of points
         for channel in channels:
             if 'blueprint' in channel.keys():
                 return channel['blueprint'].points

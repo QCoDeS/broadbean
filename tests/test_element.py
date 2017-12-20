@@ -152,3 +152,22 @@ def test_input_fail1(improper_bp):
     elem = bb.Element()
     with pytest.raises(ValueError):
         elem.addBluePrint(1, improper_bp)
+
+##################################################
+# Properties
+
+
+@settings(max_examples=25)
+@given(SR=hst.integers(1), N=hst.integers(2))
+def test_points(SR, N):
+    elem = bb.Element()
+    bp = bb.BluePrint()
+
+    bp.insertSegment(0, ramp, (0, 0), dur=N/SR)
+    bp.setSR(SR)
+
+    wfm = np.linspace(-1, 1, N)
+    elem.addArray(1, wfm, SR)
+    elem.addBluePrint(2, bp)
+
+    assert elem.points == N
