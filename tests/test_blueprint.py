@@ -294,4 +294,19 @@ def test_add_two_different(blueprint_tophat, blueprint_nasty):
     assert bp.marker1 == th.marker1 + ns.marker1
     assert bp.marker2 == th.marker2 + ns.marker2
 
+
+##################################################
+# MISC
+
+
+def test_description(blueprint_nasty, blueprint_tophat):
+    desc1 = blueprint_nasty.description
+    desc2 = blueprint_tophat.description
+
+    exp_keys = ['marker1_abs', 'marker1_rel', 'marker2_abs', 'marker2_rel',
+                'segment_01', 'segment_02', 'segment_03']
+
+    assert sorted(list(desc1.keys())) == sorted(exp_keys)
+    assert sorted(list(desc2.keys())) == sorted(exp_keys)
+
 # More to come...
