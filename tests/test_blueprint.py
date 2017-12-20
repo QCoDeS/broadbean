@@ -205,6 +205,17 @@ def test_tophat_changeargument(blueprint_tophat, name, arg, newval, argslist):
     assert blueprint_tophat._argslist == argslist
 
 
+@pytest.mark.parametrize('name, arg, newval, argslist',
+                         [('ramp', 'start', -1, [(-1, 0), (-1, 1), (-1, 0)]),
+                          ('ramp', 'stop', -1, [(0, -1), (1, -1), (0, -1)]),
+                          ('ramp', 0, -1, [(-1, 0), (-1, 1), (-1, 0)]),
+                          ('ramp', 1, -1, [(0, -1), (1, -1), (0, -1)])])
+def test_tophat_changeargument_replaceeverywhere(blueprint_tophat, name,
+                                                 arg, newval, argslist):
+    blueprint_tophat.changeArg(name, arg, newval, replaceeverywhere=True)
+    assert blueprint_tophat._argslist == argslist
+
+
 @pytest.mark.parametrize('name, arg', [('ramp', 'freq'),
                                        ('ramp', -1),
                                        ('ramp', 2),
