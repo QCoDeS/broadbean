@@ -978,7 +978,7 @@ class Element:
             if 'blueprint' in channel.keys():
                 durations.append(channel['blueprint'].duration)
             elif 'array' in channel.keys():
-                length = len(channel['array'])/channel['SR']
+                length = len(channel['array'][0])/channel['SR']
                 durations.append(length)
 
         if None not in SRs:
@@ -993,6 +993,7 @@ class Element:
                                        '{}s'.format(list(errmssglst)))
 
         # Finally the number of points
+        # (kind of redundant if sample rate and duration match?)
         npts = []
         for channel in channels:
             if 'blueprint' in channel.keys():

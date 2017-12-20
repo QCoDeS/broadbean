@@ -7,6 +7,8 @@ import pytest
 import broadbean as bb
 import numpy as np
 from broadbean.broadbean import ElementDurationError
+from hypothesis import given, settings
+import hypothesis.strategies as hst
 
 ramp = bb.PulseAtoms.ramp
 sine = bb.PulseAtoms.sine
@@ -61,7 +63,8 @@ def test_copy(blueprint_tophat):
     assert elem1 == elem2
 
 ##################################################
-# Adding things to the Element
+# Adding things to the Element, goes hand in hand
+# with duration validation
 
 
 def test_addArray():
@@ -92,6 +95,53 @@ def test_addArray():
 
     with pytest.raises(ValueError):
         elem.addArray(2, wfm, SR, m2=m2[3:])
+
+
+@settings(max_examples=25)
+@given(SR1=hst.integers(1), SR2=hst.integers(1),
+       N=hst.integers(2), M=hst.integers(2))
+def test_invalid_durations(SR1, SR2, N, M):
+    """
+    There are soooo many ways to have invalid durations, here
+    we hit a couple of them
+    """
+
+    # differing sample rates
+
+    elem = bb.Element()
+    bp = bb.BluePrint()
+
+    bp.insertSegment(0, ramp, (0, 0), dur=N/SR2)
+    bp.setSR(SR2)
+
+    wfm = np.linspace(-1, 1, N)
+    elem.addArray(1, wfm, SR1)
+    elem.addBluePrint(2, bp)
+
+    if SR1 == SR2:
+        elem.validateDurations()
+    else:
+        with pytest.raises(ElementDurationError):
+            elem.validateDurations()
+
+    # differing durations
+    bp1 = bb.BluePrint()
+    bp1.insertSegment(0, ramp, (0, 1), dur=N/SR1)
+    bp1.setSR(SR1)
+
+    bp2 = bb.BluePrint()
+    bp2.insertSegment(0, ramp, (0, 2), dur=M/SR1)
+    bp2.setSR(SR1)
+
+    elem = bb.Element()
+    elem.addBluePrint(1, bp1)
+    elem.addBluePrint(2, bp2)
+
+    if N == M:
+        elem.validateDurations()
+    else:
+        with pytest.raises(ElementDurationError):
+            elem.validateDurations()
 
 ##################################################
 # Input validation
