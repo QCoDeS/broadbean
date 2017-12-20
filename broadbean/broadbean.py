@@ -635,9 +635,9 @@ class BluePrint():
         # TODO: Do we need more than one bound marker per segment?
         markerselect[markerID][position] = specs
 
-    def removeSegmentMarker(self, name, markerID):
+    def removeSegmentMarker(self, name: str, markerID: int) -> None:
         """
-        Remove a bound marker from a specific segment
+        Remove all bound markers from a specific segment
 
         Args:
             name (str): Name of the segment
@@ -650,7 +650,11 @@ class BluePrint():
                              ' Received {}.'.format(markerID))
 
         markerselect = {1: self._segmark1, 2: self._segmark2}
-        position = self._namelist.index(name)
+        try:
+            position = self._namelist.index(name)
+        except ValueError:
+            raise KeyError('No segment named {} in this BluePrint.'
+                           ''.format(name))
         markerselect[markerID][position] = (0, 0)
 
     def copy(self):

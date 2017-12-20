@@ -267,6 +267,23 @@ def test_tophat_remove_namelist(blueprint_tophat, name):
             blueprint_tophat.removeSegment(name)
 
 
+def test_tophat_remove_segmentmarker(blueprint_tophat):
+
+    with pytest.raises(ValueError):
+        blueprint_tophat.removeSegmentMarker('ramp', 3)
+    with pytest.raises(ValueError):
+        blueprint_tophat.removeSegmentMarker('no such name', 3)
+
+    # Adding and removing should be equivalent to NOOP
+    bpc = blueprint_tophat.copy()
+    blueprint_tophat.setSegmentMarker('ramp', (0, 0.1), 1)
+    blueprint_tophat.removeSegmentMarker('ramp', 1)
+    assert bpc == blueprint_tophat
+
+    with pytest.raises(KeyError):
+        bpc.removeSegmentMarker('no such name', 1)
+
+
 ##################################################
 # DUNDERDUNDER
 
