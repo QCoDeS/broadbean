@@ -957,6 +957,9 @@ class Element:
         # pick out the channel entries
         channels = self._data.values()
 
+        if len(channels) == 0:
+            raise KeyError('Empty Element, nothing assigned')
+
         # First the sample rate
         SRs = []
         for channel in channels:
@@ -1062,11 +1065,20 @@ class Element:
 
         # if validateDurations did not raise an error, all channels
         # have the same number of points
-        for channel in channels:
-            if 'blueprint' in channel.keys():
-                return channel['blueprint'].points
-            elif 'array' in channel.keys():
-                return len(channel['array'][0])
+        for chan in channels:
+
+            if not ('array' in chan.keys() or 'blueprint' in chan.keys()):
+                raise ValueError('Neither BluePrint nor array assigned to '
+                                 'chan {}!'.format(chan))
+            if 'blueprint' in chan.keys():
+                return chan['blueprint'].points
+            else:
+                return len(chan['array'][0])
+
+        else:
+            # this line is here to make mypy happy; this exception is
+            # already raised by validateDurations
+            raise KeyError('Empty Element, nothing assigned')
 
     @property
     def duration(self):

@@ -161,6 +161,10 @@ def test_input_fail1(improper_bp):
 @given(SR=hst.integers(1), N=hst.integers(2))
 def test_points(SR, N):
     elem = bb.Element()
+
+    with pytest.raises(KeyError):
+        elem.points
+
     bp = bb.BluePrint()
 
     bp.insertSegment(0, ramp, (0, 0), dur=N/SR)
