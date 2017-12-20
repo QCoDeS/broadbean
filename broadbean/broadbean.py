@@ -788,7 +788,6 @@ class BluePrint():
 
         bluePrintPlotter(self)
 
-
     def __add__(self, other):
         """
         Add two BluePrints. The second argument is appended to the first
