@@ -171,3 +171,15 @@ def test_points(SR, N):
     elem.addBluePrint(2, bp)
 
     assert elem.points == N
+
+    elem = bb.Element()
+    bp = bb.BluePrint()
+
+    bp.insertSegment(0, ramp, (0, 0), dur=N/SR)
+    bp.setSR(SR)
+
+    wfm = np.linspace(-1, 1, N)
+    elem.addArray(2, wfm, SR)
+    elem.addBluePrint(1, bp)
+
+    assert elem.points == N
