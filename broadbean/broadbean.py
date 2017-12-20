@@ -861,9 +861,13 @@ class BluePrint():
             return False
         if not self._argslist == other._argslist:
             return False
-        if not self.marker1 == other.marker2:
+        if not self.marker1 == other.marker1:
             return False
         if not self.marker2 == other.marker2:
+            return False
+        if not self._segmark1 == other._segmark1:
+            return False
+        if not self._segmark2 == other._segmark2:
             return False
         return True
 

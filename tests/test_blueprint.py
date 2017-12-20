@@ -271,6 +271,38 @@ def test_tophat_remove_namelist(blueprint_tophat, name):
 # DUNDERDUNDER
 
 
+def test_not_equal(blueprint_tophat):
+    bpc = blueprint_tophat.copy()
+
+    with pytest.raises(ValueError):
+        bpc == '1'
+
+    bpc.insertSegment(0, ramp, (0, 0), dur=1/3)
+
+    assert (bpc == blueprint_tophat) is False
+
+    bpc = blueprint_tophat.copy()
+    blueprint_tophat.marker1 = [(0, 0.1)]
+    bpc.marker2 = [(0, 0.1)]
+
+    assert (bpc == blueprint_tophat) is False
+
+    bpc = blueprint_tophat.copy()
+    bpc.setSegmentMarker('ramp', (0, 0.1), 1)
+
+    assert (bpc == blueprint_tophat) is False
+
+    bpc = blueprint_tophat.copy()
+    bpc.marker2 = [(0, 0.1)]
+
+    assert (bpc == blueprint_tophat) is False
+
+    bpc = blueprint_tophat.copy()
+    blueprint_tophat.setSegmentMarker('ramp', (0, 0.1), 2)
+
+    assert (bpc == blueprint_tophat) is False
+
+
 def test_add_two_identical(blueprint_tophat):
     bp = blueprint_tophat
     bpc = bp.copy()
