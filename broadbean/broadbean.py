@@ -70,7 +70,7 @@ class PulseAtoms:
     @staticmethod
     def waituntil(dummy, SR, npts):
         # for internal call signature consistency, a dummy variable is needed
-        return np.zeros(npts)
+        return np.zeros(int(npts))
 
     @staticmethod
     def gaussian(ampl, sigma, mu, offset, SR, npts):
