@@ -36,6 +36,26 @@ def blueprint_tophat():
 
     return th
 
+
+@pytest.fixture
+def blueprint_nasty():
+    """
+    Return a nasty blueprint trying to hit some corner cases
+    """
+    ns = bb.BluePrint()
+    ns.insertSegment(0, 'waituntil', args=(1,))
+    ns.insertSegment(1, ramp, (-1/3, 1/3), dur=0.1)
+    ns.insertSegment(2, 'waituntil', args=(1+2/3,))
+    ns.setSR(tophat_SR)
+
+    ns.setSegmentMarker('ramp', (-0.1, 0.1), 1)
+    ns.setSegmentMarker('waituntil2', (0, 2/3), 2)
+
+    ns.marker1 = [(0, 0.1)]
+    ns.marker2 = [(1, 0.1)]
+
+    return ns
+
 ##################################################
 # TEST STATIC METHODS
 
@@ -185,6 +205,17 @@ def test_tophat_changeargument(blueprint_tophat, name, arg, newval, argslist):
     assert blueprint_tophat._argslist == argslist
 
 
+@pytest.mark.parametrize('name, arg, newval, argslist',
+                         [('ramp', 'start', -1, [(-1, 0), (-1, 1), (-1, 0)]),
+                          ('ramp', 'stop', -1, [(0, -1), (1, -1), (0, -1)]),
+                          ('ramp', 0, -1, [(-1, 0), (-1, 1), (-1, 0)]),
+                          ('ramp', 1, -1, [(0, -1), (1, -1), (0, -1)])])
+def test_tophat_changeargument_replaceeverywhere(blueprint_tophat, name,
+                                                 arg, newval, argslist):
+    blueprint_tophat.changeArg(name, arg, newval, replaceeverywhere=True)
+    assert blueprint_tophat._argslist == argslist
+
+
 @pytest.mark.parametrize('name, arg', [('ramp', 'freq'),
                                        ('ramp', -1),
                                        ('ramp', 2),
@@ -234,5 +265,108 @@ def test_tophat_remove_namelist(blueprint_tophat, name):
     else:
         with pytest.raises(KeyError):
             blueprint_tophat.removeSegment(name)
+
+
+def test_tophat_remove_segmentmarker(blueprint_tophat):
+
+    with pytest.raises(ValueError):
+        blueprint_tophat.removeSegmentMarker('ramp', 3)
+    with pytest.raises(ValueError):
+        blueprint_tophat.removeSegmentMarker('no such name', 3)
+
+    # Adding and removing should be equivalent to NOOP
+    bpc = blueprint_tophat.copy()
+    blueprint_tophat.setSegmentMarker('ramp', (0, 0.1), 1)
+    blueprint_tophat.removeSegmentMarker('ramp', 1)
+    assert bpc == blueprint_tophat
+
+    with pytest.raises(KeyError):
+        bpc.removeSegmentMarker('no such name', 1)
+
+
+##################################################
+# DUNDERDUNDER
+
+
+def test_not_equal(blueprint_tophat):
+    bpc = blueprint_tophat.copy()
+
+    with pytest.raises(ValueError):
+        bpc == '1'
+
+    bpc.insertSegment(0, ramp, (0, 0), dur=1/3)
+
+    assert (bpc == blueprint_tophat) is False
+
+    bpc = blueprint_tophat.copy()
+    blueprint_tophat.marker1 = [(0, 0.1)]
+    bpc.marker2 = [(0, 0.1)]
+
+    assert (bpc == blueprint_tophat) is False
+
+    bpc = blueprint_tophat.copy()
+    bpc.setSegmentMarker('ramp', (0, 0.1), 1)
+
+    assert (bpc == blueprint_tophat) is False
+
+    bpc = blueprint_tophat.copy()
+    bpc.marker2 = [(0, 0.1)]
+
+    assert (bpc == blueprint_tophat) is False
+
+    bpc = blueprint_tophat.copy()
+    blueprint_tophat.setSegmentMarker('ramp', (0, 0.1), 2)
+
+    assert (bpc == blueprint_tophat) is False
+
+
+def test_add_two_identical(blueprint_tophat):
+    bp = blueprint_tophat
+    bpc = bp.copy()
+    new_bp1 = bpc + bp
+    new_bp2 = bp + bpc
+
+    assert new_bp1 == new_bp2
+    assert new_bp1._namelist == ['ramp', 'ramp2', 'ramp3', 'ramp4', 'ramp5',
+                                 'ramp6']
+    assert new_bp1._argslist == bp._argslist + bp._argslist
+    assert new_bp1._funlist == bp._funlist + bp._funlist
+    assert new_bp1._segmark1 == bp._segmark1 + bp._segmark1
+    assert new_bp1._segmark2 == bp._segmark2 + bp._segmark2
+    assert new_bp1._durslist == bp._durslist + bp._durslist
+    assert new_bp1.marker1 == bp.marker1 + bp.marker1
+    assert new_bp1.marker2 == bp.marker2 + bp.marker2
+
+
+def test_add_two_different(blueprint_tophat, blueprint_nasty):
+    th = blueprint_tophat
+    ns = blueprint_nasty
+
+    bp = th + ns
+
+    assert bp._namelist == ['ramp', 'ramp2', 'ramp3',
+                            'waituntil', 'ramp4', 'waituntil2']
+    assert bp._argslist == th._argslist + ns._argslist
+    assert bp._funlist == th._funlist + ns._funlist
+    assert bp._segmark1 == th._segmark1 + ns._segmark1
+    assert bp._segmark2 == th._segmark2 + ns._segmark2
+    assert bp._durslist == th._durslist + ns._durslist
+    assert bp.marker1 == th.marker1 + ns.marker1
+    assert bp.marker2 == th.marker2 + ns.marker2
+
+
+##################################################
+# MISC
+
+
+def test_description(blueprint_nasty, blueprint_tophat):
+    desc1 = blueprint_nasty.description
+    desc2 = blueprint_tophat.description
+
+    exp_keys = ['marker1_abs', 'marker1_rel', 'marker2_abs', 'marker2_rel',
+                'segment_01', 'segment_02', 'segment_03']
+
+    assert sorted(list(desc1.keys())) == sorted(exp_keys)
+    assert sorted(list(desc2.keys())) == sorted(exp_keys)
 
 # More to come...

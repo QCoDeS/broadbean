@@ -635,9 +635,9 @@ class BluePrint():
         # TODO: Do we need more than one bound marker per segment?
         markerselect[markerID][position] = specs
 
-    def removeSegmentMarker(self, name, markerID):
+    def removeSegmentMarker(self, name: str, markerID: int) -> None:
         """
-        Remove a bound marker from a specific segment
+        Remove all bound markers from a specific segment
 
         Args:
             name (str): Name of the segment
@@ -650,7 +650,11 @@ class BluePrint():
                              ' Received {}.'.format(markerID))
 
         markerselect = {1: self._segmark1, 2: self._segmark2}
-        position = self._namelist.index(name)
+        try:
+            position = self._namelist.index(name)
+        except ValueError:
+            raise KeyError('No segment named {} in this BluePrint.'
+                           ''.format(name))
         markerselect[markerID][position] = (0, 0)
 
     def copy(self):
@@ -788,7 +792,6 @@ class BluePrint():
 
         bluePrintPlotter(self)
 
-
     def __add__(self, other):
         """
         Add two BluePrints. The second argument is appended to the first
@@ -862,9 +865,13 @@ class BluePrint():
             return False
         if not self._argslist == other._argslist:
             return False
-        if not self.marker1 == other.marker2:
+        if not self.marker1 == other.marker1:
             return False
         if not self.marker2 == other.marker2:
+            return False
+        if not self._segmark1 == other._segmark1:
+            return False
+        if not self._segmark2 == other._segmark2:
             return False
         return True
 
@@ -926,7 +933,7 @@ class Element:
         # TODO: this is very Tektronix AWG-centric, that a channel has a
         # waveform and two markers. Think about generalising.
 
-        time = np.linspace(0, int(len(array)/SR), len(array))
+        time = np.linspace(0, len(array)/SR, len(array))
         if m1 is None:
             m1 = np.zeros_like(time)
         elif len(m1) != len(array):
@@ -950,6 +957,9 @@ class Element:
         # pick out the channel entries
         channels = self._data.values()
 
+        if len(channels) == 0:
+            raise KeyError('Empty Element, nothing assigned')
+
         # First the sample rate
         SRs = []
         for channel in channels:
@@ -962,8 +972,8 @@ class Element:
         if not SRs.count(SRs[0]) == len(SRs):
             errmssglst = zip(list(self._data.keys()), SRs)
             raise ElementDurationError('Different channels have different '
-                                       'SRs. Channel, SR: '
-                                       '{}, {} s'.format(*errmssglst))
+                                       'SRs. (Channel, SR): '
+                                       '{}'.format(list(errmssglst)))
 
         # Next the total time
         durations = []
@@ -971,7 +981,7 @@ class Element:
             if 'blueprint' in channel.keys():
                 durations.append(channel['blueprint'].duration)
             elif 'array' in channel.keys():
-                length = len(channel['array'])/channel['SR']
+                length = len(channel['array'][0])/channel['SR']
                 durations.append(length)
 
         if None not in SRs:
@@ -982,23 +992,24 @@ class Element:
         if not np.allclose(durations, durations[0], atol=atol):
             errmssglst = zip(list(self._data.keys()), durations)
             raise ElementDurationError('Different channels have different '
-                                       'durations. Channel, duration: '
-                                       '{}, {} s'.format(*errmssglst))
+                                       'durations. (Channel, duration): '
+                                       '{}s'.format(list(errmssglst)))
 
         # Finally the number of points
+        # (kind of redundant if sample rate and duration match?)
         npts = []
         for channel in channels:
             if 'blueprint' in channel.keys():
                 npts.append(channel['blueprint'].points)
             elif 'array' in channel.keys():
-                length = len(channel['array'])
+                length = len(channel['array'][0])
                 npts.append(length)
 
         if not npts.count(npts[0]) == len(npts):
             errmssglst = zip(list(self._data.keys()), npts)
             raise ElementDurationError('Different channels have different '
-                                       'npts. Channel, npts: '
-                                       '{}, {}'.format(*errmssglst))
+                                       'npts. (Channel, npts): '
+                                       '{}'.format(list(errmssglst)))
 
         # If these three tests pass, we equip the dictionary with convenient
         # info used by Sequence
@@ -1042,7 +1053,7 @@ class Element:
         return self._meta['SR']
 
     @property
-    def points(self):
+    def points(self) -> int:
         """
         Returns the number of points of each channel if that number is
         well-defined. Else an error is raised.
@@ -1052,11 +1063,22 @@ class Element:
         # pick out what is on the channels
         channels = self._data.values()
 
-        for channel in channels:
-            if 'blueprint' in channel.keys():
-                return channel['blueprint'].points
-            elif 'array' in channel.keys():
-                return len(channel['array'][0])
+        # if validateDurations did not raise an error, all channels
+        # have the same number of points
+        for chan in channels:
+
+            if not ('array' in chan.keys() or 'blueprint' in chan.keys()):
+                raise ValueError('Neither BluePrint nor array assigned to '
+                                 'chan {}!'.format(chan))
+            if 'blueprint' in chan.keys():
+                return chan['blueprint'].points
+            else:
+                return len(chan['array'][0])
+
+        else:
+            # this line is here to make mypy happy; this exception is
+            # already raised by validateDurations
+            raise KeyError('Empty Element, nothing assigned')
 
     @property
     def duration(self):
