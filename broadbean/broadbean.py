@@ -1882,16 +1882,16 @@ class Sequence:
                     if seq_info['twait'] == 1:  # trigger wait
                         titlestring += 'T '
                     if seq_info['nrep'] > 1:  # nreps
-                        titlestring += '\u21BB{} '.format(seq_info[1])
+                        titlestring += '\u21BB{} '.format(seq_info['nrep'])
                     if seq_info['nrep'] == 0:
                         titlestring += '\u221E '
                     if seq_info['jump_input'] != 0:
                         if seq_info['jump_input'] == -1:
                             titlestring += 'E\u2192 '
                         else:
-                            titlestring += 'E{} '.format(seq_info[2])
+                            titlestring += 'E{} '.format(seq_info['jump_input'])
                     if seq_info['goto'] > 0:
-                        titlestring += '\u21b1{}'.format(seq_info[3])
+                        titlestring += '\u21b1{}'.format(seq_info['goto'])
 
                     ax.set_title(titlestring)
 
