@@ -1667,6 +1667,18 @@ class Sequence:
         """
         return self.element(1).channels
 
+    @property
+    def points(self):
+        """
+        Returns the number of points of the sequence, disregarding
+        sequencing info (like repetitions). Useful for asserting upload
+        times.
+        """
+        total = 0
+        for elem in self._data.values():
+            total += elem.points
+        return total
+
     def element(self, pos):
         """
         Returns the element at the given position. Changes made to the return
