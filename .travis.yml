@@ -21,11 +21,14 @@ install:
   - pip install -r test_requirements.txt
   - pip install .
 
-# command sequence to run tests
+# command sequence to run tests, including executing the
+# tutorial notebooks
 script:
   - mypy broadbean --ignore-missing-imports
   - cd tests
   - pytest
+  - cd ../docs
+  - make execute
 
 after_success:
   - cd ..

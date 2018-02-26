@@ -38,3 +38,12 @@ gh-pages:
 	git add -A
 	git commit -m "Generated gh-pages for `git log master -1 --pretty=short \
 	--abbrev-commit`" && git push https://${GITHUB_API_KEY}@github.com/QCoDeS/broadbean.git gh-pages ; git checkout master
+
+
+.PHONY: execute
+execute:
+	echo "Running the notebooks..."
+	jupyter nbconvert --to notebook --execute Pulse\ Building\ Tutorial.ipynb
+	jupyter nbconvert --to notebook --execute Filter\ compensation.ipynb
+	echo "Cleaning up the generated output..."
+	rm *nbconvert.ipynb
