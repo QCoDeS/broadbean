@@ -279,6 +279,31 @@ def test_addition_data_with_empty(protosequence1):
 
     assert newseq._data == protosequence1._data
 
+
+def test_add_subsequence_raises(protosequence1, squarepulse_baseelem):
+
+    with pytest.raises(ValueError):
+        protosequence1.addSubSequence(1, squarepulse_baseelem)
+
+    seq = bb.Sequence()
+    seq.addElement(1, squarepulse_baseelem)
+    seq.setSR(squarepulse_baseelem.SR)
+
+    mainseq = bb.Sequence()
+    mainseq.setSR(seq.SR/2)
+
+    with pytest.raises(ValueError):
+        mainseq.addSubSequence(1, seq)
+
+    mainseq.setSR(seq.SR)
+    mainseq.addSubSequence(1, seq)
+
+    doublemainseq = bb.Sequence()
+    doublemainseq.setSR(seq.SR)
+
+    with pytest.raises(ValueError):
+        doublemainseq.addSubSequence(1, mainseq)
+
 ##################################################
 # AWG settings
 

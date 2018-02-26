@@ -1572,6 +1572,10 @@ class Sequence:
             if isinstance(elem, Sequence):
                 raise ValueError('Subsequences can not contain subsequences.')
 
+        if subsequence.SR != self.SR:
+            raise ValueError('Subsequence SR does not match (main) sequence SR'
+                             '. ({} and {}).'.format(subsequence.SR, self.SR))
+
         self._data[position] = subsequence.copy()
 
         self._sequencing[position] = {'twait': 0, 'nrep': 1,
