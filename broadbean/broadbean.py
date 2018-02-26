@@ -55,10 +55,10 @@ class PulseAtoms:
     """
 
     @staticmethod
-    def sine(freq, ampl, off, SR, npts):
+    def sine(freq, ampl, off, phase, SR, npts):
         time = np.linspace(0, npts/SR, npts)
         freq *= 2*np.pi
-        return (ampl*np.sin(freq*time)+off)
+        return (ampl*np.sin(freq*time+phase)+off)
 
     @staticmethod
     def ramp(start, stop, SR, npts):
