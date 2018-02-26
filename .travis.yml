@@ -27,7 +27,8 @@ script:
   - mypy broadbean --ignore-missing-imports
   - cd tests
   - pytest
-  - make -f docs/Makefile execute
+  - cd ../docs
+  - make execute
 
 after_success:
   - cd ..
