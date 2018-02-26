@@ -76,7 +76,7 @@ def should_raise_sequencingerror(wait, nrep, jump_to, goto, num_elms):
     """
     if wait not in [0, 1]:
         return True
-    if nrep not in range(0, num_elms+1):
+    if nrep not in range(0, 16384):
         return True
     if jump_to not in range(-1, num_elms+1):
         return True
