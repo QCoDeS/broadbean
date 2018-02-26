@@ -1225,6 +1225,7 @@ class Sequence:
 
         # the internal data structure, a dict with tuples as keys and values
         # the key is sequence position (int), the value is element (Element)
+        # or subsequence (Sequence)
         self._data = {}
 
         # Here goes the sequencing info. Key: position
@@ -1548,6 +1549,31 @@ class Sequence:
         self._data.update({position: newelement})
 
         # insert default sequencing settings
+        self._sequencing[position] = {'twait': 0, 'nrep': 1,
+                                      'jump_input': 0, 'jump_target': 0,
+                                      'goto': 0}
+
+    def addSubSequence(self, position: int, subsequence: 'Sequence') -> None:
+        """
+        Add a subsequence to the sequence. Overwrites anything previously
+        assigned to this position. The subsequence can not contain any
+        subsequences itself.
+
+        Args:
+            position: The sequence position (starting from 1)
+            subsequence: The subsequence to add
+        """
+        if not isinstance(subsequence, Sequence):
+            raise ValueError('Subsequence must be a sequence object. '
+                             'Received object of type '
+                             '{}.'.format(type(subsequence)))
+
+        for elem in subsequence._data.values():
+            if isinstance(elem, Sequence):
+                raise ValueError('Subsequences can not contain subsequences.')
+
+        self._data[position] = subsequence.copy()
+
         self._sequencing[position] = {'twait': 0, 'nrep': 1,
                                       'jump_input': 0, 'jump_target': 0,
                                       'goto': 0}
