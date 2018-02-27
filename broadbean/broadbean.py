@@ -1693,16 +1693,20 @@ class Sequence:
     @property
     def channels(self):
         """
-        Returns a list of the specified channels
+        Returns a list of the specified channels of the sequence
         """
-        return self.element(1).channels
+        if self.checkConsistency():
+            return self.element(1).channels
+        else:
+            raise SequenceConsistencyError('Sequence not consistent. Can not'
+                                           ' figure out the channels.')
 
     @property
     def points(self):
         """
         Returns the number of points of the sequence, disregarding
         sequencing info (like repetitions). Useful for asserting upload
-        times.
+        times, i.e. the size of the built sequence.
         """
         total = 0
         for elem in self._data.values():
@@ -1728,6 +1732,30 @@ class Sequence:
                            'position {}'.format(pos))
 
         return elem
+
+    def _plotSummary(self) -> dict[int, np.ndarray]:
+        """
+        Return a mini-version of the getArrays output for the sequence.
+        This is so that sequences that are subsequences can be plotted.
+        """
+
+        output = {}
+
+        # TODO: a consistency check that all channels are matchingly specified
+
+        # should return {1: np.array([np.array([min, max]), np.zeros(2), np.zeros(2),
+        # time])}
+        thismin = 0
+        thismax = 0
+
+        for element in self._data.values():
+            if isinstance(element, Sequence):
+                raise SequenceConsistencyError('_plotSummary called for a '
+                                               'sequence that has a sub'
+                                               'sequence. This should not'
+                                               'happen...')
+            else:
+                arrs = element.getArrays()
 
     def plotSequence(self):
         """
