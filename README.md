@@ -23,7 +23,7 @@ The name: The broad bean is one of my favourite pulses.
 
 ### Formal requirements
 
-The broadbean package only works with python 3.
+The broadbean package only works with python 3.6+
 
 ### Installation
 
