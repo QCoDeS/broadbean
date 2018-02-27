@@ -1733,7 +1733,7 @@ class Sequence:
 
         return elem
 
-    def _plotSummary(self) -> dict[int, np.ndarray]:
+    def _plotSummary(self) -> Dict[int, np.ndarray]:
         """
         Return a mini-version of the getArrays output for the sequence.
         This is so that sequences that are subsequences can be plotted.
@@ -1741,23 +1741,32 @@ class Sequence:
 
         output = {}
 
-        # TODO: a consistency check that all channels are matchingly specified
+        chans = self.channels
 
-        # should return {1: np.array([np.array([min, max]), np.zeros(2), np.zeros(2),
-        # time])}
-        thismin = 0
-        thismax = 0
+        minmax = dict(zip(chans, [(0, 0)]*len(chans)))
 
         for element in self._data.values():
             if isinstance(element, Sequence):
                 raise SequenceConsistencyError('_plotSummary called for a '
                                                'sequence that has a sub'
-                                               'sequence. This should not'
+                                               'sequence. This should not '
                                                'happen...')
             else:
                 arrs = element.getArrays()
+                for chan in chans:
+                    wfm = arrs[chan][0]
+                    if wfm.min() < minmax[chan][0]:
+                        minmax[chan] = (wfm.min(), minmax[chan][1])
+                    if wfm.max() > minmax[chan][1]:
+                        minmax[chan] = (minmax[chan][0], wfm.max())
+                    output[chan] = np.array([np.array(minmax[chan]),
+                                             np.zeros(2),
+                                             np.zeros(2),
+                                             np.linspace(0, 1, 2)])
 
-    def plotSequence(self):
+        return output
+
+    def plotSequence(self) -> None:
         """
         Visualise the sequence
 
@@ -1770,14 +1779,19 @@ class Sequence:
         # First forge all elements that are blueprints
         seqlen = self.length_sequenceelements
         elements = []
+        subseqs = []  # a list of the positions at which there are subseqs
+
         for pos in range(1, seqlen+1):
             rawelem = self._data[pos]
             # returns the elements as dicts with
             # {channel: [wfm, m1, m2, time, newdurations]} structure
             if isinstance(rawelem, Element):
                 elements.append(rawelem.getArrays())
+            elif isinstance(rawelem, Sequence):
+                elements.append(rawelem._plotSummary())
+                subseqs.append(pos)
 
-        self._plotSequence(elements)
+        self._plotSequence(elements, subseqs)
 
     def plotAWGOutput(self):
         """
@@ -1815,7 +1829,8 @@ class Sequence:
 
         self._plotSequence(elements)
 
-    def _plotSequence(self, elements):
+    def _plotSequence(self, elements: Dict[int, np.ndarray],
+                      subseqs: List[int]) -> None:
         """
         The heavy lifting plotter
         """
@@ -1896,8 +1911,13 @@ class Sequence:
                     timescaling = 1e9
 
                 # waveform
-                ax.plot(timescaling*time, voltagescaling*wfm, lw=3,
-                        color=(0.6, 0.4, 0.3), alpha=0.4)
+                if pos+1 not in subseqs:
+                    ax.plot(timescaling*time, voltagescaling*wfm, lw=3,
+                            color=(0.6, 0.4, 0.3), alpha=0.4)
+                else:
+                    ax.annotate('SUBSEQ', xy=(0.5, 0.5),
+                                xycoords='axes fraction',
+                                horizontalalignment='center')
                 ymax = voltagescaling * chanminmax[chanind][1]
                 ymin = voltagescaling * chanminmax[chanind][0]
                 yrange = ymax - ymin
@@ -1919,9 +1939,22 @@ class Sequence:
                 marker_on[m2 == 0] = np.nan
                 marker_off = np.ones_like(m2)
                 ax.plot(timescaling*time, y_m2*marker_off,
-                        color=(0.1, 0.1, 0.1), alpha=0.2, lw=2)
+                        color=(0.1, 0.1, 0.6), alpha=0.2, lw=2)
                 ax.plot(timescaling*time, y_m2*marker_on,
                         color=(0.1, 0.1, 0.6), alpha=0.6, lw=2)
+
+                # If subsequence, plot lines indicating min and max value
+                if pos+1 in subseqs:
+                    # min:
+                    ax.plot(timescaling*time, np.ones_like(m2)*wfm[0],
+                            color=(0.12, 0.12, 0.12), alpha=0.2, lw=2)
+                    # max:
+                    ax.plot(timescaling*time, np.ones_like(m2)*wfm[1],
+                            color=(0.12, 0.12, 0.12), alpha=0.2, lw=2)
+
+                # remove time axis if subseq (we can't know the play time)
+                if pos+1 in subseqs:
+                    ax.set_xticks([])
 
                 # time step lines
                 for dur in np.cumsum(newdurs):
@@ -1937,7 +1970,11 @@ class Sequence:
                     newax = ax.twinx()
                     newax.set_yticks([])
                     newax.set_ylabel('Ch. {}'.format(chan))
-                ax.set_xlabel('({})'.format(timeunit))
+
+                if pos+1 in subseqs:
+                    ax.set_xlabel('Time N/A')
+                else:
+                    ax.set_xlabel('({})'.format(timeunit))
 
                 # remove excess space from the plot
                 if not chanind+1 == len(chans):
