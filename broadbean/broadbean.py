@@ -1746,7 +1746,8 @@ class Sequence:
             rawelem = self._data[pos]
             # returns the elements as dicts with
             # {channel: [wfm, m1, m2, time, newdurations]} structure
-            elements.append(rawelem.getArrays())
+            if isinstance(rawelem, Element):
+                elements.append(rawelem.getArrays())
 
         self._plotSequence(elements)
 
