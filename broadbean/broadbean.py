@@ -2029,7 +2029,7 @@ class Sequence:
         seqlen = len(data.keys())
         # check if sequencing information is specified for each element
         if not sorted(list(self._sequencing.keys())) == list(range(1, seqlen+1)):
-            raise ValueError('Can not generate output for .awg file; '
+            raise ValueError('Can not generate output for file; '
                              'incorrect sequencer information.')
 
         # Verify physical amplitude specifiations
