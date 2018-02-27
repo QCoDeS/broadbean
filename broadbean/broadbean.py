@@ -1829,7 +1829,7 @@ class Sequence:
 
         self._plotSequence(elements)
 
-    def _plotSequence(self, elements: Dict[int, np.ndarray],
+    def _plotSequence(self, elements: List[Dict[int, np.ndarray]],
                       subseqs: List[int]) -> None:
         """
         The heavy lifting plotter
@@ -1860,7 +1860,7 @@ class Sequence:
             v_max = max([elements[pp][chan][0].max() for pp in range(seqlen)])
             voltageexponent = np.log10(v_max)
             voltageunit = 'V'
-            voltagescaling = 1
+            voltagescaling: float = 1
             if voltageexponent < 0:
                 voltageunit = 'mV'
                 voltagescaling = 1e3
@@ -1899,7 +1899,7 @@ class Sequence:
                 # Figure out the axes' scaling
                 timeexponent = np.log10(time.max())
                 timeunit = 's'
-                timescaling = 1
+                timescaling: float = 1
                 if timeexponent < 0:
                     timeunit = 'ms'
                     timescaling = 1e3
