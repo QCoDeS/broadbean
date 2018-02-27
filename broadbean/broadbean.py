@@ -1827,7 +1827,7 @@ class Sequence:
                                  ]
             elements.append(element)
 
-        self._plotSequence(elements)
+        self._plotSequence(elements, [])
 
     def _plotSequence(self, elements: List[Dict[int, np.ndarray]],
                       subseqs: List[int]) -> None:
