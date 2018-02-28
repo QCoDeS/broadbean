@@ -1014,15 +1014,21 @@ class Element:
         self._meta['SR'] = SRs[0]
         self._meta['duration'] = durations[0]
 
-    def getArrays(self):
+    def getArrays(self,
+                  includetime: bool=False) -> Dict[int, Dict[str, np.ndarray]]:
         """
         Return arrays of the element. Heavily used by the Sequence.
+
+        Args:
+            includetime: Whether to include time arrays. They will have the key
+                'time'. Time should be included when plotting, otherwise not.
 
         Returns:
             dict:
               Dictionary with channel numbers (ints) as keys and forged
-              blueprints as values. A forged blueprint is a numpy
-              array given by np.array([wfm, m1, m2, time]).
+              blueprints as values. A forged blueprint is a dict with
+              the mandatory key 'wfm' and optional keys 'm1', 'm2', 'm3' (etc)
+              and 'time'.
 
         """
 
@@ -1030,12 +1036,20 @@ class Element:
         for channel, signal in self._data.items():
             if 'array' in signal.keys():
                 outdict[channel] = signal['array']
+                if includetime and 'time' not in signal['array'].keys():
+                    N = len(signal['array']['wfm'])
+                    dur = N/signal['SR']
+                    outdict[channel]['array']['time'] = np.linspace(0, dur, N)
             elif 'blueprint' in signal.keys():
                 bp = signal['blueprint']
                 durs = bp.durations
                 SR = bp.SR
-                outdict[channel] = (list(_subelementBuilder(bp, SR, durs)[0]) +
-                                    [_subelementBuilder(bp, SR, durs)[1]])
+                outarr = _subelementBuilder(bp, SR, durs)[0]
+                outdict[channel] = {'wfm': outarr[0], 'm1': outarr[1],
+                                    'm2': outarr[2]}
+                if includetime:
+                    outdict[channel].update({'time': outarr[3]})
+                # TODO: what about newdurations?
 
         return outdict
 
@@ -1702,7 +1716,7 @@ class Sequence:
             rawelem = self._data[pos]
             # returns the elements as dicts with
             # {channel: [wfm, m1, m2, time, newdurations]} structure
-            elements.append(rawelem.getArrays())
+            elements.append(rawelem.getArrays(includetime=True))
 
         self._plotSequence(elements)
 
@@ -1733,11 +1747,11 @@ class Sequence:
                 wfm_raw = package[chanind][0][0][pos]  # values from -1 to 1
                 wfm = rescaler(wfm_raw, amp, off)
 
-                element[chan] = [wfm,
-                                 package[chanind][1][0][pos],  # m1
-                                 package[chanind][2][0][pos],  # m2
-                                 np.linspace(0, npts/self.SR, npts)  # time
-                                 ]
+                element[chan] = {'wfm': wfm,
+                                 'm1': package[chanind][1][0][pos],
+                                 'm2': package[chanind][2][0][pos],
+                                 'time': np.linspace(0, npts/self.SR, npts)
+                                 }
             elements.append(element)
 
         self._plotSequence(elements)
@@ -1755,7 +1769,7 @@ class Sequence:
         chanminmax = [[np.inf, -np.inf]]*len(chans)
         for chanind, chan in enumerate(chans):
             for pos in range(seqlen):
-                wfmdata = elements[pos][chan][0]
+                wfmdata = elements[pos][chan]['wfm']
                 (thismin, thismax) = (wfmdata.min(), wfmdata.max())
                 if thismin < chanminmax[chanind][0]:
                     chanminmax[chanind] = [thismin, chanminmax[chanind][1]]
@@ -1769,7 +1783,8 @@ class Sequence:
 
             # figure out the channel voltage scaling
             # The entire channel shares a y-axis
-            v_max = max([elements[pp][chan][0].max() for pp in range(seqlen)])
+            v_max = max([elements[pp][chan]['wfm'].max()
+                         for pp in range(seqlen)])
             voltageexponent = np.log10(v_max)
             voltageunit = 'V'
             voltagescaling = 1
@@ -1798,14 +1813,14 @@ class Sequence:
                 # reduce the tickmark density (must be called before scaling)
                 ax.locator_params(tight=True, nbins=4, prune='lower')
 
-                wfm = elements[pos][chan][0]
-                m1 = elements[pos][chan][1]
-                m2 = elements[pos][chan][2]
-                time = elements[pos][chan][3]
+                wfm = elements[pos][chan]['wfm']
+                m1 = elements[pos][chan]['m1']
+                m2 = elements[pos][chan]['m2']
+                time = elements[pos][chan]['time']
                 # get the durations if they are specified
                 try:
-                    newdurs = elements[pos][chan][4]
-                except IndexError:
+                    newdurs = elements[pos][chan]['newdurs']
+                except KeyError:
                     newdurs = []
 
                 # Figure out the axes' scaling
@@ -1988,12 +2003,12 @@ class Sequence:
                 if f_cut is None:
                     f_cut = 1/tau
                 for pos in range(seqlen):
-                    prefilter = elements[pos][chan][0]
+                    prefilter = elements[pos][chan]['wfm']
                     postfilter = applyInverseRCFilter(prefilter,
                                                       self.SR,
                                                       kind, f_cut, order,
                                                       DCgain=1)
-                    elements[pos][chan][0] = postfilter
+                    elements[pos][chan]['wfm'] = postfilter
 
         return elements
 
@@ -2050,7 +2065,7 @@ class Sequence:
             element = elements[pos-1]
             for chan in channels:
                 ampl = self._awgspecs['channel{}_amplitude'.format(chan)]
-                wfm = element[chan][0]
+                wfm = element[chan]['wfm']
                 # check the waveform length
                 if len(wfm) < 2400:
                     raise ValueError('Waveform too short on channel '
@@ -2068,7 +2083,7 @@ class Sequence:
                                      'on channel {}'.format(chan) +
                                      ' sequence element {}. '.format(pos) +
                                      '{} < {}!'.format(wfm.min(), -ampl/2))
-                element[chan][0] = wfm
+                element[chan]['wfm'] = wfm
             elements[pos-1] = element
 
         # Finally cast the lists into the shapes required by the AWG driver
@@ -2085,9 +2100,9 @@ class Sequence:
         # different backends, we make the validation here
         for pos in range(1, seqlen+1):
             for chanind, chan in enumerate(channels):
-                wfm = elements[pos-1][chan][0]
-                m1 = elements[pos-1][chan][1]
-                m2 = elements[pos-1][chan][2]
+                wfm = elements[pos-1][chan]['wfm']
+                m1 = elements[pos-1][chan]['m1']
+                m2 = elements[pos-1][chan]['m2']
                 waveforms[chanind].append(np.array([wfm, m1, m2]))
 
             twait = self._sequencing[pos]['twait']
@@ -2171,7 +2186,7 @@ class Sequence:
             for chan in channels:
                 ampl = self._awgspecs['channel{}_amplitude'.format(chan)]
                 off = self._awgspecs['channel{}_offset'.format(chan)]
-                wfm = element[chan][0]
+                wfm = element[chan]['wfm']
                 # check whether the waveform voltages can be realised
                 if wfm.max() > ampl/2+off:
                     raise ValueError('Waveform voltages exceed channel range '
@@ -2184,7 +2199,7 @@ class Sequence:
                                      ' sequence element {}. '.format(pos) +
                                      '{} < {}!'.format(wfm.min(), -ampl/2+off))
                 wfm = rescaler(wfm, ampl, off)
-                element[chan][0] = wfm
+                element[chan]['wfm'] = wfm
             elements[pos-1] = element
 
         # Finally cast the lists into the shapes required by the AWG driver
@@ -2200,9 +2215,9 @@ class Sequence:
         # different backends, we make the validation here
         for pos in range(1, seqlen+1):
             for chanind, chan in enumerate(channels):
-                waveforms[chanind].append(elements[pos-1][chan][0])
-                m1s[chanind].append(elements[pos-1][chan][1])
-                m2s[chanind].append(elements[pos-1][chan][2])
+                waveforms[chanind].append(elements[pos-1][chan]['wfm'])
+                m1s[chanind].append(elements[pos-1][chan]['m1'])
+                m2s[chanind].append(elements[pos-1][chan]['m2'])
 
             twait = self._sequencing[pos]['twait']
             nrep = self._sequencing[pos]['nrep']
