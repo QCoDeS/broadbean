@@ -2003,6 +2003,46 @@ class Sequence:
 
                     ax.set_title(titlestring)
 
+    def forge(self) -> Dict[int, Dict]:
+        """
+        Forge the sequence, applying all specified transformations
+        (delays and ripasso filter corrections). Copies the data, so
+        that the sequence is not modified by forging.
+
+        Returns:
+            A nested dictionary.
+                {pos: {'type': 'X', 'data': {chan: [wfm, m1, m2, time]}}}
+                'type' can be either 'subsequence' or 'element'. If 'element',
+                then only one chan is present, else all of them
+        """
+        # Validation
+        if not self.checkConsistency():
+            raise ValueError('Can not generate output. Something is '
+                             'inconsistent. Please run '
+                             'checkConsistency(verbose=True) for more details')
+
+        channels = self.channels
+        data = deepcopy(self._data)
+        seqlen = len(data.keys())
+
+        # Apply channel delays. This is most elegantly done before forging.
+        # Add waituntil at the beginning, update all waituntils inside, add a
+        # zeros segment at the end.
+        # If already-forged arrays are found, simply append and prepend zeros
+        delays = []
+        for chan in channels:
+            try:
+                delays.append(self._awgspecs['channel{}_delay'.format(chan)])
+            except KeyError:
+                delays.append(0)
+        maxdelay = max(delays)
+
+        for pos in range(1, seqlen+1):
+            if isinstance(data[pos], Sequence):
+                subseq = data[pos]
+            elif isinstance(data[pos], Element):
+                pass
+
     def _prepareForOutputting(self) -> List[Dict[int, np.ndarray]]:
         """
         The preparser for numerical output. Applies delay and ripasso
