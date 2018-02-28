@@ -1192,6 +1192,11 @@ class Element:
         if not sum([d >= 0 for d in delays]) == len(delays):
             raise ValueError('Negative delays not allowed.')
 
+        # The strategy is:
+        # Add waituntil at the beginning, update all waituntils inside, add a
+        # zeros segment at the end.
+        # If already-forged arrays are found, simply append and prepend zeros
+
         SR = self.SR
         maxdelay = max(delays)
 
