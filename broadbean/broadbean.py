@@ -2064,9 +2064,11 @@ class Sequence:
 
         Returns:
             A nested dictionary.
-                {pos: {'type': 'X', 'data': {chan: [wfm, m1, m2, time]}}}
+                {pos1: {'type': 'XX',
+                       'content': {pos2: 'data': {chan: {'wfm': array, ...}}},
+                                         'sequencing': {'nreps': 10, ...}}}
                 'type' can be either 'subsequence' or 'element'. If 'element',
-                then only one chan is present, else all of them
+                then only one pos2 is present, else all of them
         """
         # Validation
         if not self.checkConsistency():
@@ -2074,6 +2076,7 @@ class Sequence:
                              'inconsistent. Please run '
                              'checkConsistency(verbose=True) for more details')
 
+        output = {}
         channels = self.channels
         data = deepcopy(self._data)
         seqlen = len(data.keys())
@@ -2088,13 +2091,17 @@ class Sequence:
                 delays.append(self._awgspecs['channel{}_delay'.format(chan)])
             except KeyError:
                 delays.append(0)
-        maxdelay = max(delays)
 
         for pos in range(1, seqlen+1):
             if isinstance(data[pos], Sequence):
                 subseq = data[pos]
+                for elem in subseq._data.values():
+                    elem._applyDelays(delays)
             elif isinstance(data[pos], Element):
-                pass
+                data[pos]._applyDelays(delays)
+
+        # Apply filter compensation
+
 
     def _prepareForOutputting(self) -> List[Dict[int, np.ndarray]]:
         """
@@ -2132,17 +2139,13 @@ class Sequence:
                 raise KeyError('No amplitude specified for channel '
                                '{}. Can not continue.'.format(chan))
 
-        # Apply channel delays. This is most elegantly done before forging.
-        # Add waituntil at the beginning, update all waituntils inside, add a
-        # zeros segment at the end.
-        # If already-forged arrays are found, simply append and prepend zeros
+        # Apply channel delays.
         delays = []
         for chan in channels:
             try:
                 delays.append(self._awgspecs['channel{}_delay'.format(chan)])
             except KeyError:
                 delays.append(0)
-        maxdelay = max(delays)
 
         for pos in range(1, seqlen+1):
             for chanind, chan in enumerate(channels):
