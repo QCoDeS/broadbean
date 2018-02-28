@@ -919,33 +919,31 @@ class Element:
         self._data[channel] = {}
         self._data[channel]['blueprint'] = newprint
 
-    def addArray(self, channel, array, SR, m1=None, m2=None):
+    def addArray(self, channel: int, waveform: np.ndarray,
+                 SR: int, **kwargs) -> None:
         """
         Add an array of voltage value to the element on the specified channel.
-        Overwrites whatever was there before.
+        Overwrites whatever was there before. Markers can be specified via
+        the kwargs, i.e. the kwargs must specify arrays of markers. The names
+        can be 'm1', 'm2', 'm3', etc.
 
         Args:
-            channel (int): The channel number
-            array (numpy.ndarray): The array of values
-            SR (int): The sample rate in Sa/s
+            channel: The channel number
+            waveform: The array of waveform values (V)
+            SR: The sample rate in Sa/s
         """
 
-        # TODO: this is very Tektronix AWG-centric, that a channel has a
-        # waveform and two markers. Think about generalising.
-
-        time = np.linspace(0, len(array)/SR, len(array))
-        if m1 is None:
-            m1 = np.zeros_like(time)
-        elif len(m1) != len(array):
-            raise ValueError('Lengths of array and m1 do not match!')
-
-        if m2 is None:
-            m2 = np.zeros_like(time)
-        elif len(m2) != len(array):
-            raise ValueError('Lengths of array and m2 do not match!')
-
+        N = len(waveform)
         self._data[channel] = {}
-        self._data[channel]['array'] = [array, m1, m2, time]
+        self._data[channel]['array'] = {}
+
+        for name, array in kwargs.items():
+            if len(array) != N:
+                raise ValueError('Length mismatch between waveform and '
+                                 f'array {name}. Must be same length')
+            self._data[channel]['array'].update({name: array})
+
+        self._data[channel]['array']['wfm'] = waveform
         self._data[channel]['SR'] = SR
 
     def validateDurations(self):
@@ -981,7 +979,7 @@ class Element:
             if 'blueprint' in channel.keys():
                 durations.append(channel['blueprint'].duration)
             elif 'array' in channel.keys():
-                length = len(channel['array'][0])/channel['SR']
+                length = len(channel['array']['wfm'])/channel['SR']
                 durations.append(length)
 
         if None not in SRs:
@@ -1002,7 +1000,7 @@ class Element:
             if 'blueprint' in channel.keys():
                 npts.append(channel['blueprint'].points)
             elif 'array' in channel.keys():
-                length = len(channel['array'][0])
+                length = len(channel['array']['wfm'])
                 npts.append(length)
 
         if not npts.count(npts[0]) == len(npts):
@@ -1073,7 +1071,7 @@ class Element:
             if 'blueprint' in chan.keys():
                 return chan['blueprint'].points
             else:
-                return len(chan['array'][0])
+                return len(chan['array']['wfm'])
 
         else:
             # this line is here to make mypy happy; this exception is
