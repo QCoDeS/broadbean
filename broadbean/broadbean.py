@@ -1174,6 +1174,54 @@ class Element:
 
         bp.changeDuration(name, newdur, replaceeverywhere)
 
+    def _applyDelays(self, delays: List[float]) -> None:
+        """
+        Apply delays to the channels of this element. This function is intended
+        to be used via a Sequence object. Note that this function changes
+        the element it is called on.
+
+        Args:
+            delays: A list matching the channels of the Element. If there
+                are channels=[1, 3], then delays=[1e-3, 0] will delay channel
+                1 by 1 ms and channel 3 by nothing.
+        """
+        if len(delays) != len(self.channels):
+            raise ValueError('Incorrect number of delays specified.'
+                             ' Must match the number of channels.')
+
+        if not sum([d >= 0 for d in delays]) == len(delays):
+            raise ValueError('Negative delays not allowed.')
+
+        SR = self.SR
+        maxdelay = max(delays)
+
+        for chanind, chan in enumerate(self.channels):
+            delay = delays[chanind]
+
+            if 'blueprint' in self._data[chan].keys():
+                blueprint = self._data[chan]['blueprint']
+
+                # update existing waituntils
+                for segpos in range(len(blueprint._funlist)):
+                    if blueprint._funlist[segpos] == 'waituntil':
+                        oldwait = blueprint._argslist[segpos][0]
+                        blueprint._argslist[segpos] = (oldwait+delay,)
+                # insert delay before the waveform
+                if delay > 0:
+                    blueprint.insertSegment(0, 'waituntil', (delay,),
+                                            'waituntil')
+                # add zeros at the end
+                if maxdelay-delay > 0:
+                    blueprint.insertSegment(-1, PulseAtoms.ramp, (0, 0),
+                                            dur=maxdelay-delay)
+
+            else:
+                arrays = self._data[chan]['array']
+                for ii, arr in enumerate(arrays):
+                    pre_wait = np.zeros(int(delay*SR))
+                    post_wait = np.zeros(int((maxdelay-delay)*SR))
+                    arrays[ii] = np.concatenate((pre_wait, arr, post_wait))
+
     def copy(self):
         """
         Return a copy of the element

@@ -15,7 +15,7 @@ sine = bb.PulseAtoms.sine
 tophat_SR = 2000
 
 
-@pytest.fixture
+@pytest.fixture(scope='function')
 def blueprint_tophat():
     """
     Return a blueprint consisting of three slopeless ramps forming something
@@ -28,6 +28,26 @@ def blueprint_tophat():
     th.setSR(tophat_SR)
 
     return th
+
+
+@pytest.fixture
+def mixed_element(blueprint_tophat):
+    """
+    An element with blueprints and arrays
+    """
+
+    noise = np.random.randn(blueprint_tophat.points)
+    wiggle = bb.BluePrint()
+    wiggle.insertSegment(0, sine, args=(1, 10, 0, 0), dur=2.5)
+    wiggle.setSR(blueprint_tophat.SR)
+
+    elem = bb.Element()
+    elem.addBluePrint(1, blueprint_tophat)
+    elem.addArray(2, noise, blueprint_tophat.SR)
+    elem.addBluePrint(3, wiggle)
+
+    return elem
+
 
 ##################################################
 # TEST BARE INITIALISATION
@@ -142,6 +162,29 @@ def test_invalid_durations(SR1, SR2, N, M):
     else:
         with pytest.raises(ElementDurationError):
             elem.validateDurations()
+
+
+def test_applyDelays(mixed_element):
+
+    delays = [1e-1, 0, 0]
+
+    assert mixed_element.duration == 2.5
+
+    with pytest.raises(ValueError):
+        mixed_element._applyDelays([-0.1, 3, 4])
+
+    with pytest.raises(ValueError):
+        mixed_element._applyDelays([0, 1])
+
+    element = mixed_element.copy()
+    element._applyDelays(delays)
+
+    assert mixed_element.duration == 2.5
+    assert element.duration == 2.6
+
+    assert element._data[1]['blueprint'].length_segments == 4
+    assert element._data[3]['blueprint'].length_segments == 2
+
 
 ##################################################
 # Input validation
