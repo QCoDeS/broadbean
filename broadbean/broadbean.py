@@ -1,7 +1,7 @@
 import logging
 import math
 import warnings
-from typing import Tuple, List, Dict, cast
+from typing import Tuple, List, Dict, cast, Union
 from inspect import signature
 from copy import deepcopy
 import functools as ft
@@ -918,33 +918,31 @@ class Element:
         self._data[channel] = {}
         self._data[channel]['blueprint'] = newprint
 
-    def addArray(self, channel, array, SR, m1=None, m2=None):
+    def addArray(self, channel: int, waveform: np.ndarray,
+                 SR: int, **kwargs) -> None:
         """
         Add an array of voltage value to the element on the specified channel.
-        Overwrites whatever was there before.
+        Overwrites whatever was there before. Markers can be specified via
+        the kwargs, i.e. the kwargs must specify arrays of markers. The names
+        can be 'm1', 'm2', 'm3', etc.
 
         Args:
-            channel (int): The channel number
-            array (numpy.ndarray): The array of values
-            SR (int): The sample rate in Sa/s
+            channel: The channel number
+            waveform: The array of waveform values (V)
+            SR: The sample rate in Sa/s
         """
 
-        # TODO: this is very Tektronix AWG-centric, that a channel has a
-        # waveform and two markers. Think about generalising.
-
-        time = np.linspace(0, len(array)/SR, len(array))
-        if m1 is None:
-            m1 = np.zeros_like(time)
-        elif len(m1) != len(array):
-            raise ValueError('Lengths of array and m1 do not match!')
-
-        if m2 is None:
-            m2 = np.zeros_like(time)
-        elif len(m2) != len(array):
-            raise ValueError('Lengths of array and m2 do not match!')
-
+        N = len(waveform)
         self._data[channel] = {}
-        self._data[channel]['array'] = [array, m1, m2, time]
+        self._data[channel]['array'] = {}
+
+        for name, array in kwargs.items():
+            if len(array) != N:
+                raise ValueError('Length mismatch between waveform and '
+                                 f'array {name}. Must be same length')
+            self._data[channel]['array'].update({name: array})
+
+        self._data[channel]['array']['wfm'] = waveform
         self._data[channel]['SR'] = SR
 
     def validateDurations(self):
@@ -980,7 +978,7 @@ class Element:
             if 'blueprint' in channel.keys():
                 durations.append(channel['blueprint'].duration)
             elif 'array' in channel.keys():
-                length = len(channel['array'][0])/channel['SR']
+                length = len(channel['array']['wfm'])/channel['SR']
                 durations.append(length)
 
         if None not in SRs:
@@ -1001,7 +999,7 @@ class Element:
             if 'blueprint' in channel.keys():
                 npts.append(channel['blueprint'].points)
             elif 'array' in channel.keys():
-                length = len(channel['array'][0])
+                length = len(channel['array']['wfm'])
                 npts.append(length)
 
         if not npts.count(npts[0]) == len(npts):
@@ -1015,15 +1013,21 @@ class Element:
         self._meta['SR'] = SRs[0]
         self._meta['duration'] = durations[0]
 
-    def getArrays(self):
+    def getArrays(self,
+                  includetime: bool=False) -> Dict[int, Dict[str, np.ndarray]]:
         """
         Return arrays of the element. Heavily used by the Sequence.
+
+        Args:
+            includetime: Whether to include time arrays. They will have the key
+                'time'. Time should be included when plotting, otherwise not.
 
         Returns:
             dict:
               Dictionary with channel numbers (ints) as keys and forged
-              blueprints as values. A forged blueprint is a numpy
-              array given by np.array([wfm, m1, m2, time]).
+              blueprints as values. A forged blueprint is a dict with
+              the mandatory key 'wfm' and optional keys 'm1', 'm2', 'm3' (etc)
+              and 'time'.
 
         """
 
@@ -1031,12 +1035,20 @@ class Element:
         for channel, signal in self._data.items():
             if 'array' in signal.keys():
                 outdict[channel] = signal['array']
+                if includetime and 'time' not in signal['array'].keys():
+                    N = len(signal['array']['wfm'])
+                    dur = N/signal['SR']
+                    outdict[channel]['array']['time'] = np.linspace(0, dur, N)
             elif 'blueprint' in signal.keys():
                 bp = signal['blueprint']
                 durs = bp.durations
                 SR = bp.SR
-                outdict[channel] = (list(_subelementBuilder(bp, SR, durs)[0]) +
-                                    [_subelementBuilder(bp, SR, durs)[1]])
+                forged_bp = _subelementBuilder(bp, SR, durs)
+                outdict[channel] = forged_bp
+                if not includetime:
+                    outdict[channel].pop('time')
+                    outdict[channel].pop('newdurations')
+                # TODO: should the be a separate bool for newdurations?
 
         return outdict
 
@@ -1072,7 +1084,7 @@ class Element:
             if 'blueprint' in chan.keys():
                 return chan['blueprint'].points
             else:
-                return len(chan['array'][0])
+                return len(chan['array']['wfm'])
 
         else:
             # this line is here to make mypy happy; this exception is
@@ -1703,7 +1715,7 @@ class Sequence:
             rawelem = self._data[pos]
             # returns the elements as dicts with
             # {channel: [wfm, m1, m2, time, newdurations]} structure
-            elements.append(rawelem.getArrays())
+            elements.append(rawelem.getArrays(includetime=True))
 
         self._plotSequence(elements)
 
@@ -1734,11 +1746,11 @@ class Sequence:
                 wfm_raw = package[chanind][0][0][pos]  # values from -1 to 1
                 wfm = rescaler(wfm_raw, amp, off)
 
-                element[chan] = [wfm,
-                                 package[chanind][1][0][pos],  # m1
-                                 package[chanind][2][0][pos],  # m2
-                                 np.linspace(0, npts/self.SR, npts)  # time
-                                 ]
+                element[chan] = {'wfm': wfm,
+                                 'm1': package[chanind][1][0][pos],
+                                 'm2': package[chanind][2][0][pos],
+                                 'time': np.linspace(0, npts/self.SR, npts)
+                                 }
             elements.append(element)
 
         self._plotSequence(elements)
@@ -1756,7 +1768,7 @@ class Sequence:
         chanminmax = [[np.inf, -np.inf]]*len(chans)
         for chanind, chan in enumerate(chans):
             for pos in range(seqlen):
-                wfmdata = elements[pos][chan][0]
+                wfmdata = elements[pos][chan]['wfm']
                 (thismin, thismax) = (wfmdata.min(), wfmdata.max())
                 if thismin < chanminmax[chanind][0]:
                     chanminmax[chanind] = [thismin, chanminmax[chanind][1]]
@@ -1770,7 +1782,8 @@ class Sequence:
 
             # figure out the channel voltage scaling
             # The entire channel shares a y-axis
-            v_max = max([elements[pp][chan][0].max() for pp in range(seqlen)])
+            v_max = max([elements[pp][chan]['wfm'].max()
+                         for pp in range(seqlen)])
             voltageexponent = np.log10(v_max)
             voltageunit = 'V'
             voltagescaling = 1
@@ -1799,14 +1812,14 @@ class Sequence:
                 # reduce the tickmark density (must be called before scaling)
                 ax.locator_params(tight=True, nbins=4, prune='lower')
 
-                wfm = elements[pos][chan][0]
-                m1 = elements[pos][chan][1]
-                m2 = elements[pos][chan][2]
-                time = elements[pos][chan][3]
+                wfm = elements[pos][chan]['wfm']
+                m1 = elements[pos][chan]['m1']
+                m2 = elements[pos][chan]['m2']
+                time = elements[pos][chan]['time']
                 # get the durations if they are specified
                 try:
-                    newdurs = elements[pos][chan][4]
-                except IndexError:
+                    newdurs = elements[pos][chan]['newdurs']
+                except KeyError:
                     newdurs = []
 
                 # Figure out the axes' scaling
@@ -1989,12 +2002,12 @@ class Sequence:
                 if f_cut is None:
                     f_cut = 1/tau
                 for pos in range(seqlen):
-                    prefilter = elements[pos][chan][0]
+                    prefilter = elements[pos][chan]['wfm']
                     postfilter = applyInverseRCFilter(prefilter,
                                                       self.SR,
                                                       kind, f_cut, order,
                                                       DCgain=1)
-                    elements[pos][chan][0] = postfilter
+                    elements[pos][chan]['wfm'] = postfilter
 
         return elements
 
@@ -2051,7 +2064,7 @@ class Sequence:
             element = elements[pos-1]
             for chan in channels:
                 ampl = self._awgspecs['channel{}_amplitude'.format(chan)]
-                wfm = element[chan][0]
+                wfm = element[chan]['wfm']
                 # check the waveform length
                 if len(wfm) < 2400:
                     raise ValueError('Waveform too short on channel '
@@ -2069,7 +2082,7 @@ class Sequence:
                                      'on channel {}'.format(chan) +
                                      ' sequence element {}. '.format(pos) +
                                      '{} < {}!'.format(wfm.min(), -ampl/2))
-                element[chan][0] = wfm
+                element[chan]['wfm'] = wfm
             elements[pos-1] = element
 
         # Finally cast the lists into the shapes required by the AWG driver
@@ -2086,9 +2099,9 @@ class Sequence:
         # different backends, we make the validation here
         for pos in range(1, seqlen+1):
             for chanind, chan in enumerate(channels):
-                wfm = elements[pos-1][chan][0]
-                m1 = elements[pos-1][chan][1]
-                m2 = elements[pos-1][chan][2]
+                wfm = elements[pos-1][chan]['wfm']
+                m1 = elements[pos-1][chan]['m1']
+                m2 = elements[pos-1][chan]['m2']
                 waveforms[chanind].append(np.array([wfm, m1, m2]))
 
             twait = self._sequencing[pos]['twait']
@@ -2172,7 +2185,7 @@ class Sequence:
             for chan in channels:
                 ampl = self._awgspecs['channel{}_amplitude'.format(chan)]
                 off = self._awgspecs['channel{}_offset'.format(chan)]
-                wfm = element[chan][0]
+                wfm = element[chan]['wfm']
                 # check whether the waveform voltages can be realised
                 if wfm.max() > ampl/2+off:
                     raise ValueError('Waveform voltages exceed channel range '
@@ -2185,7 +2198,7 @@ class Sequence:
                                      ' sequence element {}. '.format(pos) +
                                      '{} < {}!'.format(wfm.min(), -ampl/2+off))
                 wfm = rescaler(wfm, ampl, off)
-                element[chan][0] = wfm
+                element[chan]['wfm'] = wfm
             elements[pos-1] = element
 
         # Finally cast the lists into the shapes required by the AWG driver
@@ -2201,9 +2214,9 @@ class Sequence:
         # different backends, we make the validation here
         for pos in range(1, seqlen+1):
             for chanind, chan in enumerate(channels):
-                waveforms[chanind].append(elements[pos-1][chan][0])
-                m1s[chanind].append(elements[pos-1][chan][1])
-                m2s[chanind].append(elements[pos-1][chan][2])
+                waveforms[chanind].append(elements[pos-1][chan]['wfm'])
+                m1s[chanind].append(elements[pos-1][chan]['m1'])
+                m2s[chanind].append(elements[pos-1][chan]['m2'])
 
             twait = self._sequencing[pos]['twait']
             nrep = self._sequencing[pos]['nrep']
@@ -2246,7 +2259,7 @@ class Sequence:
 
 
 def _subelementBuilder(blueprint: BluePrint, SR: int,
-                       durs: List[float]) -> Tuple[np.ndarray, List[float]]:
+                       durs: List[float]) -> Dict[str, np.ndarray]:
     """
     The function building a blueprint, returning a numpy array.
 
@@ -2289,7 +2302,7 @@ def _subelementBuilder(blueprint: BluePrint, SR: int,
     # When special segments like 'waituntil' and 'ensureaverage' get
     # evaluated, the list of durations gets updated. That new list
     # is newdurations
-    newdurations = durations
+    newdurations = np.array(durations)
 
     # All waveforms must ultimately have an integer number of samples
     # Now figure out from the durations what these integers are
@@ -2307,7 +2320,7 @@ def _subelementBuilder(blueprint: BluePrint, SR: int,
                                        'Segment "{}" at position {} '
                                        'has a duration of {} which at '
                                        'an SR of {:.3E} leads to just {} '
-                                       'points(s). There must be at least '
+                                       'point(s). There must be at least '
                                        '2 points in each segment.'
                                        ''.format(namelist[ii],
                                                  ii,
@@ -2349,32 +2362,34 @@ def _subelementBuilder(blueprint: BluePrint, SR: int,
 
     output = np.array(output)  # TODO: Why is this sometimes needed?
 
-    return np.array([output, m1, m2, time]), newdurations
+    outdict = {'wfm': output, 'm1': m1, 'm2': m2, 'time': time,
+               'newdurations': newdurations}
+
+    return outdict
 
 
-def elementBuilder(blueprints, SR, durations, channels=None,
-                   returnnewdurs=False):
+def elementBuilder(blueprints: Union[BluePrint, list],
+                   SR: int, durations: List[float],
+                   channels: List[int]=None) -> Dict[int,
+                                                     Dict[str, np.ndarray]]:
     """
     Forge blueprints into an element
 
     Args:
-        blueprints (Union[BluePrint, list]): A single blueprint or a list of
+        blueprints: A single blueprint or a list of
             blueprints.
-        SR (int): The sample rate (Sa/s)
-        durations (list): List of durations or a list of lists of durations
+        SR: The sample rate (Sa/s)
+        durations: List of durations or a list of lists of durations
             if different blueprints have different durations. If a single list
             is given, this list is used for all blueprints.
-        channels (Union[list, None]): A list specifying the channels of the
+        channels: A list specifying the channels of the
             blueprints in the list. If None, channels 1, 2, .. are assigned
-        returnnewdurs (bool): If True, the returned dictionary contains the
-            newdurations.
 
     Returns:
-        dict:
-            Dictionary with channel numbers (ints) as keys and forged
-            blueprints as values. A forged blueprint is a numpy array
-            given by np.array([wfm, m1, m2, time]). If returnnewdurs is True,
-            a list of [wfm, m1, m2, time, newdurs] is returned instead.
+        Dictionary with channel numbers (ints) as keys and forged
+            blueprints as values. A forged blueprint is a dictionary
+            with keys 'wfm', 'm1', 'm2', 'm3', etc, 'time', and
+            and 'newdurations'.
 
     Raises:
         ValueError: if blueprints does not contain BluePrints
@@ -2390,20 +2405,14 @@ def elementBuilder(blueprints, SR, durations, channels=None,
         blueprints = [blueprints]
     # Allow for using a single durations list for all blueprints
     if not isinstance(durations[0], list):
-        durations = [durations]*len(blueprints)
+        fulldurations = [durations]*len(blueprints)
         # durations = [durations for _ in range(len(blueprints))]
 
     if channels is None:
         channels = [ii for ii in range(len(blueprints))]
 
-    bpdurs = zip(blueprints, durations)
-    if not returnnewdurs:
-        subelems = [_subelementBuilder(bp, SR, dur)[0] for (bp, dur) in bpdurs]
-    else:
-        subelems = []
-        for (bp, dur) in bpdurs:
-            subelems.append(list(_subelementBuilder(bp, SR, dur)[0]) +
-                            [_subelementBuilder(bp, SR, dur)[1]])
+    bpdurs = zip(blueprints, fulldurations)
+    subelems = [_subelementBuilder(bp, SR, dur) for (bp, dur) in bpdurs]
 
     outdict = dict(zip(channels, subelems))
 
@@ -2459,11 +2468,12 @@ def bluePrintPlotter(blueprints, fig=None, axs=None):
 
     for ii in range(N):
         ax = axs[ii]
-        arrays, newdurs = _subelementBuilder(blueprints[ii], SR,
-                                             durations[ii])
-        wfm = arrays[0, :]
-        m1 = arrays[1, :]
-        m2 = arrays[2, :]
+        forged_bp = _subelementBuilder(blueprints[ii], SR,
+                                       durations[ii])
+        wfm = forged_bp['wfm']
+        m1 = forged_bp['m1']
+        m2 = forged_bp['m2']
+        newdurs = forged_bp['newdurations']
         time = np.linspace(0, np.sum(newdurs), len(wfm))
 
         # Figure out time axis scaling
