@@ -75,7 +75,7 @@ class PulseAtoms:
     @staticmethod
     def gaussian(ampl, sigma, mu, offset, SR, npts):
         """
-        Returns a Gaussian of integral ampl (when offset==0)
+        Returns a Gaussian of peak height ampl (when offset==0)
 
         Is by default centred in the middle of the interval
         """
@@ -83,8 +83,7 @@ class PulseAtoms:
         time = np.linspace(0, dur, npts)
         centre = dur/2
         baregauss = np.exp((-(time-mu-centre)**2/(2*sigma**2)))
-        normalisation = 1/np.sqrt(2*sigma**2*np.pi)
-        return ampl*baregauss*normalisation+offset
+        return ampl*baregauss+offset
 
 
 class _AWGOutput:
