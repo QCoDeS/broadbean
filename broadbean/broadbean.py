@@ -1,7 +1,7 @@
 import logging
 import math
 import warnings
-from typing import Tuple, List, Dict, cast
+from typing import Tuple, List, Dict, cast, Union
 from inspect import signature
 from copy import deepcopy
 import functools as ft
@@ -1044,12 +1044,12 @@ class Element:
                 bp = signal['blueprint']
                 durs = bp.durations
                 SR = bp.SR
-                outarr = _subelementBuilder(bp, SR, durs)[0]
-                outdict[channel] = {'wfm': outarr[0], 'm1': outarr[1],
-                                    'm2': outarr[2]}
-                if includetime:
-                    outdict[channel].update({'time': outarr[3]})
-                # TODO: what about newdurations?
+                forged_bp = _subelementBuilder(bp, SR, durs)
+                outdict[channel] = forged_bp
+                if not includetime:
+                    outdict[channel].pop('time')
+                    outdict[channel].pop('newdurations')
+                # TODO: should the be a separate bool for newdurations?
 
         return outdict
 
@@ -2260,7 +2260,7 @@ class Sequence:
 
 
 def _subelementBuilder(blueprint: BluePrint, SR: int,
-                       durs: List[float]) -> Tuple[np.ndarray, List[float]]:
+                       durs: List[float]) -> Dict[str, np.ndarray]:
     """
     The function building a blueprint, returning a numpy array.
 
@@ -2303,7 +2303,7 @@ def _subelementBuilder(blueprint: BluePrint, SR: int,
     # When special segments like 'waituntil' and 'ensureaverage' get
     # evaluated, the list of durations gets updated. That new list
     # is newdurations
-    newdurations = durations
+    newdurations = np.array(durations)
 
     # All waveforms must ultimately have an integer number of samples
     # Now figure out from the durations what these integers are
@@ -2321,7 +2321,7 @@ def _subelementBuilder(blueprint: BluePrint, SR: int,
                                        'Segment "{}" at position {} '
                                        'has a duration of {} which at '
                                        'an SR of {:.3E} leads to just {} '
-                                       'points(s). There must be at least '
+                                       'point(s). There must be at least '
                                        '2 points in each segment.'
                                        ''.format(namelist[ii],
                                                  ii,
@@ -2363,32 +2363,34 @@ def _subelementBuilder(blueprint: BluePrint, SR: int,
 
     output = np.array(output)  # TODO: Why is this sometimes needed?
 
-    return np.array([output, m1, m2, time]), newdurations
+    outdict = {'wfm': output, 'm1': m1, 'm2': m2, 'time': time,
+               'newdurations': newdurations}
+
+    return outdict
 
 
-def elementBuilder(blueprints, SR, durations, channels=None,
-                   returnnewdurs=False):
+def elementBuilder(blueprints: Union[BluePrint, list],
+                   SR: int, durations: List[float],
+                   channels: List[int]=None) -> Dict[int,
+                                                     Dict[str, np.ndarray]]:
     """
     Forge blueprints into an element
 
     Args:
-        blueprints (Union[BluePrint, list]): A single blueprint or a list of
+        blueprints: A single blueprint or a list of
             blueprints.
-        SR (int): The sample rate (Sa/s)
-        durations (list): List of durations or a list of lists of durations
+        SR: The sample rate (Sa/s)
+        durations: List of durations or a list of lists of durations
             if different blueprints have different durations. If a single list
             is given, this list is used for all blueprints.
-        channels (Union[list, None]): A list specifying the channels of the
+        channels: A list specifying the channels of the
             blueprints in the list. If None, channels 1, 2, .. are assigned
-        returnnewdurs (bool): If True, the returned dictionary contains the
-            newdurations.
 
     Returns:
-        dict:
-            Dictionary with channel numbers (ints) as keys and forged
-            blueprints as values. A forged blueprint is a numpy array
-            given by np.array([wfm, m1, m2, time]). If returnnewdurs is True,
-            a list of [wfm, m1, m2, time, newdurs] is returned instead.
+        Dictionary with channel numbers (ints) as keys and forged
+            blueprints as values. A forged blueprint is a dictionary
+            with keys 'wfm', 'm1', 'm2', 'm3', etc, 'time', and
+            and 'newdurations'.
 
     Raises:
         ValueError: if blueprints does not contain BluePrints
@@ -2404,20 +2406,14 @@ def elementBuilder(blueprints, SR, durations, channels=None,
         blueprints = [blueprints]
     # Allow for using a single durations list for all blueprints
     if not isinstance(durations[0], list):
-        durations = [durations]*len(blueprints)
+        fulldurations = [durations]*len(blueprints)
         # durations = [durations for _ in range(len(blueprints))]
 
     if channels is None:
         channels = [ii for ii in range(len(blueprints))]
 
-    bpdurs = zip(blueprints, durations)
-    if not returnnewdurs:
-        subelems = [_subelementBuilder(bp, SR, dur)[0] for (bp, dur) in bpdurs]
-    else:
-        subelems = []
-        for (bp, dur) in bpdurs:
-            subelems.append(list(_subelementBuilder(bp, SR, dur)[0]) +
-                            [_subelementBuilder(bp, SR, dur)[1]])
+    bpdurs = zip(blueprints, fulldurations)
+    subelems = [_subelementBuilder(bp, SR, dur) for (bp, dur) in bpdurs]
 
     outdict = dict(zip(channels, subelems))
 
@@ -2473,11 +2469,12 @@ def bluePrintPlotter(blueprints, fig=None, axs=None):
 
     for ii in range(N):
         ax = axs[ii]
-        arrays, newdurs = _subelementBuilder(blueprints[ii], SR,
-                                             durations[ii])
-        wfm = arrays[0, :]
-        m1 = arrays[1, :]
-        m2 = arrays[2, :]
+        forged_bp = _subelementBuilder(blueprints[ii], SR,
+                                       durations[ii])
+        wfm = forged_bp['wfm']
+        m1 = forged_bp['m1']
+        m2 = forged_bp['m2']
+        newdurs = forged_bp['newdurations']
         time = np.linspace(0, np.sum(newdurs), len(wfm))
 
         # Figure out time axis scaling
