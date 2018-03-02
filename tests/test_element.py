@@ -77,8 +77,8 @@ def test_addArray():
     m2 = np.ones(N)
 
     elem = bb.Element()
-    elem.addArray(1, wfm, SR, m1, m2)
-    elem.addArray(2, wfm, SR, m1)
+    elem.addArray(1, wfm, SR, m1=m1, m2=m2)
+    elem.addArray(2, wfm, SR, m1=m1)
     elem.addArray(3, wfm, SR, m2=m2)
 
     elem.validateDurations()
@@ -91,7 +91,7 @@ def test_addArray():
         elem.validateDurations()
 
     with pytest.raises(ValueError):
-        elem.addArray(1, wfm, SR, m1[:-1])
+        elem.addArray(1, wfm, SR, m1=m1[:-1])
 
     with pytest.raises(ValueError):
         elem.addArray(2, wfm, SR, m2=m2[3:])
