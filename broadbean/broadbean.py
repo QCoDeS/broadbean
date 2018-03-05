@@ -888,7 +888,7 @@ class Element:
         # Each value is a dict with the following possible keys, values:
         # 'blueprint': a BluePrint
         # 'channelname': channel name for later use with a Tektronix AWG5014
-        # 'array': an np.array
+        # 'array': a dict {'wfm': np.array} (other keys: 'm1', 'm2', etc)
         # 'SR': Sample rate. Used with array.
         #
         # Another dict is meta, which holds:
@@ -1233,10 +1233,10 @@ class Element:
 
             else:
                 arrays = self._data[chan]['array']
-                for ii, arr in enumerate(arrays):
+                for name, arr in arrays.items():
                     pre_wait = np.zeros(int(delay*SR))
                     post_wait = np.zeros(int((maxdelay-delay)*SR))
-                    arrays[ii] = np.concatenate((pre_wait, arr, post_wait))
+                    arrays[name] = np.concatenate((pre_wait, arr, post_wait))
 
     def copy(self):
         """
@@ -2188,10 +2188,11 @@ class Sequence:
 
                 else:
                     arrays = element[chan]['array']
-                    for ii, arr in enumerate(arrays):
+                    for name, arr in arrays.items():
                         pre_wait = np.zeros(int(delay/self.SR))
                         post_wait = np.zeros(int((maxdelay-delay)/self.SR))
-                        arrays[ii] = np.concatenate((pre_wait, arr, post_wait))
+                        arrays[name] = np.concatenate((pre_wait, arr,
+                                                       post_wait))
 
         # Now forge all the elements as specified
         elements = []  # the forged elements
