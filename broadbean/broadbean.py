@@ -2089,7 +2089,7 @@ class Sequence:
                              'inconsistent. Please run '
                              'checkConsistency(verbose=True) for more details')
 
-        output = {}
+        output: Dict[int, Dict] = {}
         channels = self.channels
         data = deepcopy(self._data)
         seqlen = len(data.keys())
@@ -2115,6 +2115,7 @@ class Sequence:
 
         # Apply filter compensation
 
+        return output
 
     def _prepareForOutputting(self) -> List[Dict[int, np.ndarray]]:
         """
@@ -2159,6 +2160,7 @@ class Sequence:
                 delays.append(self._awgspecs['channel{}_delay'.format(chan)])
             except KeyError:
                 delays.append(0)
+        maxdelay = max(delays)
 
         for pos in range(1, seqlen+1):
             for chanind, chan in enumerate(channels):
