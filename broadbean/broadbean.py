@@ -1798,7 +1798,7 @@ class Sequence:
 
         return elem
 
-    def _plotSummary(self) -> Dict[int, np.ndarray]:
+    def _plotSummary(self) -> Dict[int, Dict[str, np.ndarray]]:
         """
         Return a mini-version of the getArrays output for the sequence.
         This is so that sequences that are subsequences can be plotted.
@@ -1819,15 +1819,15 @@ class Sequence:
             else:
                 arrs = element.getArrays()
                 for chan in chans:
-                    wfm = arrs[chan][0]
+                    wfm = arrs[chan]['wfm']
                     if wfm.min() < minmax[chan][0]:
                         minmax[chan] = (wfm.min(), minmax[chan][1])
                     if wfm.max() > minmax[chan][1]:
                         minmax[chan] = (minmax[chan][0], wfm.max())
-                    output[chan] = np.array([np.array(minmax[chan]),
-                                             np.zeros(2),
-                                             np.zeros(2),
-                                             np.linspace(0, 1, 2)])
+                    output[chan] = {'wfm': np.array(minmax[chan]),
+                                    'm1': np.zeros(2),
+                                    'm2': np.zeros(2),
+                                    'time': np.linspace(0, 1, 2)}
 
         return output
 
@@ -1848,11 +1848,9 @@ class Sequence:
 
         for pos in range(1, seqlen+1):
             rawelem = self._data[pos]
-            # returns the elements as dicts with
-            # {channel: [wfm, m1, m2, time, newdurations]} structure
 
             if isinstance(rawelem, Element):
-                elements.append(rawelem.getArrays())
+                elements.append(rawelem.getArrays(includetime=True))
             elif isinstance(rawelem, Sequence):
                 elements.append(rawelem._plotSummary())
                 subseqs.append(pos)
@@ -1895,7 +1893,7 @@ class Sequence:
 
         self._plotSequence(elements, [])
 
-    def _plotSequence(self, elements: List[Dict[int, np.ndarray]],
+    def _plotSequence(self, elements: List[Dict[int, Dict[str, np.ndarray]]],
                       subseqs: List[int]) -> None:
         """
         The heavy lifting plotter
