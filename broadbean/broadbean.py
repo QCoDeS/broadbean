@@ -1189,7 +1189,8 @@ class Element:
         """
         Apply delays to the channels of this element. This function is intended
         to be used via a Sequence object. Note that this function changes
-        the element it is called on.
+        the element it is called on. Calling _applyDelays a second will apply
+        more delays on top of the first ones.
 
         Args:
             delays: A list matching the channels of the Element. If there
