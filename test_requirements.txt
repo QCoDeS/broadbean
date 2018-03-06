@@ -2,3 +2,4 @@ hypothesis
 pytest
 mypy
 jupyter
+schema

@@ -2095,10 +2095,11 @@ class Sequence:
         data = deepcopy(self._data)
         seqlen = len(data.keys())
 
-        # Apply channel delays. This is most elegantly done before forging.
-        # Add waituntil at the beginning, update all waituntils inside, add a
-        # zeros segment at the end.
-        # If already-forged arrays are found, simply append and prepend zeros
+        # TODO: in this function, we iterate through the sequence three times
+        # It is probably worth considering refactoring that into a single
+        # iteration, although that may compromise readability
+
+        # Apply channel delays.
         delays = []
         for chan in channels:
             try:
@@ -2114,7 +2115,31 @@ class Sequence:
             elif isinstance(data[pos], Element):
                 data[pos]._applyDelays(delays)
 
-        # Apply filter compensation
+        # forge arrays and form the output dict
+        for pos in range(1, seqlen+1):
+            output[pos] = {}
+            output[pos]['sequencing'] = self._sequencing[pos]
+            if isinstance(data[pos], Sequence):
+                subseq = data[pos]
+                output[pos]['type'] = 'subsequence'
+                output[pos]['content'] = {}
+                for pos2 in range(1, subseq.length_sequenceelements+1):
+                    output[pos]['content'][pos2] = {'data': {},
+                                                    'sequencing': {}}
+                    elem = subseq.element(pos2)
+                    output[pos]['content'][pos2]['data'] = elem.getArrays()
+                    seqing = subseq._sequencing[pos2]
+                    output[pos]['content'][pos2]['sequencing'] = seqing
+                    # TODO: update sequencing
+            elif isinstance(data[pos], Element):
+                elem = data[pos]
+                output[pos]['type'] = 'element'
+                output[pos]['content'] = {1: {'data': elem.getArrays()}}
+
+        # apply filter corrections to forged arrays
+        for pos in range(1, seqlen+1):
+            if isinstance(data[pos], Sequence):
+                pass
 
         return output
 
