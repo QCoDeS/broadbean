@@ -1,7 +1,7 @@
 import logging
 import math
 import warnings
-from typing import Tuple, List, Dict, cast, Union
+from typing import Tuple, List, Dict, cast, Union, NewType
 from inspect import signature
 from copy import deepcopy
 import functools as ft
@@ -1833,29 +1833,19 @@ class Sequence:
 
     def plotSequence(self) -> None:
         """
-        Visualise the sequence
-
+        Visualise the sequence as it is "meant to be", i.e.
+        without delays and filters
         """
+
         if not self.checkConsistency():
             raise ValueError('Can not plot sequence: Something is '
                              'inconsistent. Please run '
                              'checkConsistency(verbose=True) for more details')
 
-        # First forge all elements that are blueprints
-        seqlen = self.length_sequenceelements
-        elements = []
-        subseqs = []  # a list of the positions at which there are subseqs
+        forged_seq = self.forge(apply_delays=False,
+                                apply_filters=False)
 
-        for pos in range(1, seqlen+1):
-            rawelem = self._data[pos]
-
-            if isinstance(rawelem, Element):
-                elements.append(rawelem.getArrays(includetime=True))
-            elif isinstance(rawelem, Sequence):
-                elements.append(rawelem._plotSummary())
-                subseqs.append(pos)
-
-        self._plotSequence(elements, subseqs)
+        self._plotSequence(forged_seq)
 
     def plotAWGOutput(self):
         """
@@ -1864,55 +1854,45 @@ class Sequence:
         plotSequence.
         """
 
-        package = self.outputForAWGFile()
+        forged_seq = self.forge()
 
-        elements = []
+        self._plotSequence(forged_seq)
 
-        def rescaler(val, ampl, off):
-            return ampl*(val+off)/2
-
-        for pos in range(self.length_sequenceelements):
-            element = {}
-            for chanind, chan in enumerate(self.channels):
-                npts = len(package[chanind][0][0][pos])
-
-                keystr_a = 'channel{}_amplitude'.format(chan)
-                keystr_o = 'channel{}_offset'.format(chan)
-                amp = self._awgspecs[keystr_a]
-                off = self._awgspecs[keystr_o]
-
-                wfm_raw = package[chanind][0][0][pos]  # values from -1 to 1
-                wfm = rescaler(wfm_raw, amp, off)
-
-                element[chan] = {'wfm': wfm,
-                                 'm1': package[chanind][1][0][pos],
-                                 'm2': package[chanind][2][0][pos],
-                                 'time': np.linspace(0, npts/self.SR, npts)
-                                 }
-            elements.append(element)
-
-        self._plotSequence(elements, [])
-
-    def _plotSequence(self, elements: List[Dict[int, Dict[str, np.ndarray]]],
-                      subseqs: List[int]) -> None:
+    # TODO: How to properly annotate this function?
+    def _plotSequence(self, seq: Dict[int, Dict]) -> None:
         """
         The heavy lifting plotter
+
+        Args:
+            forged_seq: A forged sequence (the output of Sequence.forge)
         """
+        # TODO: perhaps make this a static method?
 
         # Get the dimensions.
         chans = self._data[1].channels  # All element have the same channels
         seqlen = self.length_sequenceelements
 
+        def update_minmax(chanminmax, wfmdata, chanind):
+            (thismin, thismax) = (wfmdata.min(), wfmdata.max())
+            if thismin < chanminmax[chanind][0]:
+                chanminmax[chanind] = [thismin, chanminmax[chanind][1]]
+            if thismax > chanminmax[chanind][1]:
+                chanminmax[chanind] = [chanminmax[chanind][0], thismax]
+            return chanminmax
+
         # Then figure out the figure scalings
         chanminmax = [[np.inf, -np.inf]]*len(chans)
         for chanind, chan in enumerate(chans):
             for pos in range(seqlen):
-                wfmdata = elements[pos][chan]['wfm']
-                (thismin, thismax) = (wfmdata.min(), wfmdata.max())
-                if thismin < chanminmax[chanind][0]:
-                    chanminmax[chanind] = [thismin, chanminmax[chanind][1]]
-                if thismax > chanminmax[chanind][1]:
-                    chanminmax[chanind] = [chanminmax[chanind][0], thismax]
+                if seq[pos]['type'] == 'element':
+                    wfmdata = seq[pos]['content'][1]['data'][chan]['wfm']
+                    chanminmax = update_minmax(chanminmax, wfmdata, chanind)
+                elif seq[pos]['type'] == 'subsequence':
+                    for pos2 in seq[pos]['content'].keys():
+                        elem = seq[pos]['content'][pos2]['data']
+                        wfmdata = elem[chan]['wfm']
+                        chanminmax = update_minmax(chanminmax,
+                                                   wfmdata, chanind)
 
         fig, axs = plt.subplots(len(chans), seqlen)
 
@@ -1921,8 +1901,7 @@ class Sequence:
 
             # figure out the channel voltage scaling
             # The entire channel shares a y-axis
-            v_max = max([elements[pp][chan]['wfm'].max()
-                         for pp in range(seqlen)])
+            v_max = chanminmax[chanind][1]
             voltageexponent = np.log10(v_max)
             voltageunit = 'V'
             voltagescaling: float = 1
@@ -1951,15 +1930,19 @@ class Sequence:
                 # reduce the tickmark density (must be called before scaling)
                 ax.locator_params(tight=True, nbins=4, prune='lower')
 
-                wfm = elements[pos][chan]['wfm']
-                m1 = elements[pos][chan]['m1']
-                m2 = elements[pos][chan]['m2']
-                time = elements[pos][chan]['time']
-                # get the durations if they are specified
-                try:
-                    newdurs = elements[pos][chan]['newdurs']
-                except KeyError:
-                    newdurs = []
+                if seq[pos+1]['type'] == 'element':
+                    content = seq[pos+1]['content'][1]
+                    wfm = content['wfm']
+                    m1 = content.get('m1', np.zeros_like(wfm))
+                    m2 = content.get('m2', np.zeros_like(wfm))
+                    time = content['time']
+                    newdurs = content.get('newdurs', [])
+
+                else:
+                    ax.annotate('SUBSEQ', xy=(0.5, 0.5),
+                                xycoords='axes fraction',
+                                horizontalalignment='center')
+                    time = np.linspace(0, 1, 2)  # needed for timeexponent
 
                 # Figure out the axes' scaling
                 timeexponent = np.log10(time.max())
@@ -1975,14 +1958,10 @@ class Sequence:
                     timeunit = 'ns'
                     timescaling = 1e9
 
-                # waveform
-                if pos+1 not in subseqs:
+                if seq[pos+1]['type'] == 'element':
                     ax.plot(timescaling*time, voltagescaling*wfm, lw=3,
                             color=(0.6, 0.4, 0.3), alpha=0.4)
-                else:
-                    ax.annotate('SUBSEQ', xy=(0.5, 0.5),
-                                xycoords='axes fraction',
-                                horizontalalignment='center')
+
                 ymax = voltagescaling * chanminmax[chanind][1]
                 ymin = voltagescaling * chanminmax[chanind][0]
                 yrange = ymax - ymin
@@ -2009,16 +1988,14 @@ class Sequence:
                         color=(0.1, 0.1, 0.6), alpha=0.6, lw=2)
 
                 # If subsequence, plot lines indicating min and max value
-                if pos+1 in subseqs:
+                if seq[pos+1]['type'] == 'subsequence':
                     # min:
-                    ax.plot(timescaling*time, np.ones_like(m2)*wfm[0],
+                    ax.plot(time, np.ones_like(m2)*wfm[0],
                             color=(0.12, 0.12, 0.12), alpha=0.2, lw=2)
                     # max:
-                    ax.plot(timescaling*time, np.ones_like(m2)*wfm[1],
+                    ax.plot(time, np.ones_like(m2)*wfm[1],
                             color=(0.12, 0.12, 0.12), alpha=0.2, lw=2)
 
-                # remove time axis if subseq (we can't know the play time)
-                if pos+1 in subseqs:
                     ax.set_xticks([])
 
                 # time step lines
@@ -2036,7 +2013,7 @@ class Sequence:
                     newax.set_yticks([])
                     newax.set_ylabel('Ch. {}'.format(chan))
 
-                if pos+1 in subseqs:
+                if seq[pos+1]['type'] == 'subsequence':
                     ax.set_xlabel('Time N/A')
                 else:
                     ax.set_xlabel('({})'.format(timeunit))
@@ -2068,19 +2045,21 @@ class Sequence:
 
                     ax.set_title(titlestring)
 
-    def forge(self) -> Dict[int, Dict]:
+    def forge(self, apply_delays: bool=True,
+              apply_filters: bool=True) -> Dict[int, Dict]:
         """
         Forge the sequence, applying all specified transformations
         (delays and ripasso filter corrections). Copies the data, so
         that the sequence is not modified by forging.
 
+        Args:
+            apply_delays: Whether to apply the assigned channel delays
+                (if any)
+            apply_filters: Whether to apply the assigned channel filters
+                (if any)
+
         Returns:
-            A nested dictionary.
-                {pos1: {'type': 'XX',
-                       'content': {pos2: 'data': {chan: {'wfm': array, ...}}},
-                                         'sequencing': {'nreps': 10, ...}}}
-                'type' can be either 'subsequence' or 'element'. If 'element',
-                then only one pos2 is present, else all of them
+            A nested dictionary holding the forged sequence.
         """
         # Validation
         if not self.checkConsistency():
@@ -2098,20 +2077,22 @@ class Sequence:
         # iteration, although that may compromise readability
 
         # Apply channel delays.
-        delays = []
-        for chan in channels:
-            try:
-                delays.append(self._awgspecs['channel{}_delay'.format(chan)])
-            except KeyError:
-                delays.append(0)
 
-        for pos in range(1, seqlen+1):
-            if isinstance(data[pos], Sequence):
-                subseq = data[pos]
-                for elem in subseq._data.values():
-                    elem._applyDelays(delays)
-            elif isinstance(data[pos], Element):
-                data[pos]._applyDelays(delays)
+        if apply_delays:
+            delays = []
+            for chan in channels:
+                try:
+                    delays.append(self._awgspecs['channel{}_delay'.format(chan)])
+                except KeyError:
+                    delays.append(0)
+
+            for pos in range(1, seqlen+1):
+                if isinstance(data[pos], Sequence):
+                    subseq = data[pos]
+                    for elem in subseq._data.values():
+                        elem._applyDelays(delays)
+                elif isinstance(data[pos], Element):
+                    data[pos]._applyDelays(delays)
 
         # forge arrays and form the output dict
         for pos in range(1, seqlen+1):
@@ -2135,9 +2116,11 @@ class Sequence:
                 output[pos]['content'] = {1: {'data': elem.getArrays()}}
 
         # apply filter corrections to forged arrays
-        for pos in range(1, seqlen+1):
-            if isinstance(data[pos], Sequence):
-                pass
+
+        if apply_filters:
+            for pos in range(1, seqlen+1):
+                if isinstance(data[pos], Sequence):
+                    pass
 
         return output
 
