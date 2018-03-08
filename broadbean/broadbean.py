@@ -1798,36 +1798,41 @@ class Sequence:
 
         return elem
 
-    def _plotSummary(self) -> Dict[int, Dict[str, np.ndarray]]:
+    @staticmethod
+    def _plotSummary(seq: Dict[int, Dict]) -> Dict[int, Dict[str, np.ndarray]]:
         """
-        Return a mini-version of the getArrays output for the sequence.
-        This is so that sequences that are subsequences can be plotted.
+        Return a plotting summary of a subsequence.
+
+        Args:
+            seq: The 'content' value of a forged sequence where a
+                subsequence resides
+
+        Returns:
+            A dict that looks like a forged element, but all waveforms
+            are just two points, np.array([min, max])
         """
 
         output = {}
 
-        chans = self.channels
+        # we assume correctness, all postions specify the same channels
+        chans = seq[1]['data'].keys()
 
         minmax = dict(zip(chans, [(0, 0)]*len(chans)))
 
-        for element in self._data.values():
-            if isinstance(element, Sequence):
-                raise SequenceConsistencyError('_plotSummary called for a '
-                                               'sequence that has a sub'
-                                               'sequence. This should not '
-                                               'happen...')
-            else:
-                arrs = element.getArrays()
-                for chan in chans:
-                    wfm = arrs[chan]['wfm']
-                    if wfm.min() < minmax[chan][0]:
-                        minmax[chan] = (wfm.min(), minmax[chan][1])
-                    if wfm.max() > minmax[chan][1]:
-                        minmax[chan] = (minmax[chan][0], wfm.max())
-                    output[chan] = {'wfm': np.array(minmax[chan]),
-                                    'm1': np.zeros(2),
-                                    'm2': np.zeros(2),
-                                    'time': np.linspace(0, 1, 2)}
+        for element in seq.values():
+
+            arr_dict = element['data']
+
+            for chan in chans:
+                wfm = arr_dict[chan]['wfm']
+                if wfm.min() < minmax[chan][0]:
+                    minmax[chan] = (wfm.min(), minmax[chan][1])
+                if wfm.max() > minmax[chan][1]:
+                    minmax[chan] = (minmax[chan][0], wfm.max())
+                output[chan] = {'wfm': np.array(minmax[chan]),
+                                'm1': np.zeros(2),
+                                'm2': np.zeros(2),
+                                'time': np.linspace(0, 1, 2)}
 
         return output
 
@@ -1942,6 +1947,10 @@ class Sequence:
                     newdurs = content.get('newdurs', [])
 
                 else:
+                    arr_dict = self._plotSummary(seq[pos+1]['content'])
+                    wfm = arr_dict[chan]['wfm']
+                    newdurs = []
+
                     ax.annotate('SUBSEQ', xy=(0.5, 0.5),
                                 xycoords='axes fraction',
                                 horizontalalignment='center')
