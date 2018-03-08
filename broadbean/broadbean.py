@@ -1843,7 +1843,8 @@ class Sequence:
                              'checkConsistency(verbose=True) for more details')
 
         forged_seq = self.forge(apply_delays=False,
-                                apply_filters=False)
+                                apply_filters=False,
+                                includetime=True)
 
         self._plotSequence(forged_seq)
 
@@ -1854,7 +1855,9 @@ class Sequence:
         plotSequence.
         """
 
-        forged_seq = self.forge()
+        forged_seq = self.forge(apply_delays=False,
+                                apply_filters=False,
+                                includetime=True)
 
         self._plotSequence(forged_seq)
 
@@ -1883,7 +1886,7 @@ class Sequence:
         # Then figure out the figure scalings
         chanminmax = [[np.inf, -np.inf]]*len(chans)
         for chanind, chan in enumerate(chans):
-            for pos in range(seqlen):
+            for pos in range(1, seqlen+1):
                 if seq[pos]['type'] == 'element':
                     wfmdata = seq[pos]['content'][1]['data'][chan]['wfm']
                     chanminmax = update_minmax(chanminmax, wfmdata, chanind)
@@ -1931,7 +1934,7 @@ class Sequence:
                 ax.locator_params(tight=True, nbins=4, prune='lower')
 
                 if seq[pos+1]['type'] == 'element':
-                    content = seq[pos+1]['content'][1]
+                    content = seq[pos+1]['content'][1]['data'][chan]
                     wfm = content['wfm']
                     m1 = content.get('m1', np.zeros_like(wfm))
                     m2 = content.get('m2', np.zeros_like(wfm))
@@ -1967,33 +1970,36 @@ class Sequence:
                 yrange = ymax - ymin
                 ax.set_ylim([ymin-0.05*yrange, ymax+0.2*yrange])
 
-                # marker1 (red, on top)
-                y_m1 = ymax+0.15*yrange
-                marker_on = np.ones_like(m1)
-                marker_on[m1 == 0] = np.nan
-                marker_off = np.ones_like(m1)
-                ax.plot(timescaling*time, y_m1*marker_off,
-                        color=(0.6, 0.1, 0.1), alpha=0.2, lw=2)
-                ax.plot(timescaling*time, y_m1*marker_on,
-                        color=(0.6, 0.1, 0.1), alpha=0.6, lw=2)
+                if seq[pos+1]['type'] == 'element':
+                    # TODO: make this work for more than two markers
 
-                # marker 2 (blue, below the red)
-                y_m2 = ymax+0.10*yrange
-                marker_on = np.ones_like(m2)
-                marker_on[m2 == 0] = np.nan
-                marker_off = np.ones_like(m2)
-                ax.plot(timescaling*time, y_m2*marker_off,
-                        color=(0.1, 0.1, 0.6), alpha=0.2, lw=2)
-                ax.plot(timescaling*time, y_m2*marker_on,
-                        color=(0.1, 0.1, 0.6), alpha=0.6, lw=2)
+                    # marker1 (red, on top)
+                    y_m1 = ymax+0.15*yrange
+                    marker_on = np.ones_like(m1)
+                    marker_on[m1 == 0] = np.nan
+                    marker_off = np.ones_like(m1)
+                    ax.plot(timescaling*time, y_m1*marker_off,
+                            color=(0.6, 0.1, 0.1), alpha=0.2, lw=2)
+                    ax.plot(timescaling*time, y_m1*marker_on,
+                            color=(0.6, 0.1, 0.1), alpha=0.6, lw=2)
+
+                    # marker 2 (blue, below the red)
+                    y_m2 = ymax+0.10*yrange
+                    marker_on = np.ones_like(m2)
+                    marker_on[m2 == 0] = np.nan
+                    marker_off = np.ones_like(m2)
+                    ax.plot(timescaling*time, y_m2*marker_off,
+                            color=(0.1, 0.1, 0.6), alpha=0.2, lw=2)
+                    ax.plot(timescaling*time, y_m2*marker_on,
+                            color=(0.1, 0.1, 0.6), alpha=0.6, lw=2)
 
                 # If subsequence, plot lines indicating min and max value
                 if seq[pos+1]['type'] == 'subsequence':
                     # min:
-                    ax.plot(time, np.ones_like(m2)*wfm[0],
+                    ax.plot(time, np.ones_like(time)*wfm[0],
                             color=(0.12, 0.12, 0.12), alpha=0.2, lw=2)
                     # max:
-                    ax.plot(time, np.ones_like(m2)*wfm[1],
+                    ax.plot(time, np.ones_like(time)*wfm[1],
                             color=(0.12, 0.12, 0.12), alpha=0.2, lw=2)
 
                     ax.set_xticks([])
@@ -2046,7 +2052,8 @@ class Sequence:
                     ax.set_title(titlestring)
 
     def forge(self, apply_delays: bool=True,
-              apply_filters: bool=True) -> Dict[int, Dict]:
+              apply_filters: bool=True,
+              includetime: bool=False) -> Dict[int, Dict]:
         """
         Forge the sequence, applying all specified transformations
         (delays and ripasso filter corrections). Copies the data, so
@@ -2057,6 +2064,8 @@ class Sequence:
                 (if any)
             apply_filters: Whether to apply the assigned channel filters
                 (if any)
+            includetime: Whether to include the time axis and the segment
+                durations (a list) with the arrays. Used for plotting.
 
         Returns:
             A nested dictionary holding the forged sequence.
@@ -2106,14 +2115,16 @@ class Sequence:
                     output[pos]['content'][pos2] = {'data': {},
                                                     'sequencing': {}}
                     elem = subseq.element(pos2)
-                    output[pos]['content'][pos2]['data'] = elem.getArrays()
+                    dictdata = elem.getArrays(includetime=includetime)
+                    output[pos]['content'][pos2]['data'] = dictdata
                     seqing = subseq._sequencing[pos2]
                     output[pos]['content'][pos2]['sequencing'] = seqing
                     # TODO: update sequencing
             elif isinstance(data[pos], Element):
                 elem = data[pos]
                 output[pos]['type'] = 'element'
-                output[pos]['content'] = {1: {'data': elem.getArrays()}}
+                dictdata = elem.getArrays(includetime=includetime)
+                output[pos]['content'] = {1: {'data': dictdata}}
 
         # apply filter corrections to forged arrays
 
