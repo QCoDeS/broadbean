@@ -56,7 +56,7 @@ class PulseAtoms:
 
     @staticmethod
     def sine(freq, ampl, off, phase, SR, npts):
-        time = np.linspace(0, npts/SR, npts)
+        time = np.linspace(0, npts/SR, npts, endpoint=False)
         freq *= 2*np.pi
         return (ampl*np.sin(freq*time+phase)+off)
 
@@ -64,7 +64,7 @@ class PulseAtoms:
     def ramp(start, stop, SR, npts):
         dur = npts/SR
         slope = (stop-start)/dur
-        time = np.linspace(0, dur, npts)
+        time = np.linspace(0, dur, npts, endpoint=False)
         return (slope*time+start)
 
     @staticmethod
@@ -80,7 +80,7 @@ class PulseAtoms:
         Is by default centred in the middle of the interval
         """
         dur = npts/SR
-        time = np.linspace(0, dur, npts)
+        time = np.linspace(0, dur, npts, endpoint=False)
         centre = dur/2
         baregauss = np.exp((-(time-mu-centre)**2/(2*sigma**2)))
         return ampl*baregauss+offset
