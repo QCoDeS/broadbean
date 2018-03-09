@@ -2302,6 +2302,7 @@ def _subelementBuilder(blueprint: BluePrint, SR: int,
     # When special segments like 'waituntil' and 'ensureaverage' get
     # evaluated, the list of durations gets updated. That new list
     # is newdurations
+
     newdurations = np.array(durations)
 
     # All waveforms must ultimately have an integer number of samples
@@ -2337,13 +2338,14 @@ def _subelementBuilder(blueprint: BluePrint, SR: int,
     output = [block for sl in blocks for block in sl]
 
     # now make the markers
-    time = np.linspace(0, sum(newdurations), len(output))
+    time = np.linspace(0, sum(newdurations), len(output), endpoint=False)
     m1 = np.zeros_like(time)
     m2 = m1.copy()
-    dt = time[1] - time[0]
+
     # update the 'absolute time' marker list with 'relative time'
     # (segment bound) markers converted to absolute time
-    elapsed_times = np.cumsum([0.0] + newdurations)
+    elapsed_times = np.cumsum([0.0] + list(newdurations))
+
     for pos, spec in enumerate(segmark1):
         if spec[1] is not 0:
             ontime = elapsed_times[pos] + spec[0]  # spec is (delay, duration)
@@ -2357,7 +2359,7 @@ def _subelementBuilder(blueprint: BluePrint, SR: int,
     for marker, setting in zip(marks, msettings):
         for (t, dur) in setting:
             ind = np.abs(time-t).argmin()
-            chunk = int(np.round(dur/dt))
+            chunk = int(np.round(dur*SR))
             marker[ind:ind+chunk] = 1
 
     output = np.array(output)  # TODO: Why is this sometimes needed?
