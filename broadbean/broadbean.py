@@ -4,14 +4,22 @@ from typing import Tuple, List, Dict, cast, Union
 from inspect import signature
 from copy import deepcopy
 import functools as ft
+
 import numpy as np
 import matplotlib.pyplot as plt
+from schema import Schema, Or, Optional
 
 from broadbean.ripasso import applyInverseRCFilter
 
 plt.ion()
 
 log = logging.getLogger(__name__)
+
+fs_schema = Schema({int: {'type': Or('subsequence', 'element'),
+                          'content': {int: {'data': {int: {str: np.ndarray}},
+                                            Optional('sequencing'): {Optional(str):
+                                                                    int}}},
+                          'sequencing': {Optional(str): int}}})
 
 
 class SequencingError(Exception):
@@ -27,6 +35,10 @@ class ElementDurationError(Exception):
 
 
 class SequenceConsistencyError(Exception):
+    pass
+
+
+class InvalidForgedSequenceError(Exception):
     pass
 
 
@@ -1873,7 +1885,13 @@ class Sequence:
         Args:
             forged_seq: A forged sequence (the output of Sequence.forge)
         """
+
         # TODO: perhaps make this a static method?
+
+        try:
+            fs_schema.validate(seq)
+        except Exception as e:
+            raise InvalidForgedSequenceError(e)
 
         # Get the dimensions.
         chans = self._data[1].channels  # All element have the same channels

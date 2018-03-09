@@ -3,7 +3,6 @@
 
 import pytest
 import numpy as np
-from schema import Schema, Or, Optional
 
 import broadbean as bb
 
@@ -13,19 +12,7 @@ gauss = bb.PulseAtoms.gaussian
 
 SR1 = 1e9
 
-
-@pytest.fixture
-def forged_sequence_schema():
-    """
-    Schema for the output of a forged sequence
-    """
-    schema = Schema({int: {'type': Or('subsequence', 'element'),
-                           'content': {int: {'data': {int: {str: np.ndarray}},
-                                             Optional('sequencing'): {Optional(str):
-                                                                      int}}},
-                           'sequencing': {Optional(str): int}}})
-
-    return schema
+forged_sequence_schema = bb.fs_schema
 
 
 @pytest.fixture
@@ -178,7 +165,7 @@ def master_sequence(subseq1, subseq2, bp_element, noise_element):
     return seq
 
 
-def test_forge(master_sequence, forged_sequence_schema):
+def test_forge(master_sequence):
 
     assert master_sequence.length_sequenceelements == 4
 
