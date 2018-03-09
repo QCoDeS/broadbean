@@ -1,7 +1,6 @@
 import logging
-import math
 import warnings
-from typing import Tuple, List, Dict, cast, Union, NewType
+from typing import Tuple, List, Dict, cast, Union
 from inspect import signature
 from copy import deepcopy
 import functools as ft
