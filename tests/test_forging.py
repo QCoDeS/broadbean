@@ -66,3 +66,25 @@ def test_correct_periods():
         wfm = _subelementBuilder(bp, SR, [dur])['wfm']
 
         assert _has_period(wfm, period)
+
+
+def test_correct_marker_times():
+
+    SR = 100
+
+    bp = bb.BluePrint()
+    bp.insertSegment(-1, ramp, (0, 0), dur=1, name='A')
+    bp.insertSegment(-1, ramp, (0, 0), dur=1, name='B')
+    bp.insertSegment(-1, ramp, (0, 0), dur=1, name='C')
+    bp.setSR(SR)
+
+    bp.setSegmentMarker('A', (0, 0.5), 1)
+    bp.setSegmentMarker('B', (-0.1, 0.25), 2)
+    bp.setSegmentMarker('C', (0.1, 0.25), 1)
+
+    forged_bp = _subelementBuilder(bp, SR, [1, 1, 1])
+
+    m1 = forged_bp['m1']
+
+    assert (m1 == np.concatenate((np.ones(50), np.zeros(160),
+                                  np.ones(25), np.zeros(65)))).all()
