@@ -83,7 +83,7 @@ def test_copy(blueprint_tophat):
     assert elem1 == elem2
 
 ##################################################
-# Adding things to the Element, goes hand in hand
+# Adding things to the Element goes hand in hand
 # with duration validation
 
 
@@ -98,8 +98,8 @@ def test_addArray():
 
     elem = bb.Element()
     elem.addArray(1, wfm, SR, m1=m1, m2=m2)
-    elem.addArray(2, wfm, SR, m1=m1)
-    elem.addArray(3, wfm, SR, m2=m2)
+    elem.addArray('2', wfm, SR, m1=m1)
+    elem.addArray('readout_channel', wfm, SR, m2=m2)
 
     elem.validateDurations()
 
