@@ -1531,7 +1531,8 @@ class Sequence:
         Add an element to the sequence. Overwrites previous values.
 
         Args:
-            position (int): The sequence position of the element (lowest: 1)
+            position (int): The sequence position of the element, if -1 element
+                is appended
             element (Element): An element instance
 
         Raises:
@@ -1544,6 +1545,13 @@ class Sequence:
         # make a new copy of the element
         newelement = element.copy()
 
+        if position == -1:
+            position = self.length_sequenceelements
+        elif position < -1:
+            raise IndexError(("Tried to add an element at position <{}>. "
+                              "Position must be -1 to append, 0 or positive "
+                              "otherwise").format(position))
+
         # Data mutation
         self._data.update({position: newelement})
 
@@ -1551,6 +1559,7 @@ class Sequence:
         self._sequencing[position] = {'twait': 0, 'nrep': 1,
                                       'jump_input': 0, 'jump_target': 0,
                                       'goto': 0}
+
 
     def checkConsistency(self, verbose=False):
         """
