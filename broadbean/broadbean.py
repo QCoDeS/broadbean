@@ -1,18 +1,25 @@
 import logging
-import math
 import warnings
 from typing import Tuple, List, Dict, cast, Union
 from inspect import signature
 from copy import deepcopy
 import functools as ft
+
 import numpy as np
 import matplotlib.pyplot as plt
+from schema import Schema, Or, Optional
 
 from broadbean.ripasso import applyInverseRCFilter
 
 plt.ion()
 
 log = logging.getLogger(__name__)
+
+fs_schema = Schema({int: {'type': Or('subsequence', 'element'),
+                          'content': {int: {'data': {Or(str, int): {str: np.ndarray}},
+                                            Optional('sequencing'): {Optional(str):
+                                                                    int}}},
+                          'sequencing': {Optional(str): int}}})
 
 
 class SequencingError(Exception):
@@ -28,6 +35,10 @@ class ElementDurationError(Exception):
 
 
 class SequenceConsistencyError(Exception):
+    pass
+
+
+class InvalidForgedSequenceError(Exception):
     pass
 
 
@@ -888,7 +899,7 @@ class Element:
         # Each value is a dict with the following possible keys, values:
         # 'blueprint': a BluePrint
         # 'channelname': channel name for later use with a Tektronix AWG5014
-        # 'array': an np.array
+        # 'array': a dict {'wfm': np.array} (other keys: 'm1', 'm2', etc)
         # 'SR': Sample rate. Used with array.
         #
         # Another dict is meta, which holds:
@@ -899,7 +910,8 @@ class Element:
         self._data = {}
         self._meta = {}
 
-    def addBluePrint(self, channel, blueprint):
+    def addBluePrint(self, channel: Union[str, int],
+                     blueprint: BluePrint) -> None:
         """
         Add a blueprint to the element on the specified channel.
         Overwrites whatever was there before.
@@ -918,7 +930,7 @@ class Element:
         self._data[channel] = {}
         self._data[channel]['blueprint'] = newprint
 
-    def addArray(self, channel: int, waveform: np.ndarray,
+    def addArray(self, channel: Union[int, str], waveform: np.ndarray,
                  SR: int, **kwargs) -> None:
         """
         Add an array of voltage value to the element on the specified channel.
@@ -1125,18 +1137,20 @@ class Element:
 
         return desc
 
-    def changeArg(self, channel, name, arg, value, replaceeverywhere=False):
+    def changeArg(self, channel: Union[str, int],
+                  name: str, arg: Union[str, int], value: Union[int, float],
+                  replaceeverywhere: bool=False) -> None:
         """
         Change the argument of a function of the blueprint on the specified
         channel.
 
         Args:
-            channel (int): The channel where the blueprint sits.
-            name (str): The name of the segment in which to change an argument
-            arg (Union[int, str]): Either the position (int) or name (str) of
+            channel: The channel where the blueprint sits.
+            name: The name of the segment in which to change an argument
+            arg: Either the position (int) or name (str) of
                 the argument to change
-            value (Union[int, float]): The new value of the argument
-            replaceeverywhere (bool): If True, the same argument is overwritten
+            value: The new value of the argument
+            replaceeverywhere: If True, the same argument is overwritten
                 in ALL segments where the name matches. E.g. 'gaussian1' will
                 match 'gaussian', 'gaussian2', etc. If False, only the segment
                 with exact name match gets a replacement.
@@ -1146,9 +1160,9 @@ class Element:
             ValueError: If the argument can not be matched (either the argument
                 name does not match or the argument number is wrong).
         """
-        # avoid a KeyError in the next if statement
+
         if channel not in self.channels:
-            self._data[channel] = {'': ''}
+            raise ValueError(f'Nothing assigned to channel {channel}')
 
         if 'blueprint' not in self._data[channel].keys():
             raise ValueError('No blueprint on channel {}.'.format(channel))
@@ -1157,26 +1171,26 @@ class Element:
 
         bp.changeArg(name, arg, value, replaceeverywhere)
 
-    def changeDuration(self, channel, name, newdur, replaceeverywhere=False):
+    def changeDuration(self, channel: Union[str, int], name: str,
+                       newdur: Union[int, float],
+                       replaceeverywhere: bool=False) -> None:
         """
-        Change the duration(s) of a segment of the blueprint on the specified
+        Change the duration of a segment of the blueprint on the specified
         channel
 
         Args:
-            channel (int): The channel holding the blueprint in question
-            name (str): The name of the segment to modify
-            newdur (Union[tuple, int, float]): The new duration(s). Must be a
-                tuple if more than one is provided.
-            replaceeverywhere (Optional[bool]): If True, all segments
+            channel: The channel holding the blueprint in question
+            name): The name of the segment to modify
+            newdur: The new duration.
+            replaceeverywhere: If True, all segments
                 matching the base
                 name given will have their duration changed. If False, only the
                 segment with an exact name match will have its duration
                 changed. Default: False.
         """
 
-        # avoid a KeyError in the next if statement
         if channel not in self.channels:
-            self._data[channel] = {'': ''}
+            raise ValueError(f'Nothing assigned to channel {channel}')
 
         if 'blueprint' not in self._data[channel].keys():
             raise ValueError('No blueprint on channel {}.'.format(channel))
@@ -1184,6 +1198,60 @@ class Element:
         bp = self._data[channel]['blueprint']
 
         bp.changeDuration(name, newdur, replaceeverywhere)
+
+    def _applyDelays(self, delays: List[float]) -> None:
+        """
+        Apply delays to the channels of this element. This function is intended
+        to be used via a Sequence object. Note that this function changes
+        the element it is called on. Calling _applyDelays a second will apply
+        more delays on top of the first ones.
+
+        Args:
+            delays: A list matching the channels of the Element. If there
+                are channels=[1, 3], then delays=[1e-3, 0] will delay channel
+                1 by 1 ms and channel 3 by nothing.
+        """
+        if len(delays) != len(self.channels):
+            raise ValueError('Incorrect number of delays specified.'
+                             ' Must match the number of channels.')
+
+        if not sum([d >= 0 for d in delays]) == len(delays):
+            raise ValueError('Negative delays not allowed.')
+
+        # The strategy is:
+        # Add waituntil at the beginning, update all waituntils inside, add a
+        # zeros segment at the end.
+        # If already-forged arrays are found, simply append and prepend zeros
+
+        SR = self.SR
+        maxdelay = max(delays)
+
+        for chanind, chan in enumerate(self.channels):
+            delay = delays[chanind]
+
+            if 'blueprint' in self._data[chan].keys():
+                blueprint = self._data[chan]['blueprint']
+
+                # update existing waituntils
+                for segpos in range(len(blueprint._funlist)):
+                    if blueprint._funlist[segpos] == 'waituntil':
+                        oldwait = blueprint._argslist[segpos][0]
+                        blueprint._argslist[segpos] = (oldwait+delay,)
+                # insert delay before the waveform
+                if delay > 0:
+                    blueprint.insertSegment(0, 'waituntil', (delay,),
+                                            'waituntil')
+                # add zeros at the end
+                if maxdelay-delay > 0:
+                    blueprint.insertSegment(-1, PulseAtoms.ramp, (0, 0),
+                                            dur=maxdelay-delay)
+
+            else:
+                arrays = self._data[chan]['array']
+                for name, arr in arrays.items():
+                    pre_wait = np.zeros(int(delay*SR))
+                    post_wait = np.zeros(int((maxdelay-delay)*SR))
+                    arrays[name] = np.concatenate((pre_wait, arr, post_wait))
 
     def copy(self):
         """
@@ -1210,7 +1278,10 @@ class Element:
         cur_fig = plt.gcf()
         for ii, channel in enumerate(self.channels):
             oldlabel = cur_fig.axes[ii].get_ylabel()
-            newlabel = oldlabel.replace('Signal', 'Ch {}'.format(channel))
+            if isinstance(channel, int):
+                newlabel = oldlabel.replace('Signal', 'Ch {}'.format(channel))
+            else:
+                newlabel = oldlabel.replace('Signal', '{}'.format(channel))
             cur_fig.axes[ii].set_ylabel(newlabel)
 
     def __eq__(self, other):
@@ -1236,6 +1307,7 @@ class Sequence:
 
         # the internal data structure, a dict with tuples as keys and values
         # the key is sequence position (int), the value is element (Element)
+        # or subsequence (Sequence)
         self._data = {}
 
         # Here goes the sequencing info. Key: position
@@ -1451,7 +1523,8 @@ class Sequence:
         keystr = 'channel{}_offset'.format(channel)
         self._awgspecs[keystr] = offset
 
-    def setChannelAmplitude(self, channel: int, ampl: float) -> None:
+    def setChannelAmplitude(self, channel: Union[int, str],
+                            ampl: float) -> None:
         """
         Assign the physical voltage amplitude of the channel. This is used
         when making output for real instruments.
@@ -1463,19 +1536,21 @@ class Sequence:
         keystr = 'channel{}_amplitude'.format(channel)
         self._awgspecs[keystr] = ampl
 
-    def setChannelOffset(self, channel: int, offset: float) -> None:
+    def setChannelOffset(self, channel: Union[int, str],
+                         offset: float) -> None:
         """
         Assign the physical voltage offset of the channel. This is used
         by some backends when making output for real instruments
 
         Args:
-            channel: The channel number
+            channel: The channel number/name
             offset: The channel offset (V)
         """
         keystr = 'channel{}_offset'.format(channel)
         self._awgspecs[keystr] = offset
 
-    def setChannelDelay(self, channel, delay):
+    def setChannelDelay(self, channel: Union[int, str],
+                        delay: float) -> None:
         """
         Assign a delay to a channel. This is used when making output for .awg
         files. Use the delay to compensate for cable length differences etc.
@@ -1483,22 +1558,20 @@ class Sequence:
         appended to non (or less) delayed channels.
 
         Args:
-            channel (int): The channel number
-            delay (float): The required delay (s)
+            channel: The channel number/name
+            delay: The required delay (s)
 
         Raises:
             ValueError: If a non-integer or non-non-negative channel number is
                 given.
         """
 
-        if not isinstance(channel, int) or channel < 1:
-            raise ValueError('{} is not a valid '.format(channel) +
-                             'channel number.')
-
         self._awgspecs['channel{}_delay'.format(channel)] = delay
 
-    def setChannelFilterCompensation(self, channel, kind, order=1,
-                                     f_cut=None, tau=None):
+    def setChannelFilterCompensation(self, channel: Union[str, int],
+                                     kind: str, order: int=1,
+                                     f_cut: float=None,
+                                     tau: float=None) -> None:
         """
         Specify a filter to compensate for.
 
@@ -1509,13 +1582,13 @@ class Sequence:
         pass is supported.
 
         Args:
-            channel (int): The channel to apply this to.
-            kind (str): Either 'LP' or 'HP'
-            order (Optional[int]): The order of the filter to compensate for.
+            channel: The channel to apply this to.
+            kind: Either 'LP' or 'HP'
+            order: The order of the filter to compensate for.
                 May be negative. Default: 1.
-            f_cut (Optional[Union[float, int]]): The cut_off frequency (Hz).
-            tau (Optional[Union[float, int]]): The time constant (s). Note that
-                tau = 1/f_cut and that only one can be specified.
+            f_cut: The cut_off frequency (Hz).
+            tau): The time constant (s). Note that
+                tau = 1/f_cut and that only one of the two can be specified.
 
         Raises:
             ValueError: If kind is not 'LP' or 'HP'
@@ -1537,7 +1610,7 @@ class Sequence:
         self._awgspecs[keystr] = {'kind': kind, 'order': order, 'f_cut': f_cut,
                                   'tau': tau}
 
-    def addElement(self, position, element):
+    def addElement(self, position: int, element: Element) -> None:
         """
         Add an element to the sequence. Overwrites previous values.
 
@@ -1559,6 +1632,35 @@ class Sequence:
         self._data.update({position: newelement})
 
         # insert default sequencing settings
+        self._sequencing[position] = {'twait': 0, 'nrep': 1,
+                                      'jump_input': 0, 'jump_target': 0,
+                                      'goto': 0}
+
+    def addSubSequence(self, position: int, subsequence: 'Sequence') -> None:
+        """
+        Add a subsequence to the sequence. Overwrites anything previously
+        assigned to this position. The subsequence can not contain any
+        subsequences itself.
+
+        Args:
+            position: The sequence position (starting from 1)
+            subsequence: The subsequence to add
+        """
+        if not isinstance(subsequence, Sequence):
+            raise ValueError('Subsequence must be a sequence object. '
+                             'Received object of type '
+                             '{}.'.format(type(subsequence)))
+
+        for elem in subsequence._data.values():
+            if isinstance(elem, Sequence):
+                raise ValueError('Subsequences can not contain subsequences.')
+
+        if subsequence.SR != self.SR:
+            raise ValueError('Subsequence SR does not match (main) sequence SR'
+                             '. ({} and {}).'.format(subsequence.SR, self.SR))
+
+        self._data[position] = subsequence.copy()
+
         self._sequencing[position] = {'twait': 0, 'nrep': 1,
                                       'jump_input': 0, 'jump_target': 0,
                                       'goto': 0}
@@ -1674,9 +1776,25 @@ class Sequence:
     @property
     def channels(self):
         """
-        Returns a list of the specified channels
+        Returns a list of the specified channels of the sequence
         """
-        return self.element(1).channels
+        if self.checkConsistency():
+            return self.element(1).channels
+        else:
+            raise SequenceConsistencyError('Sequence not consistent. Can not'
+                                           ' figure out the channels.')
+
+    @property
+    def points(self):
+        """
+        Returns the number of points of the sequence, disregarding
+        sequencing info (like repetitions). Useful for asserting upload
+        times, i.e. the size of the built sequence.
+        """
+        total = 0
+        for elem in self._data.values():
+            total += elem.points
+        return total
 
     def element(self, pos):
         """
@@ -1698,26 +1816,60 @@ class Sequence:
 
         return elem
 
-    def plotSequence(self):
+    @staticmethod
+    def _plotSummary(seq: Dict[int, Dict]) -> Dict[int, Dict[str, np.ndarray]]:
         """
-        Visualise the sequence
+        Return a plotting summary of a subsequence.
 
+        Args:
+            seq: The 'content' value of a forged sequence where a
+                subsequence resides
+
+        Returns:
+            A dict that looks like a forged element, but all waveforms
+            are just two points, np.array([min, max])
         """
+
+        output = {}
+
+        # we assume correctness, all postions specify the same channels
+        chans = seq[1]['data'].keys()
+
+        minmax = dict(zip(chans, [(0, 0)]*len(chans)))
+
+        for element in seq.values():
+
+            arr_dict = element['data']
+
+            for chan in chans:
+                wfm = arr_dict[chan]['wfm']
+                if wfm.min() < minmax[chan][0]:
+                    minmax[chan] = (wfm.min(), minmax[chan][1])
+                if wfm.max() > minmax[chan][1]:
+                    minmax[chan] = (minmax[chan][0], wfm.max())
+                output[chan] = {'wfm': np.array(minmax[chan]),
+                                'm1': np.zeros(2),
+                                'm2': np.zeros(2),
+                                'time': np.linspace(0, 1, 2)}
+
+        return output
+
+    def plotSequence(self) -> None:
+        """
+        Visualise the sequence as it is "meant to be", i.e.
+        without delays and filters
+        """
+
         if not self.checkConsistency():
             raise ValueError('Can not plot sequence: Something is '
                              'inconsistent. Please run '
                              'checkConsistency(verbose=True) for more details')
 
-        # First forge all elements that are blueprints
-        seqlen = self.length_sequenceelements
-        elements = []
-        for pos in range(1, seqlen+1):
-            rawelem = self._data[pos]
-            # returns the elements as dicts with
-            # {channel: [wfm, m1, m2, time, newdurations]} structure
-            elements.append(rawelem.getArrays(includetime=True))
+        forged_seq = self.forge(apply_delays=False,
+                                apply_filters=False,
+                                includetime=True)
 
-        self._plotSequence(elements)
+        self._plotSequence(forged_seq)
 
     def plotAWGOutput(self):
         """
@@ -1726,54 +1878,53 @@ class Sequence:
         plotSequence.
         """
 
-        package = self.outputForAWGFile()
+        forged_seq = self.forge(apply_delays=False,
+                                apply_filters=False,
+                                includetime=True)
 
-        elements = []
+        self._plotSequence(forged_seq)
 
-        def rescaler(val, ampl, off):
-            return ampl*(val+off)/2
-
-        for pos in range(self.length_sequenceelements):
-            element = {}
-            for chanind, chan in enumerate(self.channels):
-                npts = len(package[chanind][0][0][pos])
-
-                keystr_a = 'channel{}_amplitude'.format(chan)
-                keystr_o = 'channel{}_offset'.format(chan)
-                amp = self._awgspecs[keystr_a]
-                off = self._awgspecs[keystr_o]
-
-                wfm_raw = package[chanind][0][0][pos]  # values from -1 to 1
-                wfm = rescaler(wfm_raw, amp, off)
-
-                element[chan] = {'wfm': wfm,
-                                 'm1': package[chanind][1][0][pos],
-                                 'm2': package[chanind][2][0][pos],
-                                 'time': np.linspace(0, npts/self.SR, npts)
-                                 }
-            elements.append(element)
-
-        self._plotSequence(elements)
-
-    def _plotSequence(self, elements):
+    # TODO: How to properly annotate this function?
+    def _plotSequence(self, seq: Dict[int, Dict]) -> None:
         """
         The heavy lifting plotter
+
+        Args:
+            forged_seq: A forged sequence (the output of Sequence.forge)
         """
+
+        # TODO: perhaps make this a static method?
+
+        try:
+            fs_schema.validate(seq)
+        except Exception as e:
+            raise InvalidForgedSequenceError(e)
 
         # Get the dimensions.
         chans = self._data[1].channels  # All element have the same channels
         seqlen = self.length_sequenceelements
 
+        def update_minmax(chanminmax, wfmdata, chanind):
+            (thismin, thismax) = (wfmdata.min(), wfmdata.max())
+            if thismin < chanminmax[chanind][0]:
+                chanminmax[chanind] = [thismin, chanminmax[chanind][1]]
+            if thismax > chanminmax[chanind][1]:
+                chanminmax[chanind] = [chanminmax[chanind][0], thismax]
+            return chanminmax
+
         # Then figure out the figure scalings
         chanminmax = [[np.inf, -np.inf]]*len(chans)
         for chanind, chan in enumerate(chans):
-            for pos in range(seqlen):
-                wfmdata = elements[pos][chan]['wfm']
-                (thismin, thismax) = (wfmdata.min(), wfmdata.max())
-                if thismin < chanminmax[chanind][0]:
-                    chanminmax[chanind] = [thismin, chanminmax[chanind][1]]
-                if thismax > chanminmax[chanind][1]:
-                    chanminmax[chanind] = [chanminmax[chanind][0], thismax]
+            for pos in range(1, seqlen+1):
+                if seq[pos]['type'] == 'element':
+                    wfmdata = seq[pos]['content'][1]['data'][chan]['wfm']
+                    chanminmax = update_minmax(chanminmax, wfmdata, chanind)
+                elif seq[pos]['type'] == 'subsequence':
+                    for pos2 in seq[pos]['content'].keys():
+                        elem = seq[pos]['content'][pos2]['data']
+                        wfmdata = elem[chan]['wfm']
+                        chanminmax = update_minmax(chanminmax,
+                                                   wfmdata, chanind)
 
         fig, axs = plt.subplots(len(chans), seqlen)
 
@@ -1782,11 +1933,10 @@ class Sequence:
 
             # figure out the channel voltage scaling
             # The entire channel shares a y-axis
-            v_max = max([elements[pp][chan]['wfm'].max()
-                         for pp in range(seqlen)])
+            v_max = chanminmax[chanind][1]
             voltageexponent = np.log10(v_max)
             voltageunit = 'V'
-            voltagescaling = 1
+            voltagescaling: float = 1
             if voltageexponent < 0:
                 voltageunit = 'mV'
                 voltagescaling = 1e3
@@ -1812,20 +1962,28 @@ class Sequence:
                 # reduce the tickmark density (must be called before scaling)
                 ax.locator_params(tight=True, nbins=4, prune='lower')
 
-                wfm = elements[pos][chan]['wfm']
-                m1 = elements[pos][chan]['m1']
-                m2 = elements[pos][chan]['m2']
-                time = elements[pos][chan]['time']
-                # get the durations if they are specified
-                try:
-                    newdurs = elements[pos][chan]['newdurs']
-                except KeyError:
+                if seq[pos+1]['type'] == 'element':
+                    content = seq[pos+1]['content'][1]['data'][chan]
+                    wfm = content['wfm']
+                    m1 = content.get('m1', np.zeros_like(wfm))
+                    m2 = content.get('m2', np.zeros_like(wfm))
+                    time = content['time']
+                    newdurs = content.get('newdurs', [])
+
+                else:
+                    arr_dict = self._plotSummary(seq[pos+1]['content'])
+                    wfm = arr_dict[chan]['wfm']
                     newdurs = []
+
+                    ax.annotate('SUBSEQ', xy=(0.5, 0.5),
+                                xycoords='axes fraction',
+                                horizontalalignment='center')
+                    time = np.linspace(0, 1, 2)  # needed for timeexponent
 
                 # Figure out the axes' scaling
                 timeexponent = np.log10(time.max())
                 timeunit = 's'
-                timescaling = 1
+                timescaling: float = 1.0
                 if timeexponent < 0:
                     timeunit = 'ms'
                     timescaling = 1e3
@@ -1836,33 +1994,48 @@ class Sequence:
                     timeunit = 'ns'
                     timescaling = 1e9
 
-                # waveform
-                ax.plot(timescaling*time, voltagescaling*wfm, lw=3,
-                        color=(0.6, 0.4, 0.3), alpha=0.4)
+                if seq[pos+1]['type'] == 'element':
+                    ax.plot(timescaling*time, voltagescaling*wfm, lw=3,
+                            color=(0.6, 0.4, 0.3), alpha=0.4)
+
                 ymax = voltagescaling * chanminmax[chanind][1]
                 ymin = voltagescaling * chanminmax[chanind][0]
                 yrange = ymax - ymin
                 ax.set_ylim([ymin-0.05*yrange, ymax+0.2*yrange])
 
-                # marker1 (red, on top)
-                y_m1 = ymax+0.15*yrange
-                marker_on = np.ones_like(m1)
-                marker_on[m1 == 0] = np.nan
-                marker_off = np.ones_like(m1)
-                ax.plot(timescaling*time, y_m1*marker_off,
-                        color=(0.6, 0.1, 0.1), alpha=0.2, lw=2)
-                ax.plot(timescaling*time, y_m1*marker_on,
-                        color=(0.6, 0.1, 0.1), alpha=0.6, lw=2)
+                if seq[pos+1]['type'] == 'element':
+                    # TODO: make this work for more than two markers
 
-                # marker 2 (blue, below the red)
-                y_m2 = ymax+0.10*yrange
-                marker_on = np.ones_like(m2)
-                marker_on[m2 == 0] = np.nan
-                marker_off = np.ones_like(m2)
-                ax.plot(timescaling*time, y_m2*marker_off,
-                        color=(0.1, 0.1, 0.1), alpha=0.2, lw=2)
-                ax.plot(timescaling*time, y_m2*marker_on,
-                        color=(0.1, 0.1, 0.6), alpha=0.6, lw=2)
+                    # marker1 (red, on top)
+                    y_m1 = ymax+0.15*yrange
+                    marker_on = np.ones_like(m1)
+                    marker_on[m1 == 0] = np.nan
+                    marker_off = np.ones_like(m1)
+                    ax.plot(timescaling*time, y_m1*marker_off,
+                            color=(0.6, 0.1, 0.1), alpha=0.2, lw=2)
+                    ax.plot(timescaling*time, y_m1*marker_on,
+                            color=(0.6, 0.1, 0.1), alpha=0.6, lw=2)
+
+                    # marker 2 (blue, below the red)
+                    y_m2 = ymax+0.10*yrange
+                    marker_on = np.ones_like(m2)
+                    marker_on[m2 == 0] = np.nan
+                    marker_off = np.ones_like(m2)
+                    ax.plot(timescaling*time, y_m2*marker_off,
+                            color=(0.1, 0.1, 0.6), alpha=0.2, lw=2)
+                    ax.plot(timescaling*time, y_m2*marker_on,
+                            color=(0.1, 0.1, 0.6), alpha=0.6, lw=2)
+
+                # If subsequence, plot lines indicating min and max value
+                if seq[pos+1]['type'] == 'subsequence':
+                    # min:
+                    ax.plot(time, np.ones_like(time)*wfm[0],
+                            color=(0.12, 0.12, 0.12), alpha=0.2, lw=2)
+                    # max:
+                    ax.plot(time, np.ones_like(time)*wfm[1],
+                            color=(0.12, 0.12, 0.12), alpha=0.2, lw=2)
+
+                    ax.set_xticks([])
 
                 # time step lines
                 for dur in np.cumsum(newdurs):
@@ -1878,7 +2051,11 @@ class Sequence:
                     newax = ax.twinx()
                     newax.set_yticks([])
                     newax.set_ylabel('Ch. {}'.format(chan))
-                ax.set_xlabel('({})'.format(timeunit))
+
+                if seq[pos+1]['type'] == 'subsequence':
+                    ax.set_xlabel('Time N/A')
+                else:
+                    ax.set_xlabel('({})'.format(timeunit))
 
                 # remove excess space from the plot
                 if not chanind+1 == len(chans):
@@ -1907,6 +2084,90 @@ class Sequence:
 
                     ax.set_title(titlestring)
 
+    def forge(self, apply_delays: bool=True,
+              apply_filters: bool=True,
+              includetime: bool=False) -> Dict[int, Dict]:
+        """
+        Forge the sequence, applying all specified transformations
+        (delays and ripasso filter corrections). Copies the data, so
+        that the sequence is not modified by forging.
+
+        Args:
+            apply_delays: Whether to apply the assigned channel delays
+                (if any)
+            apply_filters: Whether to apply the assigned channel filters
+                (if any)
+            includetime: Whether to include the time axis and the segment
+                durations (a list) with the arrays. Used for plotting.
+
+        Returns:
+            A nested dictionary holding the forged sequence.
+        """
+        # Validation
+        if not self.checkConsistency():
+            raise ValueError('Can not generate output. Something is '
+                             'inconsistent. Please run '
+                             'checkConsistency(verbose=True) for more details')
+
+        output: Dict[int, Dict] = {}
+        channels = self.channels
+        data = deepcopy(self._data)
+        seqlen = len(data.keys())
+
+        # TODO: in this function, we iterate through the sequence three times
+        # It is probably worth considering refactoring that into a single
+        # iteration, although that may compromise readability
+
+        # Apply channel delays.
+
+        if apply_delays:
+            delays = []
+            for chan in channels:
+                try:
+                    delays.append(self._awgspecs['channel{}_delay'.format(chan)])
+                except KeyError:
+                    delays.append(0)
+
+            for pos in range(1, seqlen+1):
+                if isinstance(data[pos], Sequence):
+                    subseq = data[pos]
+                    for elem in subseq._data.values():
+                        elem._applyDelays(delays)
+                elif isinstance(data[pos], Element):
+                    data[pos]._applyDelays(delays)
+
+        # forge arrays and form the output dict
+        for pos in range(1, seqlen+1):
+            output[pos] = {}
+            output[pos]['sequencing'] = self._sequencing[pos]
+            if isinstance(data[pos], Sequence):
+                subseq = data[pos]
+                output[pos]['type'] = 'subsequence'
+                output[pos]['content'] = {}
+                for pos2 in range(1, subseq.length_sequenceelements+1):
+                    output[pos]['content'][pos2] = {'data': {},
+                                                    'sequencing': {}}
+                    elem = subseq.element(pos2)
+                    dictdata = elem.getArrays(includetime=includetime)
+                    output[pos]['content'][pos2]['data'] = dictdata
+                    seqing = subseq._sequencing[pos2]
+                    output[pos]['content'][pos2]['sequencing'] = seqing
+                    # TODO: update sequencing
+            elif isinstance(data[pos], Element):
+                elem = data[pos]
+                output[pos]['type'] = 'element'
+                dictdata = elem.getArrays(includetime=includetime)
+                output[pos]['content'] = {1: {'data': dictdata}}
+
+        # apply filter corrections to forged arrays
+
+        if apply_filters:
+            for pos in range(1, seqlen+1):
+                if isinstance(data[pos], Sequence):
+                    pass
+
+        return output
+
     def _prepareForOutputting(self) -> List[Dict[int, np.ndarray]]:
         """
         The preparser for numerical output. Applies delay and ripasso
@@ -1933,7 +2194,7 @@ class Sequence:
         seqlen = len(data.keys())
         # check if sequencing information is specified for each element
         if not sorted(list(self._sequencing.keys())) == list(range(1, seqlen+1)):
-            raise ValueError('Can not generate output for .awg file; '
+            raise ValueError('Can not generate output for file; '
                              'incorrect sequencer information.')
 
         # Verify physical amplitude specifiations
@@ -1943,10 +2204,7 @@ class Sequence:
                 raise KeyError('No amplitude specified for channel '
                                '{}. Can not continue.'.format(chan))
 
-        # Apply channel delays. This is most elegantly done before forging.
-        # Add waituntil at the beginning, update all waituntils inside, add a
-        # zeros segment at the end.
-        # If already-forged arrays are found, simply append and prepend zeros
+        # Apply channel delays.
         delays = []
         for chan in channels:
             try:
@@ -1981,10 +2239,11 @@ class Sequence:
 
                 else:
                     arrays = element[chan]['array']
-                    for ii, arr in enumerate(arrays):
+                    for name, arr in arrays.items():
                         pre_wait = np.zeros(int(delay/self.SR))
                         post_wait = np.zeros(int((maxdelay-delay)/self.SR))
-                        arrays[ii] = np.concatenate((pre_wait, arr, post_wait))
+                        arrays[name] = np.concatenate((pre_wait, arr,
+                                                       post_wait))
 
         # Now forge all the elements as specified
         elements = []  # the forged elements
