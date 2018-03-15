@@ -282,6 +282,7 @@ def test_addition_data_with_empty(protosequence1):
 
 def test_add_subsequence_raises(protosequence1, squarepulse_baseelem):
 
+    # raise if a non-Sequence object is added
     with pytest.raises(ValueError):
         protosequence1.addSubSequence(1, squarepulse_baseelem)
 
@@ -292,6 +293,7 @@ def test_add_subsequence_raises(protosequence1, squarepulse_baseelem):
     mainseq = bb.Sequence()
     mainseq.setSR(seq.SR/2)
 
+    # raise if the subsequence sample rate does not match the main seq. SR
     with pytest.raises(ValueError):
         mainseq.addSubSequence(1, seq)
 
