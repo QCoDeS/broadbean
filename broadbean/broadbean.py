@@ -1976,7 +1976,7 @@ class Sequence:
                 # Figure out the axes' scaling
                 timeexponent = np.log10(time.max())
                 timeunit = 's'
-                timescaling: float = 1
+                timescaling: float = 1.0
                 if timeexponent < 0:
                     timeunit = 'ms'
                     timescaling = 1e3
