@@ -16,7 +16,7 @@ plt.ion()
 log = logging.getLogger(__name__)
 
 fs_schema = Schema({int: {'type': Or('subsequence', 'element'),
-                          'content': {int: {'data': {int: {str: np.ndarray}},
+                          'content': {int: {'data': {Or(str, int): {str: np.ndarray}},
                                             Optional('sequencing'): {Optional(str):
                                                                     int}}},
                           'sequencing': {Optional(str): int}}})
@@ -910,7 +910,8 @@ class Element:
         self._data = {}
         self._meta = {}
 
-    def addBluePrint(self, channel, blueprint):
+    def addBluePrint(self, channel: Union[str, int],
+                     blueprint: BluePrint) -> None:
         """
         Add a blueprint to the element on the specified channel.
         Overwrites whatever was there before.
@@ -929,7 +930,7 @@ class Element:
         self._data[channel] = {}
         self._data[channel]['blueprint'] = newprint
 
-    def addArray(self, channel: int, waveform: np.ndarray,
+    def addArray(self, channel: Union[int, str], waveform: np.ndarray,
                  SR: int, **kwargs) -> None:
         """
         Add an array of voltage value to the element on the specified channel.
@@ -1136,18 +1137,20 @@ class Element:
 
         return desc
 
-    def changeArg(self, channel, name, arg, value, replaceeverywhere=False):
+    def changeArg(self, channel: Union[str, int],
+                  name: str, arg: Union[str, int], value: Union[int, float],
+                  replaceeverywhere: bool=False) -> None:
         """
         Change the argument of a function of the blueprint on the specified
         channel.
 
         Args:
-            channel (int): The channel where the blueprint sits.
-            name (str): The name of the segment in which to change an argument
-            arg (Union[int, str]): Either the position (int) or name (str) of
+            channel: The channel where the blueprint sits.
+            name: The name of the segment in which to change an argument
+            arg: Either the position (int) or name (str) of
                 the argument to change
-            value (Union[int, float]): The new value of the argument
-            replaceeverywhere (bool): If True, the same argument is overwritten
+            value: The new value of the argument
+            replaceeverywhere: If True, the same argument is overwritten
                 in ALL segments where the name matches. E.g. 'gaussian1' will
                 match 'gaussian', 'gaussian2', etc. If False, only the segment
                 with exact name match gets a replacement.
@@ -1157,9 +1160,9 @@ class Element:
             ValueError: If the argument can not be matched (either the argument
                 name does not match or the argument number is wrong).
         """
-        # avoid a KeyError in the next if statement
+
         if channel not in self.channels:
-            self._data[channel] = {'': ''}
+            raise ValueError(f'Nothing assigned to channel {channel}')
 
         if 'blueprint' not in self._data[channel].keys():
             raise ValueError('No blueprint on channel {}.'.format(channel))
@@ -1168,26 +1171,26 @@ class Element:
 
         bp.changeArg(name, arg, value, replaceeverywhere)
 
-    def changeDuration(self, channel, name, newdur, replaceeverywhere=False):
+    def changeDuration(self, channel: Union[str, int], name: str,
+                       newdur: Union[int, float],
+                       replaceeverywhere: bool=False) -> None:
         """
-        Change the duration(s) of a segment of the blueprint on the specified
+        Change the duration of a segment of the blueprint on the specified
         channel
 
         Args:
-            channel (int): The channel holding the blueprint in question
-            name (str): The name of the segment to modify
-            newdur (Union[tuple, int, float]): The new duration(s). Must be a
-                tuple if more than one is provided.
-            replaceeverywhere (Optional[bool]): If True, all segments
+            channel: The channel holding the blueprint in question
+            name): The name of the segment to modify
+            newdur: The new duration.
+            replaceeverywhere: If True, all segments
                 matching the base
                 name given will have their duration changed. If False, only the
                 segment with an exact name match will have its duration
                 changed. Default: False.
         """
 
-        # avoid a KeyError in the next if statement
         if channel not in self.channels:
-            self._data[channel] = {'': ''}
+            raise ValueError(f'Nothing assigned to channel {channel}')
 
         if 'blueprint' not in self._data[channel].keys():
             raise ValueError('No blueprint on channel {}.'.format(channel))
@@ -1275,7 +1278,10 @@ class Element:
         cur_fig = plt.gcf()
         for ii, channel in enumerate(self.channels):
             oldlabel = cur_fig.axes[ii].get_ylabel()
-            newlabel = oldlabel.replace('Signal', 'Ch {}'.format(channel))
+            if isinstance(channel, int):
+                newlabel = oldlabel.replace('Signal', 'Ch {}'.format(channel))
+            else:
+                newlabel = oldlabel.replace('Signal', '{}'.format(channel))
             cur_fig.axes[ii].set_ylabel(newlabel)
 
     def __eq__(self, other):
@@ -1517,7 +1523,8 @@ class Sequence:
         keystr = 'channel{}_offset'.format(channel)
         self._awgspecs[keystr] = offset
 
-    def setChannelAmplitude(self, channel: int, ampl: float) -> None:
+    def setChannelAmplitude(self, channel: Union[int, str],
+                            ampl: float) -> None:
         """
         Assign the physical voltage amplitude of the channel. This is used
         when making output for real instruments.
@@ -1529,19 +1536,21 @@ class Sequence:
         keystr = 'channel{}_amplitude'.format(channel)
         self._awgspecs[keystr] = ampl
 
-    def setChannelOffset(self, channel: int, offset: float) -> None:
+    def setChannelOffset(self, channel: Union[int, str],
+                         offset: float) -> None:
         """
         Assign the physical voltage offset of the channel. This is used
         by some backends when making output for real instruments
 
         Args:
-            channel: The channel number
+            channel: The channel number/name
             offset: The channel offset (V)
         """
         keystr = 'channel{}_offset'.format(channel)
         self._awgspecs[keystr] = offset
 
-    def setChannelDelay(self, channel, delay):
+    def setChannelDelay(self, channel: Union[int, str],
+                        delay: float) -> None:
         """
         Assign a delay to a channel. This is used when making output for .awg
         files. Use the delay to compensate for cable length differences etc.
@@ -1549,22 +1558,20 @@ class Sequence:
         appended to non (or less) delayed channels.
 
         Args:
-            channel (int): The channel number
-            delay (float): The required delay (s)
+            channel: The channel number/name
+            delay: The required delay (s)
 
         Raises:
             ValueError: If a non-integer or non-non-negative channel number is
                 given.
         """
 
-        if not isinstance(channel, int) or channel < 1:
-            raise ValueError('{} is not a valid '.format(channel) +
-                             'channel number.')
-
         self._awgspecs['channel{}_delay'.format(channel)] = delay
 
-    def setChannelFilterCompensation(self, channel, kind, order=1,
-                                     f_cut=None, tau=None):
+    def setChannelFilterCompensation(self, channel: Union[str, int],
+                                     kind: str, order: int=1,
+                                     f_cut: float=None,
+                                     tau: float=None) -> None:
         """
         Specify a filter to compensate for.
 
@@ -1575,13 +1582,13 @@ class Sequence:
         pass is supported.
 
         Args:
-            channel (int): The channel to apply this to.
-            kind (str): Either 'LP' or 'HP'
-            order (Optional[int]): The order of the filter to compensate for.
+            channel: The channel to apply this to.
+            kind: Either 'LP' or 'HP'
+            order: The order of the filter to compensate for.
                 May be negative. Default: 1.
-            f_cut (Optional[Union[float, int]]): The cut_off frequency (Hz).
-            tau (Optional[Union[float, int]]): The time constant (s). Note that
-                tau = 1/f_cut and that only one can be specified.
+            f_cut: The cut_off frequency (Hz).
+            tau): The time constant (s). Note that
+                tau = 1/f_cut and that only one of the two can be specified.
 
         Raises:
             ValueError: If kind is not 'LP' or 'HP'
@@ -1603,7 +1610,7 @@ class Sequence:
         self._awgspecs[keystr] = {'kind': kind, 'order': order, 'f_cut': f_cut,
                                   'tau': tau}
 
-    def addElement(self, position, element):
+    def addElement(self, position: int, element: Element) -> None:
         """
         Add an element to the sequence. Overwrites previous values.
 
