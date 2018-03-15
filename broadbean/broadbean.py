@@ -2258,12 +2258,12 @@ def joinElements(elem1: Element,
     If the channels specified in the two elements differ
     one can choose to do zero padding
     |-~-| |~--| |-~-~--|
-     +|~--|=|---~--|
+         +|~--|=|---~--|
     |---|       |------|
     If the channels are disjunct an overlap can be introduced
     |-~-|       |-~--|
-      |~--| |-~--|
-     +|~--|=|-~--|
+          |~--| |-~--|
+         +|~--|=|-~--|
     |---|       |----|
     It should also be possible at some point to join elements
     with overlap that share a common channel
