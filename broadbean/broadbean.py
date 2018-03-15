@@ -1,5 +1,8 @@
+from contextlib import redirect_stdout
+import io
 import logging
 import math
+import textwrap
 import warnings
 from typing import Tuple, List, Dict, cast
 from inspect import signature
@@ -899,6 +902,18 @@ class Element:
 
         self._data = {}
         self._meta = {}
+
+    def __repr__(self):
+        out = type(self).__name__ + '\n'
+        for channel_id in self.channels:
+            out += channel_id + ':\n'
+            f = io.StringIO()
+            # this redirction should be replaced by a stream input for showPrint
+            # is this a good idea? possibly not
+            with redirect_stdout(f):
+                self._data[channel_id]['blueprint'].showPrint()
+            out += textwrap.indent(f.getvalue(), '    ')
+        return out 
 
     def addBluePrint(self, channel, blueprint):
         """
