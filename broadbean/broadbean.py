@@ -2245,6 +2245,56 @@ class Sequence:
 
         return output
 
+def joinElements(elem1: Element,
+                 elem2: Element,
+                 zero_pad: bool=True,
+                 overlap_time: float=0)->Element:
+    """
+    joins two elements by appending elem2 to elem1
+    and returns a new atomic element:
+    |-~-| |~--| |-~-~--|
+    |---|+|~--|=|---~--|
+    |---| |~--| |---~--|
+    If the channels specified in the two elements differ
+    one can choose to do zero padding
+    |-~-| |~--| |-~-~--|
+     +|~--|=|---~--|
+    |---|       |------|
+    If the channels are disjunct an overlap can be introduced
+    |-~-|       |-~--|
+      |~--| |-~--|
+     +|~--|=|-~--|
+    |---|       |----|
+    It should also be possible at some point to join elements
+    with overlap that share a common channel
+    """
+    ids_elem1 = set(elem1.channels)
+    ids_elem2 = set(elem2.channels)
+    has_same_ids =  ids_elem1 == ids_elem2
+    has_common_ids = len(ids_elem1 - ids_elem2) != 0
+    if has_common_ids and overlap_time is not 0:
+        raise Exception("Overlapp is not supported yet for elements with"
+                        " common ids/channels")
+    if not has_same_ids and zero_pad == False:
+        raise Exception("Tried to join two elements with different"
+                        " ids/channels but no permission to zero padding "
+                        "was given")
+    joint_element = Element()
+    for channel_id in ids_elem1 | ids_elem2:
+        if channel_id in ids_elem1 - ids_elem2:
+            bp1  = elem1.getBluePrint(channel_id)
+            bp2 = BluePrint()
+            bp2.insertSegment(0, zero, dur=bp1.duration)
+        elif channel_id in ids_elem2 - ids_elem1:
+            bp2  = elem2.getBluePrint(channel_id)
+            bp1 = BluePrint()
+            bp1.insertSegment(0, zero, dur=bp2.duration)
+        else:
+            bp1  = elem1.getBluePrint(channel_id)
+            bp2  = elem2.getBluePrint(channel_id)
+        joint_element.addBluePrint(channel_id, bp1 + bp2)
+
+    return joint_element
 
 def _subelementBuilder(blueprint: BluePrint, SR: int,
                        durs: List[float]) -> Tuple[np.ndarray, List[float]]:
