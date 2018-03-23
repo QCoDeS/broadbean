@@ -102,10 +102,14 @@ def _channelListSorter(channels: List[Union[str, int]]) -> List[Union[str, int]]
     Sort a list of channel names. Channel names can be ints or strings. Sorts
     ints as being before strings.
     """
+    intlist: List[Union[str, int]] = []
     intlist = [ch for ch in channels if isinstance(ch, int)]
+    strlist: List[Union[str, int]] = []
     strlist = [ch for ch in channels if isinstance(ch, str)]
 
-    return sorted(intlist) + sorted(strlist)
+    sorted_list = sorted(intlist) + sorted(strlist)
+
+    return sorted_list
 
 
 class _AWGOutput:
