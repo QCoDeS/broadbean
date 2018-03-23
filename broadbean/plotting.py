@@ -1,6 +1,6 @@
 # A little helper module for plotting of broadbean objects
 
-from typing import Tuple, Union, Dict
+from typing import Tuple, Union, Dict, List
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,7 +11,7 @@ import broadbean.broadbean as bb
 BBObject = Union[bb.Sequence, bb.BluePrint, bb.Element]
 
 
-def getSIScalingAndPrefix(minmax: Tuple[float]) -> Tuple[float, str]:
+def getSIScalingAndPrefix(minmax: Tuple[float, float]) -> Tuple[float, str]:
     """
     Return the scaling exponent and unit prefix. E.g. (-2e-3, 1e-6) will
     return (1e3, 'm')
@@ -24,9 +24,9 @@ def getSIScalingAndPrefix(minmax: Tuple[float]) -> Tuple[float, str]:
           string.
 
     """
-    v_max = max(map(abs, minmax))
+    v_max = max(map(abs, minmax))  # type: ignore
     if v_max == 0:
-        v_max = 1
+        v_max = 1  # type: ignore
     exponent = np.log10(v_max)
     prefix = ''
     scaling: float = 1
@@ -156,7 +156,9 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
         return chanminmax
 
     # Then figure out the figure scalings
-    chanminmax = [(np.inf, -np.inf)]*len(chans)
+    minf: float = -np.inf
+    inf: float = np.inf
+    chanminmax: List[Tuple[float, float]] = [(inf, minf)]*len(chans)
     for chanind, chan in enumerate(chans):
         for pos in range(1, seqlen+1):
             if seq[pos]['type'] == 'element':
@@ -177,7 +179,7 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
         # figure out the channel voltage scaling
         # The entire channel shares a y-axis
 
-        minmax = chanminmax[chanind]
+        minmax: Tuple[float, float] = chanminmax[chanind]
 
         (voltagescaling, voltageprefix) = getSIScalingAndPrefix(minmax)
         voltageunit = voltageprefix + 'V'
