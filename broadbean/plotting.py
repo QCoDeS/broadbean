@@ -127,11 +127,13 @@ def _plot_summariser(seq: Dict[int, Dict]) -> Dict[int, Dict[str, np.ndarray]]:
 
 
 # the Grand Unified Plotter
-def plot(obj_to_plot: BBObject, **forger_kwargs) -> None:
+def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
     """
     The one plot function to be called. Turns whatever it gets
     into a sequence, forges it, and plots that.
     """
+
+    # TODO: Take axes as input
 
     # strategy:
     # * Validate
