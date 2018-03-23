@@ -9,10 +9,43 @@ import numpy as np
 import broadbean as bb
 from broadbean.broadbean import _subelementBuilder
 from broadbean import SegmentDurationError
+from broadbean.ripasso import applyInverseRCFilter
+
+import matplotlib.pyplot as plt
+plt.ion()
 
 ramp = bb.PulseAtoms.ramp
 sine = bb.PulseAtoms.sine
 
+
+@pytest.fixture
+def sequence_maker():
+    """
+    Return a function returning a sequence with some top hat pulses
+    """
+
+    def make_seq(seqlen, channels, SR):
+
+        seq = bb.Sequence()
+        seq.setSR(SR)
+
+        for pos in range(1, seqlen+1):
+
+            elem = bb.Element()
+
+            for chan in channels:
+                bp = bb.BluePrint()
+                bp.insertSegment(-1, ramp, (0, 0), dur=20/SR)
+                bp.insertSegment(-1, ramp, (1, 1), dur=10/SR)
+                bp.insertSegment(-1, ramp, (0, 0), dur=5/SR)
+                bp.setSR(SR)
+                elem.addBluePrint(chan, bp)
+
+            seq.addElement(pos, elem)
+
+        return seq
+
+    return make_seq
 
 def _has_period(array: np.ndarray, period: int) -> bool:
     """
@@ -88,3 +121,33 @@ def test_correct_marker_times():
 
     assert (m1 == np.concatenate((np.ones(50), np.zeros(160),
                                   np.ones(25), np.zeros(65)))).all()
+
+
+def test_apply_filters_in_forging(sequence_maker):
+    """
+    Assign some filters, forge and assert that they were applied
+    """
+    N = 5
+    channels = [1, 2, 'my_channel']
+    filter_orders = [1, 2, 3]
+    SR = 1e9
+
+    seq = sequence_maker(N, channels, SR)
+
+    for chan, order in zip(channels, filter_orders):
+        seq.setChannelFilterCompensation(chan, kind='HP',
+                                         order=order, f_cut=SR/10,
+                                         tau=None)
+
+    forged_seq_bare = seq.forge(apply_filters=False)
+    forged_seq_filtered = seq.forge(apply_filters=True)
+
+    for chan, order in zip(channels, filter_orders):
+
+        wfm_bare = forged_seq_bare[1]['content'][1]['data'][chan]['wfm']
+        expected = applyInverseRCFilter(wfm_bare, SR, kind='HP',
+                                        f_cut=SR/10, order=order, DCgain=1)
+
+        forged = forged_seq_filtered[1]['content'][1]['data'][chan]['wfm']
+
+        assert np.all(expected == forged)

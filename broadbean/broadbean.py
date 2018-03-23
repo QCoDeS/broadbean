@@ -97,6 +97,21 @@ class PulseAtoms:
         return ampl*baregauss+offset
 
 
+def _channelListSorter(channels: List[Union[str, int]]) -> List[Union[str, int]]:
+    """
+    Sort a list of channel names. Channel names can be ints or strings. Sorts
+    ints as being before strings.
+    """
+    intlist: List[Union[str, int]] = []
+    intlist = [ch for ch in channels if isinstance(ch, int)]
+    strlist: List[Union[str, int]] = []
+    strlist = [ch for ch in channels if isinstance(ch, str)]
+
+    sorted_list = sorted(intlist) + sorted(strlist)
+
+    return sorted_list
+
+
 class _AWGOutput:
     """
     Class used inside Sequence.outputForAWGFile
@@ -1692,7 +1707,7 @@ class Sequence:
         # Then check that elements use the same channels
         specchans = []
         for elem in self._data.values():
-            chans = sorted(elem.channels)
+            chans = _channelListSorter(elem.channels)
             specchans.append(chans)
         if specchans == []:  # case of empty Sequence
             chans = None
@@ -2124,7 +2139,7 @@ class Sequence:
             delays = []
             for chan in channels:
                 try:
-                    delays.append(self._awgspecs['channel{}_delay'.format(chan)])
+                    delays.append(self._awgspecs[f'channel{chan}_delay'])
                 except KeyError:
                     delays.append(0)
 
@@ -2160,11 +2175,32 @@ class Sequence:
                 output[pos]['content'] = {1: {'data': dictdata}}
 
         # apply filter corrections to forged arrays
-
         if apply_filters:
-            for pos in range(1, seqlen+1):
-                if isinstance(data[pos], Sequence):
-                    pass
+            for pos1 in range(1, seqlen+1):
+                thiselem = output[pos]['content']
+                for pos2 in thiselem.keys():
+                    data = thiselem[pos2]['data']
+                    for channame in data.keys():
+                        keystr = f'channel{channame}_filtercompensation'
+                        if keystr in self._awgspecs.keys():
+                            kind = self._awgspecs[keystr]['kind']
+                            order = self._awgspecs[keystr]['order']
+                            f_cut = self._awgspecs[keystr]['f_cut']
+                            tau = self._awgspecs[keystr]['tau']
+                            if f_cut is None:
+                                f_cut = 1/tau
+                            prefilter = data[channame]['wfm']
+                            postfilter = applyInverseRCFilter(prefilter,
+                                                              self.SR,
+                                                              kind,
+                                                              f_cut, order,
+                                                              DCgain=1)
+                            (output[pos1]
+                                   ['content']
+                                   [pos2]
+                                   ['data']
+                                   [channame]
+                                   ['wfm']) = postfilter
 
         return output
 
