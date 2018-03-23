@@ -2177,7 +2177,7 @@ class Sequence:
         # apply filter corrections to forged arrays
         if apply_filters:
             for pos1 in range(1, seqlen+1):
-                thiselem = output[pos]['content']
+                thiselem = output[pos1]['content']
                 for pos2 in thiselem.keys():
                     data = thiselem[pos2]['data']
                     for channame in data.keys():
