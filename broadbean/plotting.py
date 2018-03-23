@@ -5,11 +5,10 @@ from typing import Tuple, Union, Dict
 import numpy as np
 import matplotlib.pyplot as plt
 
-from broadbean import (Sequence, BluePrint, Element, fs_schema,
-                       InvalidForgedSequenceError, SequenceConsistencyError)
+import broadbean.broadbean as bb
 
 # The object we can/want to plot
-BBObject = Union[Sequence, BluePrint, Element]
+BBObject = Union[bb.Sequence, bb.BluePrint, bb.Element]
 
 
 def getSIScalingAndPrefix(minmax: Tuple[float]) -> Tuple[float, str]:
@@ -49,15 +48,15 @@ def _plot_object_validator(obj_to_plot: BBObject) -> None:
     """
     Validate the object
     """
-    if isinstance(obj_to_plot, Sequence):
+    if isinstance(obj_to_plot, bb.Sequence):
         proceed = obj_to_plot.checkConsistency(verbose=True)
         if not proceed:
-            raise SequenceConsistencyError
+            raise bb.SequenceConsistencyError
 
-    elif isinstance(obj_to_plot, Element):
+    elif isinstance(obj_to_plot, bb.Element):
         obj_to_plot.validateDurations()
 
-    elif isinstance(obj_to_plot, BluePrint):
+    elif isinstance(obj_to_plot, bb.BluePrint):
         assert obj_to_plot.SR is not None
 
 
@@ -68,19 +67,19 @@ def _plot_object_forger(obj_to_plot: BBObject,
     Returns a forged sequence.
     """
 
-    if isinstance(obj_to_plot, BluePrint):
-        elem = Element()
+    if isinstance(obj_to_plot, bb.BluePrint):
+        elem = bb.Element()
         elem.addBluePrint(1, obj_to_plot)
-        seq = Sequence()
+        seq = bb.Sequence()
         seq.addElement(1, elem)
         seq.setSR(obj_to_plot.SR)
 
-    elif isinstance(obj_to_plot, Element):
-        seq = Sequence()
+    elif isinstance(obj_to_plot, bb.Element):
+        seq = bb.Sequence()
         seq.addElement(1, obj_to_plot)
         seq.setSR(obj_to_plot._meta['SR'])
 
-    elif isinstance(obj_to_plot, Sequence):
+    elif isinstance(obj_to_plot, bb.Sequence):
         seq = obj_to_plot
 
     forged_seq = seq.forge(includetime=True, **forger_kwargs)
@@ -283,7 +282,7 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
             # labels
             if pos == 0:
                 ax.set_ylabel('({})'.format(voltageunit))
-            if pos == seqlen - 1 and not(isinstance(obj_to_plot, BluePrint)):
+            if pos == seqlen - 1 and not(isinstance(obj_to_plot, bb.BluePrint)):
                 newax = ax.twinx()
                 newax.set_yticks([])
                 if isinstance(chan, int):
@@ -305,7 +304,7 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
             fig.subplots_adjust(hspace=0, wspace=0)
 
             # display sequencer information
-            if chanind == 0 and isinstance(obj_to_plot, Sequence):
+            if chanind == 0 and isinstance(obj_to_plot, bb.Sequence):
                 seq_info = seq[pos+1]['sequencing']
                 titlestring = ''
                 if seq_info['twait'] == 1:  # trigger wait
