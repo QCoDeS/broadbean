@@ -2191,7 +2191,12 @@ class Sequence:
                                                               kind,
                                                               f_cut, order,
                                                               DCgain=1)
-                            data[channame]['wfm'] = postfilter
+                            (output[pos1]
+                                   ['content']
+                                   [pos2]
+                                   ['data']
+                                   [channame]
+                                   ['wfm']) = postfilter
 
         return output
 
