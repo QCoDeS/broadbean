@@ -1,6 +1,6 @@
 import logging
 import warnings
-from typing import Tuple, List, Dict, cast, Union
+from typing import Tuple, List, Dict, cast, Union, Callable
 from inspect import signature
 from copy import deepcopy
 import functools as ft
@@ -11,7 +11,6 @@ from schema import Schema, Or, Optional
 
 from broadbean.ripasso import applyInverseRCFilter
 
-plt.ion()
 
 log = logging.getLogger(__name__)
 
@@ -95,6 +94,23 @@ class PulseAtoms:
         centre = dur/2
         baregauss = np.exp((-(time-mu-centre)**2/(2*sigma**2)))
         return ampl*baregauss+offset
+
+
+def marked_for_deletion(replaced_by: Union[str, None]=None) -> Callable:
+    """
+    A decorator for functions we want to kill. The function still
+    gets called.
+    """
+    def decorator(func):
+        @ft.wraps(func)
+        def warner(*args, **kwargs):
+            warnstr = f'{func.__name__} is obsolete.'
+            if replaced_by:
+                warnstr += f' Please use {replaced_by} insted.'
+            warnings.warn(warnstr)
+            return func(*args, **kwargs)
+        return warner
+    return decorator
 
 
 def _channelListSorter(channels: List[Union[str, int]]) -> List[Union[str, int]]:
@@ -796,26 +812,9 @@ class BluePrint():
 
         self._namelist = self._make_names_unique(self._namelist)
 
+    @marked_for_deletion(replaced_by='broadbean.plotting.plotter')
     def plot(self, SR=None):
-        """
-        Plot the blueprint.
-
-        Args:
-            SR (Optional[Union[int, None]]): The sample rate. If None,
-                the sample rate of the blueprint is used.
-
-        Raises:
-            ValueError: If no sample rate is provided as argument nor set for
-            the blueprint.
-        """
-
-        if self.SR is None and SR is None:
-            raise ValueError('No sample rate specified. Please provide one!')
-
-        if SR is None:
-            SR = self.SR
-
-        bluePrintPlotter(self)
+        pass
 
     def __add__(self, other):
         """
@@ -1277,27 +1276,9 @@ class Element:
         new._meta = deepcopy(self._meta)
         return new
 
+    @marked_for_deletion(replaced_by='broadbean.plotting.plotter')
     def plotElement(self):
-        """
-        Plot the element. Currently only works if ONLY BluePrints are added.
-        """
-
-        # First check that the element is valid
-        self.validateDurations()
-
-        blueprints = [val['blueprint'] for val in self._data.values()]
-
-        bluePrintPlotter(blueprints)
-
-        # hack the ylabels
-        cur_fig = plt.gcf()
-        for ii, channel in enumerate(self.channels):
-            oldlabel = cur_fig.axes[ii].get_ylabel()
-            if isinstance(channel, int):
-                newlabel = oldlabel.replace('Signal', 'Ch {}'.format(channel))
-            else:
-                newlabel = oldlabel.replace('Signal', '{}'.format(channel))
-            cur_fig.axes[ii].set_ylabel(newlabel)
+        pass
 
     def __eq__(self, other):
         if not isinstance(other, Element):
@@ -1869,235 +1850,13 @@ class Sequence:
 
         return output
 
+    @marked_for_deletion(replaced_by='broadbean.plotting.plotter')
     def plotSequence(self) -> None:
-        """
-        Visualise the sequence as it is "meant to be", i.e.
-        without delays and filters
-        """
+        pass
 
-        if not self.checkConsistency():
-            raise ValueError('Can not plot sequence: Something is '
-                             'inconsistent. Please run '
-                             'checkConsistency(verbose=True) for more details')
-
-        forged_seq = self.forge(apply_delays=False,
-                                apply_filters=False,
-                                includetime=True)
-
-        self._plotSequence(forged_seq)
-
+    @marked_for_deletion(replaced_by='broadbean.plotting.plotter')
     def plotAWGOutput(self):
-        """
-        Plot the actual output for an AWG. If not delays or filter
-        compensations are specified, this does the same as
-        plotSequence.
-        """
-
-        forged_seq = self.forge(apply_delays=False,
-                                apply_filters=False,
-                                includetime=True)
-
-        self._plotSequence(forged_seq)
-
-    # TODO: How to properly annotate this function?
-    def _plotSequence(self, seq: Dict[int, Dict]) -> None:
-        """
-        The heavy lifting plotter
-
-        Args:
-            forged_seq: A forged sequence (the output of Sequence.forge)
-        """
-
-        # TODO: perhaps make this a static method?
-
-        try:
-            fs_schema.validate(seq)
-        except Exception as e:
-            raise InvalidForgedSequenceError(e)
-
-        # Get the dimensions.
-        chans = self._data[1].channels  # All element have the same channels
-        seqlen = self.length_sequenceelements
-
-        def update_minmax(chanminmax, wfmdata, chanind):
-            (thismin, thismax) = (wfmdata.min(), wfmdata.max())
-            if thismin < chanminmax[chanind][0]:
-                chanminmax[chanind] = [thismin, chanminmax[chanind][1]]
-            if thismax > chanminmax[chanind][1]:
-                chanminmax[chanind] = [chanminmax[chanind][0], thismax]
-            return chanminmax
-
-        # Then figure out the figure scalings
-        chanminmax = [[np.inf, -np.inf]]*len(chans)
-        for chanind, chan in enumerate(chans):
-            for pos in range(1, seqlen+1):
-                if seq[pos]['type'] == 'element':
-                    wfmdata = seq[pos]['content'][1]['data'][chan]['wfm']
-                    chanminmax = update_minmax(chanminmax, wfmdata, chanind)
-                elif seq[pos]['type'] == 'subsequence':
-                    for pos2 in seq[pos]['content'].keys():
-                        elem = seq[pos]['content'][pos2]['data']
-                        wfmdata = elem[chan]['wfm']
-                        chanminmax = update_minmax(chanminmax,
-                                                   wfmdata, chanind)
-
-        fig, axs = plt.subplots(len(chans), seqlen)
-
-        # ...and do the plotting
-        for chanind, chan in enumerate(chans):
-
-            # figure out the channel voltage scaling
-            # The entire channel shares a y-axis
-            v_max = chanminmax[chanind][1]
-            voltageexponent = np.log10(v_max)
-            voltageunit = 'V'
-            voltagescaling: float = 1
-            if voltageexponent < 0:
-                voltageunit = 'mV'
-                voltagescaling = 1e3
-            if voltageexponent < -3:
-                voltageunit = 'micro V'
-                voltagescaling = 1e6
-            if voltageexponent < -6:
-                voltageunit = 'nV'
-                voltagescaling = 1e9
-
-            for pos in range(seqlen):
-                # 1 by N arrays are indexed differently than M by N arrays
-                # and 1 by 1 arrays are not arrays at all...
-                if len(chans) == 1 and seqlen > 1:
-                    ax = axs[pos]
-                if len(chans) > 1 and seqlen == 1:
-                    ax = axs[chanind]
-                if len(chans) == 1 and seqlen == 1:
-                    ax = axs
-                if len(chans) > 1 and seqlen > 1:
-                    ax = axs[chanind, pos]
-
-                # reduce the tickmark density (must be called before scaling)
-                ax.locator_params(tight=True, nbins=4, prune='lower')
-
-                if seq[pos+1]['type'] == 'element':
-                    content = seq[pos+1]['content'][1]['data'][chan]
-                    wfm = content['wfm']
-                    m1 = content.get('m1', np.zeros_like(wfm))
-                    m2 = content.get('m2', np.zeros_like(wfm))
-                    time = content['time']
-                    newdurs = content.get('newdurs', [])
-
-                else:
-                    arr_dict = self._plotSummary(seq[pos+1]['content'])
-                    wfm = arr_dict[chan]['wfm']
-                    newdurs = []
-
-                    ax.annotate('SUBSEQ', xy=(0.5, 0.5),
-                                xycoords='axes fraction',
-                                horizontalalignment='center')
-                    time = np.linspace(0, 1, 2)  # needed for timeexponent
-
-                # Figure out the axes' scaling
-                timeexponent = np.log10(time.max())
-                timeunit = 's'
-                timescaling: float = 1.0
-                if timeexponent < 0:
-                    timeunit = 'ms'
-                    timescaling = 1e3
-                if timeexponent < -3:
-                    timeunit = 'micro s'
-                    timescaling = 1e6
-                if timeexponent < -6:
-                    timeunit = 'ns'
-                    timescaling = 1e9
-
-                if seq[pos+1]['type'] == 'element':
-                    ax.plot(timescaling*time, voltagescaling*wfm, lw=3,
-                            color=(0.6, 0.4, 0.3), alpha=0.4)
-
-                ymax = voltagescaling * chanminmax[chanind][1]
-                ymin = voltagescaling * chanminmax[chanind][0]
-                yrange = ymax - ymin
-                ax.set_ylim([ymin-0.05*yrange, ymax+0.2*yrange])
-
-                if seq[pos+1]['type'] == 'element':
-                    # TODO: make this work for more than two markers
-
-                    # marker1 (red, on top)
-                    y_m1 = ymax+0.15*yrange
-                    marker_on = np.ones_like(m1)
-                    marker_on[m1 == 0] = np.nan
-                    marker_off = np.ones_like(m1)
-                    ax.plot(timescaling*time, y_m1*marker_off,
-                            color=(0.6, 0.1, 0.1), alpha=0.2, lw=2)
-                    ax.plot(timescaling*time, y_m1*marker_on,
-                            color=(0.6, 0.1, 0.1), alpha=0.6, lw=2)
-
-                    # marker 2 (blue, below the red)
-                    y_m2 = ymax+0.10*yrange
-                    marker_on = np.ones_like(m2)
-                    marker_on[m2 == 0] = np.nan
-                    marker_off = np.ones_like(m2)
-                    ax.plot(timescaling*time, y_m2*marker_off,
-                            color=(0.1, 0.1, 0.6), alpha=0.2, lw=2)
-                    ax.plot(timescaling*time, y_m2*marker_on,
-                            color=(0.1, 0.1, 0.6), alpha=0.6, lw=2)
-
-                # If subsequence, plot lines indicating min and max value
-                if seq[pos+1]['type'] == 'subsequence':
-                    # min:
-                    ax.plot(time, np.ones_like(time)*wfm[0],
-                            color=(0.12, 0.12, 0.12), alpha=0.2, lw=2)
-                    # max:
-                    ax.plot(time, np.ones_like(time)*wfm[1],
-                            color=(0.12, 0.12, 0.12), alpha=0.2, lw=2)
-
-                    ax.set_xticks([])
-
-                # time step lines
-                for dur in np.cumsum(newdurs):
-                    ax.plot([timescaling*dur, timescaling*dur],
-                            [ax.get_ylim()[0], ax.get_ylim()[1]],
-                            color=(0.312, 0.2, 0.33),
-                            alpha=0.3)
-
-                # labels
-                if pos == 0:
-                    ax.set_ylabel('({})'.format(voltageunit))
-                if pos == seqlen - 1:
-                    newax = ax.twinx()
-                    newax.set_yticks([])
-                    newax.set_ylabel('Ch. {}'.format(chan))
-
-                if seq[pos+1]['type'] == 'subsequence':
-                    ax.set_xlabel('Time N/A')
-                else:
-                    ax.set_xlabel('({})'.format(timeunit))
-
-                # remove excess space from the plot
-                if not chanind+1 == len(chans):
-                    ax.set_xticks([])
-                if not pos == 0:
-                    ax.set_yticks([])
-                fig.subplots_adjust(hspace=0, wspace=0)
-
-                # display sequencer information
-                if chanind == 0:
-                    seq_info = self._sequencing[pos+1]
-                    titlestring = ''
-                    if seq_info['twait'] == 1:  # trigger wait
-                        titlestring += 'T '
-                    if seq_info['nrep'] > 1:  # nreps
-                        titlestring += '\u21BB{} '.format(seq_info['nrep'])
-                    if seq_info['nrep'] == 0:
-                        titlestring += '\u221E '
-                    if seq_info['jump_input'] != 0:
-                        if seq_info['jump_input'] == -1:
-                            titlestring += 'E\u2192 '
-                        else:
-                            titlestring += 'E{} '.format(seq_info['jump_input'])
-                    if seq_info['goto'] > 0:
-                        titlestring += '\u21b1{}'.format(seq_info['goto'])
-
-                    ax.set_title(titlestring)
+        pass
 
     def forge(self, apply_delays: bool=True,
               apply_filters: bool=True,
@@ -2177,7 +1936,7 @@ class Sequence:
         # apply filter corrections to forged arrays
         if apply_filters:
             for pos1 in range(1, seqlen+1):
-                thiselem = output[pos]['content']
+                thiselem = output[pos1]['content']
                 for pos2 in thiselem.keys():
                     data = thiselem[pos2]['data']
                     for channame in data.keys():
@@ -2716,134 +2475,9 @@ def elementBuilder(blueprints: Union[BluePrint, list],
     return outdict
 
 
+@marked_for_deletion(replaced_by='broadbean.plotting.plotter')
 def bluePrintPlotter(blueprints, fig=None, axs=None):
-    """
-    Plots a bluePrint or list of blueprints for easy overview.
-
-    Args:
-        blueprints (Union[BluePrint, list[BluePrint]]): A single BluePrint or a
-            list of blueprints to plot.
-        fig (Union[matplotlib.figure.Figure, None]): The figure on which to
-            plot. If None is given, a new instance is created.
-        axs (Union[list, None]): A list of
-            matplotlib.axes._subplots.AxesSubplot to plot onto. If None is
-            given, a new list is created.
-    """
-
-    #  Todo: All sorts of validation on lengths of blueprint and the like
-
-    # Allow single blueprint
-    if not isinstance(blueprints, list):
-        blueprints = [blueprints]
-
-    SRs = []
-    for blueprint in blueprints:
-        if blueprint.SR is None:
-            raise ValueError('No sample rate specified for blueprint.'
-                             ' Can not create plot. Please specify a'
-                             ' sample rate.')
-        else:
-            SRs.append(blueprint.SR)
-
-    if len(set(SRs)) != 1:
-        raise ValueError('Blueprints do not have matching sample '
-                         'rates. Received {}. Can not proceed.'
-                         ''.format(SRs))
-    else:
-        SR = SRs[0]
-
-    durations = []
-    for blueprint in blueprints:
-        durations.append(blueprint._durslist)
-
-    if fig is None:
-        fig = plt.figure()
-    N = len(blueprints)
-
-    if axs is None:
-        axs = [fig.add_subplot(N, 1, ii+1) for ii in range(N)]
-
-    for ii in range(N):
-        ax = axs[ii]
-        forged_bp = _subelementBuilder(blueprints[ii], SR,
-                                       durations[ii])
-        wfm = forged_bp['wfm']
-        m1 = forged_bp['m1']
-        m2 = forged_bp['m2']
-        newdurs = forged_bp['newdurations']
-        time = np.linspace(0, np.sum(newdurs), len(wfm))
-
-        # Figure out time axis scaling
-        exponent = np.log10(time.max())
-        timeunit = 's'
-        timescaling = 1
-        if exponent < 0:
-            timeunit = 'ms'
-            timescaling = 1e3
-        if exponent < -3:
-            timeunit = 'micro s'  # sadly, we don't live in the global future..
-            timescaling = 1e6
-        if exponent < -6:
-            timeunit = 'ns'
-            timescaling = 1e9
-
-        # Figure out voltage axis scaling
-        exponent = np.log10(wfm.max())
-        voltageunit = 'V'
-        voltagescaling = 1
-        if exponent < 0:
-            voltageunit = 'mV'
-            voltagescaling = 1e3
-        if exponent < -3:
-            voltageunit = 'micro V'
-            voltagescaling = 1e6
-        if exponent < -6:
-            voltageunit = 'nV'
-            voltagescaling = 1e9
-
-        ax.locator_params(tight=True, nbins=3, prune='lower')
-
-        yrange = voltagescaling * (wfm.max() - wfm.min())
-        ax.set_ylim([voltagescaling*wfm.min()-0.05*yrange,
-                     voltagescaling*wfm.max()+0.2*yrange])
-
-        # PLOT lines indicating the durations
-        for dur in np.cumsum(newdurs):
-            ax.plot([dur*timescaling, dur*timescaling],
-                    [ax.get_ylim()[0], ax.get_ylim()[1]],
-                    color=(0.312, 0.2, 0.33),
-                    alpha=0.3)
-
-        # plot the waveform
-        ax.plot(timescaling*time, voltagescaling*wfm,
-                lw=3, color=(0.6, 0.4, 0.3), alpha=0.4)
-
-        # plot the markers
-        y_m1 = (voltagescaling*wfm.max()+0.15*yrange)
-        marker_on = np.ones_like(m1)
-        marker_on[m1 == 0] = np.nan
-        marker_off = np.ones_like(m1)
-        ax.plot(time*timescaling, y_m1*marker_off,
-                color=(0.6, 0.1, 0.1), alpha=0.2, lw=2)
-        ax.plot(time*timescaling, y_m1*marker_on,
-                color=(0.6, 0.1, 0.1), alpha=0.6, lw=2)
-        #
-        y_m2 = voltagescaling*wfm.max()+0.10*yrange
-        marker_on = np.ones_like(m2)
-        marker_on[m2 == 0] = np.nan
-        marker_off = np.ones_like(m2)
-        ax.plot(time*timescaling, y_m2*marker_off,
-                color=(0.1, 0.1, 0.6), alpha=0.2, lw=2)
-        ax.plot(time*timescaling, y_m2*marker_on,
-                color=(0.1, 0.1, 0.6), alpha=0.6, lw=2)
-
-    # Prettify a bit
-    for ax in axs[:-1]:
-        ax.set_xticks([])
-    axs[-1].set_xlabel('Time ({})'.format(timeunit))
-    for ax in axs:
-        ax.set_ylabel('Signal ({})'.format(voltageunit))
-    fig.subplots_adjust(hspace=0)
+    pass
 
 
 def makeLinearlyVaryingSequence(baseelement, channel, name, arg, start, stop,
