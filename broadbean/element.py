@@ -5,8 +5,8 @@ from copy import deepcopy
 
 import numpy as np
 
-from .broadbean import (BluePrint, _subelementBuilder, marked_for_deletion,
-                        PulseAtoms)
+from .broadbean import marked_for_deletion, PulseAtoms
+from broadbean.blueprint import BluePrint, _subelementBuilder
 
 
 class ElementDurationError(Exception):

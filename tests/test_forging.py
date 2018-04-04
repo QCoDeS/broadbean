@@ -7,8 +7,7 @@ import pytest
 import numpy as np
 
 import broadbean as bb
-from broadbean.broadbean import _subelementBuilder
-from broadbean import SegmentDurationError
+from broadbean.blueprint import _subelementBuilder, SegmentDurationError
 from broadbean.ripasso import applyInverseRCFilter
 from broadbean.sequence import Sequence
 
