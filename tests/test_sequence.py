@@ -7,7 +7,8 @@
 
 import pytest
 import broadbean as bb
-from broadbean import SequenceCompatibilityError, SequenceConsistencyError
+from broadbean.sequence import (SequenceCompatibilityError,
+                                SequenceConsistencyError, Sequence)
 
 ramp = bb.PulseAtoms.ramp
 sine = bb.PulseAtoms.sine
@@ -40,7 +41,7 @@ def protosequence1():
     elem2.addBluePrint(1, th)
     elem2.addBluePrint(2, wiggle2)
 
-    seq = bb.Sequence()
+    seq = Sequence()
     seq.addElement(1, elem1)
     seq.addElement(2, elem2)
     seq.setSR(SR)
@@ -82,7 +83,7 @@ def protosequence2():
     elem2.addBluePrint(2, saw)
     elem2.addBluePrint(1, lineandwiggle)
 
-    seq = bb.Sequence()
+    seq = Sequence()
     seq.setSR(SR)
     seq.addElement(1, elem1)
     seq.addElement(2, elem2)
@@ -125,7 +126,7 @@ def badseq_missing_pos():
     elem2.addBluePrint(2, saw)
     elem2.addBluePrint(1, lineandwiggle)
 
-    seq = bb.Sequence()
+    seq = Sequence()
     seq.setSR(SR)
     seq.addElement(1, elem1)
     seq.addElement(3, elem2)  # <--- A gap in the sequence
@@ -272,7 +273,7 @@ def test_addition_awgspecs(protosequence1, protosequence2):
 
 
 def test_addition_data_with_empty(protosequence1):
-    newseq = bb.Sequence()
+    newseq = Sequence()
     newseq._awgspecs = protosequence1._awgspecs
 
     newseq = newseq + protosequence1
@@ -286,11 +287,11 @@ def test_add_subsequence_raises(protosequence1, squarepulse_baseelem):
     with pytest.raises(ValueError):
         protosequence1.addSubSequence(1, squarepulse_baseelem)
 
-    seq = bb.Sequence()
+    seq = Sequence()
     seq.addElement(1, squarepulse_baseelem)
     seq.setSR(squarepulse_baseelem.SR)
 
-    mainseq = bb.Sequence()
+    mainseq = Sequence()
     mainseq.setSR(seq.SR/2)
 
     # raise if the subsequence sample rate does not match the main seq. SR
@@ -300,7 +301,7 @@ def test_add_subsequence_raises(protosequence1, squarepulse_baseelem):
     mainseq.setSR(seq.SR)
     mainseq.addSubSequence(1, seq)
 
-    doublemainseq = bb.Sequence()
+    doublemainseq = Sequence()
     doublemainseq.setSR(seq.SR)
 
     with pytest.raises(ValueError):
