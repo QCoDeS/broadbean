@@ -168,57 +168,6 @@ class _AWGOutput:
         raise KeyError('Key must be int or slice!')
 
 
-def elementBuilder(blueprints: Union[BluePrint, list],
-                   SR: int, durations: List[float],
-                   channels: List[int]=None) -> Dict[int,
-                                                     Dict[str, np.ndarray]]:
-    """
-    Forge blueprints into an element
-
-    Args:
-        blueprints: A single blueprint or a list of
-            blueprints.
-        SR: The sample rate (Sa/s)
-        durations: List of durations or a list of lists of durations
-            if different blueprints have different durations. If a single list
-            is given, this list is used for all blueprints.
-        channels: A list specifying the channels of the
-            blueprints in the list. If None, channels 1, 2, .. are assigned
-
-    Returns:
-        Dictionary with channel numbers (ints) as keys and forged
-            blueprints as values. A forged blueprint is a dictionary
-            with keys 'wfm', 'm1', 'm2', 'm3', etc, 'time', and
-            and 'newdurations'.
-
-    Raises:
-        ValueError: if blueprints does not contain BluePrints
-        ValueError: if the wrong number of blueprints/durations is given
-    """
-
-    # Validation
-    if not (isinstance(blueprints, BluePrint) or isinstance(blueprints, list)):
-        raise ValueError('blueprints must be a BluePrint object or a list of '
-                         'BluePrint objects. '
-                         'Received {}.'.format(type(blueprints)))
-    if isinstance(blueprints, BluePrint):
-        blueprints = [blueprints]
-    # Allow for using a single durations list for all blueprints
-    if not isinstance(durations[0], list):
-        fulldurations = [durations]*len(blueprints)
-        # durations = [durations for _ in range(len(blueprints))]
-
-    if channels is None:
-        channels = [ii for ii in range(len(blueprints))]
-
-    bpdurs = zip(blueprints, fulldurations)
-    subelems = [_subelementBuilder(bp, SR, dur) for (bp, dur) in bpdurs]
-
-    outdict = dict(zip(channels, subelems))
-
-    return outdict
-
-
 @marked_for_deletion(replaced_by='broadbean.plotting.plotter')
 def bluePrintPlotter(blueprints, fig=None, axs=None):
     pass
