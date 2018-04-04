@@ -9,7 +9,7 @@ import numpy as np
 from schema import Schema, Or, Optional
 
 from broadbean.ripasso import applyInverseRCFilter
-from .broadbean import Element  # TODO: change import to element.py
+from broadbean.element import Element  # TODO: change import to element.py
 from .broadbean import _channelListSorter  # TODO: change import to helpers.py
 from .broadbean import marked_for_deletion
 from .broadbean import PulseAtoms

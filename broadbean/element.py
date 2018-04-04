@@ -1,10 +1,16 @@
 # This file contains the Element definition
 
-from typing import Union
+from typing import Union, Dict, List
+from copy import deepcopy
 
 import numpy as np
 
-from .broadbean import BluePrint
+from .broadbean import (BluePrint, _subelementBuilder, marked_for_deletion,
+                        PulseAtoms)
+
+
+class ElementDurationError(Exception):
+    pass
 
 
 class Element:
