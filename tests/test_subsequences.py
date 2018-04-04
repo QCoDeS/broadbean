@@ -5,6 +5,7 @@ import pytest
 import numpy as np
 
 import broadbean as bb
+from broadbean.sequence import fs_schema, Sequence
 
 ramp = bb.PulseAtoms.ramp
 sine = bb.PulseAtoms.sine
@@ -12,7 +13,7 @@ gauss = bb.PulseAtoms.gaussian
 
 SR1 = 1e9
 
-forged_sequence_schema = bb.fs_schema
+forged_sequence_schema = fs_schema
 
 
 @pytest.fixture
@@ -51,7 +52,7 @@ def subseq1():
 
     elem3 = elem1.copy()
 
-    seq = bb.Sequence()
+    seq = Sequence()
     seq.setSR(SR1)
     seq.addElement(1, elem1)
     seq.addElement(2, elem2)
@@ -96,7 +97,7 @@ def subseq2():
     elem2.addBluePrint(2, slope)
     elem2.addBluePrint(3, blob)
 
-    seq = bb.Sequence()
+    seq = Sequence()
     seq.setSR(SR1)
     seq.addElement(1, elem2)
     seq.addElement(2, elem1)
@@ -154,7 +155,7 @@ def master_sequence(subseq1, subseq2, bp_element, noise_element):
     have ararys, some have blueprint. We try to aim wide.
     """
 
-    seq = bb.Sequence()
+    seq = Sequence()
     seq.setSR(SR1)
 
     seq.addElement(1, noise_element)

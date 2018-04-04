@@ -7,6 +7,7 @@ from hypothesis import given, settings
 import hypothesis.strategies as hst
 
 import broadbean as bb
+from broadbean.sequence import Sequence, SequencingError
 
 ramp = bb.PulseAtoms.ramp
 sine = bb.PulseAtoms.sine
@@ -39,7 +40,7 @@ def protosequence1():
     elem2.addBluePrint(1, th)
     elem2.addBluePrint(2, wiggle2)
 
-    seq = bb.Sequence()
+    seq = Sequence()
     seq.addElement(1, elem1)
     seq.addElement(2, elem2)
     seq.setSR(SR)
@@ -98,7 +99,7 @@ def test_awg_output_validations(protosequence1, wait, nrep, jump_to, goto):
     N = protosequence1.length_sequenceelements
 
     if should_raise_sequencingerror(wait, nrep, jump_to, goto, N):
-        with pytest.raises(bb.SequencingError):
+        with pytest.raises(SequencingError):
             protosequence1.outputForAWGFile()
     else:
         protosequence1.outputForAWGFile()

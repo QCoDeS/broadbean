@@ -10,6 +10,7 @@ import broadbean as bb
 from broadbean.broadbean import _subelementBuilder
 from broadbean import SegmentDurationError
 from broadbean.ripasso import applyInverseRCFilter
+from broadbean.sequence import Sequence
 
 import matplotlib.pyplot as plt
 plt.ion()
@@ -26,7 +27,7 @@ def sequence_maker():
 
     def make_seq(seqlen, channels, SR):
 
-        seq = bb.Sequence()
+        seq = Sequence()
         seq.setSR(SR)
 
         for pos in range(1, seqlen+1):
@@ -46,6 +47,7 @@ def sequence_maker():
         return seq
 
     return make_seq
+
 
 def _has_period(array: np.ndarray, period: int) -> bool:
     """
