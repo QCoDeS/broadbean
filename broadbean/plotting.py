@@ -145,7 +145,8 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
     seq = _plot_object_forger(obj_to_plot, **forger_kwargs)
 
     # Get the dimensions.
-    chans = seq[1]['content'][1]['data'].keys()
+    channames = list(seq[1]['content'].keys())
+    chans = seq[1]['content'][channames[0]]['data'].keys()
     seqlen = len(seq.keys())
 
     def update_minmax(chanminmax, wfmdata, chanind):
