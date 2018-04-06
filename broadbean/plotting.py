@@ -294,6 +294,7 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
             if pos == seqlen - 1 and not(isinstance(obj_to_plot, BluePrint)):
                 newax = ax.twinx()
                 newax.set_yticks([])
+
                 if isinstance(chan, int):
                     new_ylabel = f'Ch. {chan}'
                 elif isinstance(chan, str):
@@ -355,9 +356,9 @@ def _segment_plot_forger(segment: Segment, **kwargs) -> Dict[int, Dict]:
     timeax = np.linspace(0, duration, npts, endpoint=False)
     signal = segment.forge(SR, **kwargs)
 
-    data = {1: {'wfm': signal, 'time': timeax}}
+    data = {'': {'wfm': signal, 'time': timeax}}
 
     forged_seq = {1: {'type': 'element',
-                      'content': {'': {'data': data}}}}
+                      'content': {1: {'data': data}}}}
 
     return forged_seq
