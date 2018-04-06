@@ -5,11 +5,11 @@ from typing import Tuple, Union, Dict, List
 import numpy as np
 import matplotlib.pyplot as plt
 
-from broadbean import Sequence, BluePrint, Element
+from broadbean import Sequence, BluePrint, Element, Segment
 from broadbean.sequence import SequenceConsistencyError
 
 # The object we can/want to plot
-BBObject = Union[Sequence, BluePrint, Element]
+BBObject = Union[Sequence, BluePrint, Element, Segment]
 
 
 def getSIScalingAndPrefix(minmax: Tuple[float, float]) -> Tuple[float, str]:
@@ -67,6 +67,10 @@ def _plot_object_forger(obj_to_plot: BBObject,
     Make a forged sequence out of any object.
     Returns a forged sequence.
     """
+
+    # hacky, hacky, quick insertion of Segment handling
+    if isinstance(obj_to_plot, Segment):
+        return _segment_plot_forger(obj_to_plot, **forger_kwargs)
 
     if isinstance(obj_to_plot, BluePrint):
         elem = Element()
@@ -325,3 +329,33 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
                     titlestring += '\u21b1{}'.format(seq_info['goto'])
 
                 ax.set_title(titlestring)
+
+
+def _segment_plot_forger(segment: Segment, **kwargs) -> Dict[int, Dict]:
+    """
+    Temporary quick function to forge a segment into a sequence
+    """
+
+    if 'SR' in kwargs.keys():
+        SR = kwargs.pop('SR')
+    else:
+        raise ValueError('Cannot plot segment, no sample rate provided')
+
+    if 'dur' in kwargs.keys():
+        duration = kwargs.pop('dur')  # now the kwargs are only symbols
+    elif segment.duration:
+        duration = segment.duration
+
+    if not duration:
+        raise ValueError('Cannot plot segment, no duration specified')
+
+    npts = int(duration*SR)
+    timeax = np.linspace(0, duration, npts, endpoint=False)
+    signal = segment.forge(SR, **kwargs)
+
+    data = {1: {'wfm': signal, 'time': timeax}}
+
+    forged_seq = {1: {'type': 'element',
+                      'content': {1: {'data': data}}}}
+
+    return forged_seq
