@@ -4,7 +4,6 @@
 
 from . import ripasso
 from .element import Element
-from .segment import Segment
 from .sequence import Sequence
 from .blueprint import BluePrint
 from .tools import makeVaryingSequence, repeatAndVarySequence
