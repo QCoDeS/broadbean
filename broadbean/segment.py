@@ -77,6 +77,14 @@ class Segment:
         return self._symbols
 
     def forge(self, SR: int, **kwargs) -> np.ndarray:
+        """
+        Forge the segment into an array. Keyword arguments can
+        contain a duration (must be called dur) and should otherwise
+        specify values for any symbols in the segment
+
+        Args:
+            SR: The sample rate (Sa/s)
+        """
 
         duration = None
 
