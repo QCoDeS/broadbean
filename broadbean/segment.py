@@ -3,11 +3,12 @@
 #
 
 from typing import Callable, Dict, Union, Optional
-from numbers import Number
 from inspect import signature
 
 import numpy as np
 
+# types for good hinting
+Number = Union[float, int]
 ArgsDict = Dict[str, Union[Number, str]]
 
 
@@ -35,7 +36,7 @@ def validate_function_and_args_dict(func: Callable,
 
     if not set(argnames) == set(args_dict.keys()):
         raise ValueError('Invalid args_dict. args_dict specifies '
-                         f'{set(arg_dict.keys())}, but the function '
+                         f'{set(args_dict.keys())}, but the function '
                          f'expects {set(argnames)}.')
 
 
