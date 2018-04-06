@@ -357,6 +357,6 @@ def _segment_plot_forger(segment: Segment, **kwargs) -> Dict[int, Dict]:
     data = {1: {'wfm': signal, 'time': timeax}}
 
     forged_seq = {1: {'type': 'element',
-                      'content': {1: {'data': data}}}}
+                      'content': {'': {'data': data}}}}
 
     return forged_seq
