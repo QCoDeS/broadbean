@@ -2,14 +2,14 @@
 #
 #
 
-from typing import Callable, Dict, Union, Optional
+from typing import Callable, Dict, Union
 from inspect import signature
 
 import numpy as np
 
 # types for good hinting
 Number = Union[float, int]
-ArgsDict = Dict[str, Union[Number, str]]
+ArgsDict = Dict[str, Union[Number, str, None]]
 
 
 def validate_function_and_args_dict(func: Callable,
@@ -26,15 +26,20 @@ def validate_function_and_args_dict(func: Callable,
     sig = signature(func)
     argnames = [an for an in sig.parameters]
 
-    if 'time' not in argnames:
-        raise ValueError('Function invalid, must have the argument "time".')
+    try:
+        argnames.remove('time')
+    except ValueError:
+            raise ValueError('Function invalid, must have the'
+                             ' argument "time".')
 
-    argnames.remove('time')
+    _dur = args_dict.pop('duration')
 
     if not set(argnames) == set(args_dict.keys()):
         raise ValueError('Invalid args_dict. args_dict specifies '
                          f'{set(args_dict.keys())}, but the function '
                          f'expects {set(argnames)}.')
+
+    args_dict.update({'duration': _dur})
 
 
 class Segment:
@@ -43,30 +48,25 @@ class Segment:
     """
 
     def __init__(self, name: str, function: Callable,
-                 args_dict: ArgsDict,
-                 duration: Optional[float]=None) -> None:
+                 **kwargs) -> None:
         """
         Args:
             name: the name of the segment
-            function: the function that, when fed with the args from the
-                args_dict plus an 'SR' and a 'dur', returns the signal array
-            args_dict: dictionary with {arg_name: arg_value} items.
-                The args are the arguments to the function, excluding 'SR'
-                and 'dur'.
-                The arg_value may either be a number or a string. Using a
-                string will defer the evaluation, i.e. making the argument
-                a symbolic parameter.
-            duration: The duration of the segment (s)
+            function: the function that, when fed with the kwargs
+                (minus 'duration', plus 'time') returns an array
+            kwargs: the parameters for the function except 'time' and
+                also the segment duration
         """
 
-        validate_function_and_args_dict(function, args_dict)
+        validate_function_and_args_dict(function, kwargs)
 
         self.name = name
         self.function = function
-        self.args_dict = args_dict
-        self.duration = duration
+        self.duration = kwargs.pop('duration')
+        self.args_dict = kwargs
 
-        symbols = {v: k for (k, v) in args_dict.items() if isinstance(v, str)}
+        symbols = {v: k for (k, v) in self.args_dict.items()
+                   if isinstance(v, str)}
         self._symbols = symbols
 
     @property
