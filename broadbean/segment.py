@@ -70,13 +70,17 @@ class Segment:
         self._symbols = symbols
 
     @property
-    def symbols(self):
+    def duration(self) -> Union[str, Number, None]:
+        return self.duration
+
+    @property
+    def symbols(self) -> Dict[str, str]:
         return self._symbols
 
     def forge(self, SR: int, **kwargs) -> np.ndarray:
         """
         Forge the segment into an array. Keyword arguments can
-        contain a duration (must be called dur) and should otherwise
+        contain a duration (must be called 'duration') and should otherwise
         specify values for any symbols in the segment
 
         Args:
@@ -85,8 +89,8 @@ class Segment:
 
         duration = None
 
-        if 'dur' in kwargs.keys():
-            duration = kwargs.pop('dur')
+        if 'duration' in kwargs.keys():
+            duration = kwargs.pop('duration')
             # after this pop, only symbols are in the kwargs
         elif self.duration:
             duration = self.duration
