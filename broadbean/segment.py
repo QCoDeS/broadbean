@@ -71,7 +71,7 @@ class Segment:
 
     @property
     def duration(self) -> Union[str, Number, None]:
-        return self.duration
+        return self._duration
 
     @property
     def symbols(self) -> Dict[str, str]:
