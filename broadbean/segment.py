@@ -59,7 +59,7 @@ class Segment:
         validate_function_and_args_dict(function, kwargs)
 
         self.function = function
-        self.duration = kwargs.pop('duration')
+        self._duration = kwargs.pop('duration')
         self.args_dict = kwargs
 
         symbols = {v: k for (k, v) in self.args_dict.items()
@@ -115,3 +115,10 @@ class Segment:
         array = self.function(**args_dict)
 
         return array
+
+    def __repr__(self) -> str:
+        output = f'Segment({self.function.__name__},\n'
+        for name, value in self.args_dict:
+            output += f'{name}={value}\n'
+        output += f'duration={self.duration})'
+        return output
