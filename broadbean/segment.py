@@ -123,6 +123,6 @@ class Segment:
                 valstr = f"'{value}'"
             else:
                 valstr = f"{value}"
-            output += f'{name}={valstr}\n'
+            output += f'{name}={valstr},\n'
         output += f'duration={self.duration})'
         return output
