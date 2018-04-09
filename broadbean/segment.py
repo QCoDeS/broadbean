@@ -119,6 +119,10 @@ class Segment:
     def __repr__(self) -> str:
         output = f'Segment({self.function.__name__},\n'
         for name, value in self.args_dict.items():
-            output += f'{name}={value}\n'
+            if isinstance(str, value):
+                valstr = f"'{value}'"
+            else:
+                valstr = f"{value}"
+            output += f'{name}={valstr}\n'
         output += f'duration={self.duration})'
         return output
