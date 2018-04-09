@@ -119,7 +119,7 @@ class Segment:
     def __repr__(self) -> str:
         output = f'Segment({self.function.__name__},\n'
         for name, value in self.args_dict.items():
-            if isinstance(str, value):
+            if isinstance(value, str):
                 valstr = f"'{value}'"
             else:
                 valstr = f"{value}"
