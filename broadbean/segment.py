@@ -47,11 +47,9 @@ class Segment:
     The smallest broadbean particle
     """
 
-    def __init__(self, name: str, function: Callable,
-                 **kwargs) -> None:
+    def __init__(self, function: Callable, **kwargs) -> None:
         """
         Args:
-            name: the name of the segment
             function: the function that, when fed with the kwargs
                 (minus 'duration', plus 'time') returns an array
             kwargs: the parameters for the function except 'time' and
@@ -60,7 +58,6 @@ class Segment:
 
         validate_function_and_args_dict(function, kwargs)
 
-        self.name = name
         self.function = function
         self.duration = kwargs.pop('duration')
         self.args_dict = kwargs
