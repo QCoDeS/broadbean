@@ -118,7 +118,7 @@ class Segment:
 
     def __repr__(self) -> str:
         output = f'Segment({self.function.__name__},\n'
-        for name, value in self.args_dict:
+        for name, value in self.args_dict.items():
             output += f'{name}={value}\n'
         output += f'duration={self.duration})'
         return output
