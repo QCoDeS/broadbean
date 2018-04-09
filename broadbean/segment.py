@@ -26,13 +26,10 @@ def validate_function_and_args_dict(func: Callable,
     sig = signature(func)
     argnames = [an for an in sig.parameters]
 
-    if 'dur' not in argnames:
-        raise ValueError('Function invalid, must have the argument "dur".')
-    if 'SR' not in argnames:
-        raise ValueError('Function invalid, must have the argument "SR".')
+    if 'time' not in argnames:
+        raise ValueError('Function invalid, must have the argument "time".')
 
-    argnames.remove('SR')
-    argnames.remove('dur')
+    argnames.remove('time')
 
     if not set(argnames) == set(args_dict.keys()):
         raise ValueError('Invalid args_dict. args_dict specifies '
@@ -103,8 +100,16 @@ class Segment:
                              f' expected {set(self._symbols)}.')
 
         args_dict = self.args_dict.copy()
-        args_dict.update({'SR': SR, 'dur': duration})
         args_dict.update({self._symbols[s]: kwargs[s] for s in kwargs.keys()})
+
+        int_dur = int(duration*SR)
+        if int_dur < 2:
+            raise ValueError('Cannot forge segment; forging must result in at'
+                             ' least two points, but this segment has only '
+                             f'{int_dur}')
+        time_array = np.linspace(0, duration, int_dur, endpoint=False)
+
+        args_dict.update({'time': time_array})
 
         array = self.function(**args_dict)
 
