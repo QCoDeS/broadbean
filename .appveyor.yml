@@ -1,0 +1,29 @@
+# AppVeyor configuration file for broadbean
+
+branches:
+  only:
+    - master
+    - version1.0
+
+environment:
+  matrix:
+    - PYTHON_VERSION: "3.6"
+
+# Disable email notifications
+notifications:
+  email: false
+
+
+# Init scripts
+
+# Install scripts
+install:
+  - pip install --upgrade pip
+  - pip install -r test_requirements.txt
+  - pip install .
+
+# Test scripts
+test_script:
+  - mypy broadbean --ignore-missing-imports
+  - cd tests
+  - pytest
