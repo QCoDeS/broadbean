@@ -6,7 +6,7 @@ branches:
     - version1.0
 
 environment:
-  - CONDA_INSTALL_LOCATION: "C:\\Miniconda36-x64"
+  CONDA_INSTALL_LOCATION: "C:\\Miniconda36-x64"
 
 # Do not use MSBuild
 build: false
