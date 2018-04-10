@@ -9,9 +9,6 @@ environment:
   matrix:
     - PYTHON_VERSION: "3.6"
 
-# Disable email notifications
-notifications:
-  email: false
 
 # Do not use MSBuild
 build: false
