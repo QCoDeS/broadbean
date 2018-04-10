@@ -32,4 +32,4 @@ test_script:
   - cd tests
   - pytest
   - cd ../docs
-  - make execute
+  - execute_notebooks.cmd
