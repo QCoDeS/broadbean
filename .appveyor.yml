@@ -6,8 +6,7 @@ branches:
     - version1.0
 
 environment:
-  PYTHON_VERSION: "3.6"
-
+  - CONDA_INSTALL_LOCATION: "C:\\Miniconda36-x64"
 
 # Do not use MSBuild
 build: false
@@ -16,6 +15,11 @@ build: false
 
 # Install scripts
 install:
+  - set PATH=%CONDA_INSTALL_LOCN%;%CONDA_INSTALL_LOCN%\scripts;%PATH%;
+  - conda update --all
+  - conda info -a
+  - conda create -q -n test-environment python=%PYTHON_VERSION% pip setuptools
+  - conda activate test-environment
   - python -m pip install --upgrade pip
   - pip install -r test_requirements.txt
   - pip install .
