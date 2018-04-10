@@ -31,3 +31,5 @@ test_script:
   - mypy broadbean --ignore-missing-imports
   - cd tests
   - pytest
+  - cd ../docs
+  - make execute
