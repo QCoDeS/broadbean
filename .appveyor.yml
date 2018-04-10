@@ -6,12 +6,8 @@ branches:
     - version1.0
 
 environment:
-  matrix:
-    - PYTHON_VERSION: "3.6"
-
-# Disable email notifications
-notifications:
-  email: false
+  global:
+    CONDA_INSTALL_LOCATION: "C:\\Miniconda36-x64"
 
 # Do not use MSBuild
 build: false
@@ -20,7 +16,13 @@ build: false
 
 # Install scripts
 install:
-  - pip install --upgrade pip
+  - set PATH=%CONDA_INSTALL_LOCATION%;%CONDA_INSTALL_LOCATION%\scripts;%PATH%;
+  - conda config --set always_yes true  # else AppVeyor will hang forever waiting for user ([y]/n)
+  - conda update -n base conda
+  - conda info -a
+  - conda create -q -n test-environment python=%PYTHON_VERSION% pip setuptools
+  - activate test-environment
+  - python -m pip install --upgrade pip
   - pip install -r test_requirements.txt
   - pip install .
 
@@ -29,3 +31,5 @@ test_script:
   - mypy broadbean --ignore-missing-imports
   - cd tests
   - pytest
+  - cd ../docs
+  - execute_notebooks.cmd
