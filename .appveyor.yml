@@ -13,6 +13,8 @@ environment:
 notifications:
   email: false
 
+# Do not use MSBuild
+build: false
 
 # Init scripts
 
