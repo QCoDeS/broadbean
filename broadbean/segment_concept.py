@@ -73,6 +73,22 @@ class _BaseSegment:
     def inferred_duration(self):
         return self._inferred_duration
 
+    def _property_list(self):
+        output = ''
+        for name, value in self._properties.items():
+            if isinstance(value, str):
+                valstr = f"'{value}'"
+            else:
+                valstr = f"{value}"
+            output += f'{name}={valstr},\n'
+        output += f'expandable={self.expandable},\n'
+        output += f'inferred_duration={self.inferred_duration})'
+        return output
+
+    def __repr__(self) -> str:
+        output = '_BaseSegment(\n'
+        output += self._property_list()
+        return output
 
 class Segment(_BaseSegment):
     def __init__(self,
@@ -108,6 +124,10 @@ class Segment(_BaseSegment):
         return self._function(time=time_array,
                               **kwargs)
 
+    def __repr__(self) -> str:
+        output = f'Segment({self._function.__name__},\n'
+        output += self._property_list()
+        return output
 
 class GroupSegment(_BaseSegment):
 # TODO: prevent recursive nesting of segments
