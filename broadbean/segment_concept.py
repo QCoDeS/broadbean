@@ -184,3 +184,8 @@ class GroupSegment(_BaseSegment):
                 # some unecessary copying here
                 return_array = np.append(return_array, s.forge(SR, **context))
         return return_array
+
+    def __repr__(self) -> str:
+        output = f'GroupSegment(,\n'
+        output += self._property_list()
+        return output
