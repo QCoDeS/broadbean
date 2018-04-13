@@ -13,7 +13,7 @@ class _Expandable:
 
 expandable = _Expandable()
 
-class Segment:
+class _BaseSegment:
     def __init__(self,
                  duration: Union[Number,None]=None,
                  expandable: bool=False,
@@ -74,7 +74,7 @@ class Segment:
         return self._inferred_duration
 
 
-class FunctionSegment(Segment):
+class Segment(_BaseSegment):
     def __init__(self,
                  function: callable,
                  duration: Union[Number,None]=None,
@@ -83,7 +83,7 @@ class FunctionSegment(Segment):
                  **function_arguments: PropertyDict) -> None:
         # check if compatible with function footprint and has a duration
         if inferred_duration:
-            raise ValueError('Cannot infer duration for FunctionSegment.')
+            raise ValueError('Cannot infer duration for Segment.')
         super().__init__(duration=duration,
                          expandable=expandable,
                          **function_arguments)
@@ -109,10 +109,10 @@ class FunctionSegment(Segment):
                               **kwargs)
 
 
-class GroupSegment(Segment):
+class GroupSegment(_BaseSegment):
 # TODO: prevent recursive nesting of segments
     def __init__(self,
-                 *segments: List['Segment'],
+                 *segments: List['_BaseSegment'],
                  duration = None,
                  **properties: PropertyDict) -> None:
         super().__init__(duration=duration, **properties)
