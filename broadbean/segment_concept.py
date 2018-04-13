@@ -2,7 +2,7 @@ import numpy as np
 from copy import copy, deepcopy
 
 from typing import Union, Dict, List
-Number = Union[float, int]
+Number = Union[float, int, None]
 Property =  Union[Number, str, None]
 PropertyDict = Dict[str, Property]
 ContextDict = Dict[str, Number]
@@ -14,7 +14,15 @@ class _Expandable:
 expandable = _Expandable()
 
 class Segment:
-    def __init__(self, duration, **properties: PropertyDict):
+    def __init__(self,
+                 duration: Union[Number,None]=None,
+                 expandable: bool=False,
+                 inferred_duration: bool=False,
+                 **properties: PropertyDict):
+        self._expandable = expandable
+        self._inferred_duration = inferred_duration
+        if not expandable and not inferred_duration and duration is None:
+            raise ValueError('A segment must have a duration that is either expandable, inferred from its children, a symbol or a numeric value.')
         properties['duration'] = duration
         self._properties = properties
 
@@ -41,36 +49,44 @@ class Segment:
                            **context: ContextDict) -> Dict[str, Number]:
         return {k:self.get(k, **context) for k,v in self._properties.items()}
 
-    @property
-    def is_expandable(self):
-        return self._properties['duration'] == expandable
 
-    def _safe_get_duration(self, duration, **context):
-        if self.is_expandable:
+    def _safe_get_duration(self, duration=None, **context):
+        if self.expandable:
             # duration must be supplied explicitly
             if duration is None:
                 raise ValueError('Must supply duration')
             return duration
         else:
             # duration fixed by segment
-            if duration is not None:
+            if self.inferred_duration:
                 raise ValueError('Duration cannot be overridden.')
             own_duration = self.get('duration', **context)
             if own_duration is None:
                 raise ValueError('Must supply duration')
             return self.get('duration', **context)
 
+    @property
+    def expandable(self):
+        return self._expandable
+
+    @property
+    def inferred_duration(self):
+        return self._inferred_duration
 
 
 class FunctionSegment(Segment):
     def __init__(self,
                  function: callable,
-                 duration: Number=None,
+                 duration: Union[Number,None]=None,
+                 expandable: bool=False,
+                 inferred_duration: bool=False,
                  **function_arguments: PropertyDict) -> None:
         # check if compatible with function footprint and has a duration
-        if duration is None:
-            raise ValueError('Must supply a duration to a FunctionSegment')
-        super().__init__(duration=duration, **function_arguments)
+        if inferred_duration:
+            raise ValueError('Cannot infer duration for FunctionSegment.')
+        super().__init__(duration=duration,
+                         expandable=expandable,
+                         **function_arguments)
         self._function = function
 
     def forge(self,
@@ -106,7 +122,7 @@ class GroupSegment(Segment):
             name: str,
             **context: ContextDict) -> Number:
         if name == 'duration':
-            n_expandable_children = sum(1 for s in self._segments if s.is_expandable)
+            n_expandable_children = sum(1 for s in self._segments if s.expandable)
             if n_expandable_children == 0:
                 # duration fixed by children
                 if self._properties['duration'] is not None:
@@ -137,11 +153,11 @@ class GroupSegment(Segment):
         # TODO: Make this faster once everything works
         return_array = np.array([])
         # find missing duration
-        missing_duration = own_duration - sum(s.get('duration', **context) for s in self._segments if not s.is_expandable)
+        missing_duration = own_duration - sum(s.get('duration', **context) for s in self._segments if not s.expandable)
         if missing_duration < 0:
             raise RuntimeError('The expandable element in this group cannot have negative length.')
         for s in self._segments:
-            if s.is_expandable:
+            if s.expandable:
                 # some unecessary copying here
                 return_array = np.append(return_array, s.forge(SR, **context, duration=missing_duration))
             else:
