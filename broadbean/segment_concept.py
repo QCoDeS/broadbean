@@ -134,8 +134,13 @@ class GroupSegment(_BaseSegment):
     def __init__(self,
                  *segments: List['_BaseSegment'],
                  duration = None,
+                 expandable: bool=False,
+                 inferred_duration: bool=False,
                  **properties: PropertyDict) -> None:
-        super().__init__(duration=duration, **properties)
+        super().__init__(duration=duration,
+                         expandable=expandable,
+                         inferred_duration=inferred_duration,
+                         **properties)
         self._segments = segments
 
     def get(self,
