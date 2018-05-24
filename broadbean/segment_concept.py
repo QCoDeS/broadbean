@@ -194,3 +194,18 @@ class GroupSegment(_BaseSegment):
         output = f'GroupSegment(,\n'
         output += self._property_list()
         return output
+
+
+class PointWiseOperationSegmentGroup(_BaseSegment):
+
+    def __init__(self,
+                 *segments: List['_BaseSegment'],
+                 duration = None,
+                 expandable: bool=False,
+                 inferred_duration: bool=False,
+                 **properties: PropertyDict) -> None:
+        super().__init__(duration=duration,
+                         expandable=expandable,
+                         inferred_duration=inferred_duration,
+                         **properties)
+        self._segments = segments
