@@ -1,128 +1,132 @@
-# The module defining the segment object
-#
-#
-
-from typing import Callable, Dict, Union
-from inspect import signature
-
 import numpy as np
+from copy import copy, deepcopy
 
-# types for good hinting
-Number = Union[float, int]
-ArgsDict = Dict[str, Union[Number, str, None]]
+from typing import Union, Dict, List
+Number = Union[float, int, None]
+Property =  Union[Number, str, None]
+PropertyDict = Dict[str, Property]
+ContextDict = Dict[str, Number]
+TimeType = np.ndarray
 
+class Symbol:
+    def __init__(self, value):
+        self.value = value
 
-def validate_function_and_args_dict(func: Callable,
-                                    args_dict: ArgsDict) -> None:
-    """
-    Validate whether a function can be used in a segment
-    to generate an array and validate that the args_dict matches
-    the function.
-
-    The function must have the two arguments dur and SR and can
-    have as many other arguments as it will and the args_dict must
-    specify all these additional arguments
-    """
-    sig = signature(func)
-    argnames = [an for an in sig.parameters]
-
-    try:
-        argnames.remove('time')
-    except ValueError:
-            raise ValueError('Function invalid, must have the'
-                             ' argument "time".')
-
-    _dur = args_dict.pop('duration')
-
-    if not set(argnames) == set(args_dict.keys()):
-        raise ValueError('Invalid args_dict. args_dict specifies '
-                         f'{set(args_dict.keys())}, but the function '
-                         f'expects {set(argnames)}.')
-
-    args_dict.update({'duration': _dur})
+    def get(self, context):
+        if isinstance(self.value, str):  # add possibility for escaping strings here
+            # is symbol
+            return context[self.value]
+        else:
+            # is value
+            return self.value
 
 
-class Segment:
-    """
-    The smallest broadbean particle
-    """
 
-    def __init__(self, function: Callable, **kwargs) -> None:
-        """
-        Args:
-            function: the function that, when fed with the kwargs
-                (minus 'duration', plus 'time') returns an array
-            kwargs: the parameters for the function except 'time' and
-                also the segment duration
-        """
+class _BaseSegment:
+    def __init__(self,
+                 duration: Union[Number,str]=None,
+                 **properties: PropertyDict):
+        properties['duration'] = duration
+        self._properties = properties
 
-        validate_function_and_args_dict(function, kwargs)
+    def forge(self,
+              SR: Number,
+              duration = None,
+              **context: ContextDict) -> np.ndarray:
+        raise NotImplementedError
 
-        self.function = function
-        self._duration = kwargs.pop('duration')
-        self.args_dict = kwargs
+    def get(self,
+            name: str,
+            **context: ContextDict) -> Number:
+        # it might be prone to errors to put context and values together into one dict
+        value_or_symbol = self._properties[name]
+        if isinstance(value_or_symbol, str):  # add possibility for escaping strings here
+            # is symbol
+            return context[value_or_symbol]
+        else:
+            # is value
+            return value_or_symbol
 
-        symbols = {v: k for (k, v) in self.args_dict.items()
-                   if isinstance(v, str)}
-        self._symbols = symbols
+    def get_all_properties(self,
+                           **context: ContextDict) -> Dict[str, Number]:
+        return {k:self.get(k, **context) for k,v in self._properties.items()}
 
-    @property
-    def duration(self) -> Union[str, Number, None]:
-        return self._duration
-
-    @property
-    def symbols(self) -> Dict[str, str]:
-        return self._symbols
-
-    def forge(self, SR: int, **kwargs) -> np.ndarray:
-        """
-        Forge the segment into an array. Keyword arguments can
-        contain a duration (must be called 'duration') and should otherwise
-        specify values for any symbols in the segment
-
-        Args:
-            SR: The sample rate (Sa/s)
-        """
-
-        duration = None
-
-        if 'duration' in kwargs.keys():
-            duration = kwargs.pop('duration')
-            # after this pop, only symbols are in the kwargs
-        elif self.duration:
-            duration = self.duration
-
-        if not duration:
-            raise ValueError('Cannot forge segment, no duration specified')
-
-        if not set(self._symbols) == set(kwargs.keys()):
-            raise ValueError('Cannot forge segment, incorrect symbol '
-                             f'values provided. Got {set(kwargs.keys())},'
-                             f' expected {set(self._symbols)}.')
-
-        args_dict = self.args_dict.copy()
-        args_dict.update({self._symbols[s]: kwargs[s] for s in kwargs.keys()})
-
-        int_dur = int(duration*SR)
-        if int_dur < 2:
-            raise ValueError('Cannot forge segment; forging must result in at'
-                             ' least two points, but this segment has only '
-                             f'{int_dur}')
-        time_array = np.linspace(0, duration, int_dur, endpoint=False)
-
-        args_dict.update({'time': time_array})
-
-        array = self.function(**args_dict)
-
-        return array
-
-    def __repr__(self) -> str:
-        output = f'Segment({self.function.__name__},\n'
-        for name, value in self.args_dict.items():
+    # convenience functions
+    def _property_list(self):
+        output = ''
+        for name, value in self._properties.items():
             if isinstance(value, str):
                 valstr = f"'{value}'"
             else:
                 valstr = f"{value}"
-            output += f'{name}={valstr},\n'
-        output += f'duration={self.duration})'
+            output += f'{name}={valstr})'
         return output
+
+    def __repr__(self) -> str:
+        output = '_BaseSegment(\n'
+        output += self._property_list()
+        return output
+
+class Segment(_BaseSegment):
+    def __init__(self,
+                 function: callable,
+                 duration: Union[Number, str]=None,
+                 **function_arguments: ContextDict) -> None:
+        # TODO: check if compatible with function footprint and has a duration
+        super().__init__(duration=duration,
+                         **function_arguments)
+        self._function = function
+
+    def forge(self,
+              SR: Number,
+              **context: ContextDict) -> np.ndarray:
+        duration = self.get('duration', **context)
+
+        # check minimum length
+        int_dur = int(duration*SR)
+        if int_dur < 2:
+            # get rid of this restriction, which is totally unecessary
+            raise ValueError('Cannot forge segment; forging must result in at'
+                             ' least two points, but this segment has only '
+                             f'{int_dur}')
+        # create time array
+        time_array = np.linspace(0, duration, int_dur, endpoint=False)
+        kwargs = self.get_all_properties(**context)
+        kwargs.pop('duration')
+        return self._function(time=time_array,
+                              **kwargs)
+
+    # convenience functions
+    def __repr__(self) -> str:
+        output = f'Segment({self._function.__name__},\n'
+        output += self._property_list()
+        return output
+
+
+class SegmentGroup(_BaseSegment):
+
+    def __init__(self,
+                 *segments: List[Segment],
+                 duration,
+                 transformation=None ) -> None:
+        super().__init__(duration=duration)
+        self._transformation = transformation
+        self._segments = segments
+
+    def forge(self,
+              SR: Number,
+              **context: ContextDict) -> np.ndarray:
+        # new_context = self._transformation(context)
+        self._transformation(context)
+        new_context = context
+        # n_samples = int(SR*self.get('duration'))
+        # this is the simples implemenation without any time constraints
+        return_array = np.array([])
+        for s in self._segments:
+            return_array = np.append(return_array, s.forge(SR, **new_context))
+        return return_array
+
+    def get(self,
+            name: str,
+            **context: ContextDict) -> Number:
+        return super().get(name, **self._transformation(context))
