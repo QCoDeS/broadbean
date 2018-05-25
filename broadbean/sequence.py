@@ -49,15 +49,11 @@ class Sequence:
     Sequence object
     """
 
-    def __init__(self):
+    def __init__(self, elements={}):
         """
         Not much to see here...
         """
-
-        # the internal data structure, a dict with tuples as keys and values
-        # the key is sequence position (int), the value is element (Element)
-        # or subsequence (Sequence)
-        self._data = {}
+        self.elements = elements
 
         # Here goes the sequencing info. Key: position
         # value: dict with keys 'twait', 'nrep', 'jump_input',
@@ -73,121 +69,24 @@ class Sequence:
         # 'SR', 'channelX_amplitude', 'channelX_offset', 'channelX_filter'
         self._awgspecs = {}
 
-        # The metainfo to be extracted by measurements
-        # todo: I'm pretty sure this is obsolete now that description exists
-        self._meta = {}
-
         # some backends (seqx files) allow for a sequence to have a name
         # we make the name a property of the sequence
         self._name = ''
 
-    def __eq__(self, other):
-        if not isinstance(other, Sequence):
-            return False
-        elif not self._data == other._data:
-            return False
-        elif not self._meta == other._meta:
-            return False
-        elif not self._awgspecs == other._awgspecs:
-            return False
-        elif not self._sequencing == other._sequencing:
-            return False
-        else:
-            return True
 
-    def __add__(self, other):
-        """
-        Add two sequences.
-        Return a new sequence with is the right argument appended to the
-        left argument.
-        """
-
-        # Validation
-        if not self.checkConsistency():
-            raise SequenceConsistencyError('Left hand sequence inconsistent!')
-        if not other.checkConsistency():
-            raise SequenceConsistencyError('Right hand sequence inconsistent!')
-
-        if not self._awgspecs == other._awgspecs:
-            raise SequenceCompatibilityError('Incompatible sequences: '
-                                             'different AWG'
-                                             'specifications.')
-
-        newseq = Sequence()
-        N = len(self._data)
-
-        newdata1 = dict([(key, self.element(key).copy())
-                         for key in self._data.keys()])
-        newdata2 = dict([(key+N, other.element(key).copy())
-                         for key in other._data.keys()])
-        newdata1.update(newdata2)
-
-        newseq._data = newdata1
-
-        newsequencing1 = dict([(key, self._sequencing[key].copy())
-                               for key in self._sequencing.keys()])
-        newsequencing2 = dict()
-
-        for key, item in other._sequencing.items():
-            newitem = item.copy()
-            # update goto and jump according to new sequence length
-            if newitem['goto'] > 0:
-                newitem['goto'] += N
-            if newitem['jump_target'] > 0:
-                newitem['jump_target'] += N
-            newsequencing2.update({key+N: newitem})
-
-        newsequencing1.update(newsequencing2)
-
-        newseq._sequencing = newsequencing1
-
-        newseq._awgspecs = other._awgspecs.copy()
-
-        return newseq
 
     def copy(self):
         """
         Returns a copy of the sequence.
         """
         newseq = Sequence()
-        newseq._data = deepcopy(self._data)
+        newseq.elemets = [element.copy() for element in self.elements]
         newseq._meta = deepcopy(self._meta)
         newseq._awgspecs = deepcopy(self._awgspecs)
         newseq._sequencing = deepcopy(self._sequencing)
 
         return newseq
 
-    def setSequenceSettings(self, pos, wait, nreps, jump, goto):
-        """
-        Set the sequence setting for the sequence element at pos.
-
-        Args:
-            pos (int): The sequence element (counting from 1)
-            wait (int): The wait state specifying whether to wait for a
-                trigger. 0: OFF, don't wait, 1: ON, wait. For some backends,
-                additional integers are allowed to specify the trigger input.
-                0 always means off.
-            nreps (int): Number of repetitions. 0 corresponds to infinite
-                repetitions
-            jump (int): Event jump target, the position of a sequence element.
-                If 0, the event jump state is off.
-            goto (int): Goto target, the position of a sequence element.
-                0 means next.
-        """
-
-        warnings.warn('Deprecation warning. This function is only compatible '
-                      'with AWG5014 output and will be removed. '
-                      'Please use the specific setSequencingXXX methods.')
-
-        # Validation (some validation 'postponed' and put in checkConsistency)
-        #
-        # Because of different compliances for different backends,
-        # most validation of these settings is deferred and performed
-        # in the outputForXXX methods
-
-        self._sequencing[pos] = {'twait': wait, 'nrep': nreps,
-                                 'jump_target': jump, 'goto': goto,
-                                 'jump_input': 0}
 
     def setSequencingTriggerWait(self, pos: int, wait: int) -> None:
         """

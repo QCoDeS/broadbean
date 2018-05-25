@@ -35,3 +35,4 @@ class Element:
     def copy(self):
         return Element(deepcopy(self.segments))
 
+    # TODO: add methods/operators for stacking, concatenation, equality
