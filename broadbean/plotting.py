@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from broadbean import Sequence, BluePrint, Element, Segment
+from broadbean.sequence_simple import Sequence as SimpleSequence
 from broadbean.sequence import SequenceConsistencyError
 
 # The object we can/want to plot
@@ -85,6 +86,9 @@ def _plot_object_forger(obj_to_plot: BBObject,
         seq.setSR(obj_to_plot._meta['SR'])
 
     elif isinstance(obj_to_plot, Sequence):
+        seq = obj_to_plot
+
+    elif isinstance(obj_to_plot, SimpleSequence):
         seq = obj_to_plot
 
     forged_seq = seq.forge(includetime=True, **forger_kwargs)
@@ -343,10 +347,10 @@ def _segment_plot_forger(segment: Segment, **kwargs) -> Dict[int, Dict]:
     else:
         raise ValueError('Cannot plot segment, no sample rate provided')
 
-    if 'dur' in kwargs.keys():
-        duration = kwargs.pop('dur')  # now the kwargs are only symbols
-    elif segment.duration:
-        duration = segment.duration
+    if 'duration' in kwargs.keys():
+        duration = kwargs.pop('duration')  # now the kwargs are only symbols
+    else:
+        duration = segment._properties.get('duration', None)
 
     if not duration:
         raise ValueError('Cannot plot segment, no duration specified')
