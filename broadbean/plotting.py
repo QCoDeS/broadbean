@@ -8,9 +8,10 @@ import matplotlib.pyplot as plt
 from broadbean import Sequence, BluePrint, Element, Segment
 from broadbean.sequence_simple import Sequence as SimpleSequence
 from broadbean.sequence import SequenceConsistencyError
+from broadbean.segment import SegmentGroup
 
 # The object we can/want to plot
-BBObject = Union[Sequence, BluePrint, Element, Segment]
+BBObject = Union[Sequence, BluePrint, Element, Segment, SegmentGroup]
 
 
 def getSIScalingAndPrefix(minmax: Tuple[float, float]) -> Tuple[float, str]:
