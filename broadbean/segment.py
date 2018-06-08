@@ -21,26 +21,26 @@ class Symbol:
             return self.value
 
 
-
 class _BaseSegment:
     def __init__(self,
-                 duration: Union[Number,str]=None,
+                 duration: Union[Number, str]=None,
                  **properties: PropertyDict):
         properties['duration'] = duration
         self._properties = properties
 
     def forge(self,
               SR: Number,
-              duration = None,
+              duration=None,
               **context: ContextDict) -> np.ndarray:
         raise NotImplementedError
 
     def get(self,
             name: str,
             **context: ContextDict) -> Number:
-        # it might be prone to errors to put context and values together into one dict
+        # it might be prone to errors to put context and values together into
+        # one dict
         value_or_symbol = self._properties[name]
-        if isinstance(value_or_symbol, str):  # add possibility for escaping strings here
+        if isinstance(value_or_symbol, str): # add possibility for escaping strings here
             # is symbol
             return context[value_or_symbol]
         else:
@@ -49,7 +49,8 @@ class _BaseSegment:
 
     def get_all_properties(self,
                            **context: ContextDict) -> Dict[str, Number]:
-        return {k:self.get(k, **context) for k,v in self._properties.items()}
+        return {k: self.get(k, **context)
+                for k, v in self._properties.items()}
 
     # convenience functions
     def _property_list(self):
@@ -66,6 +67,7 @@ class _BaseSegment:
         output = '_BaseSegment(\n'
         output += self._property_list()
         return output
+
 
 class Segment(_BaseSegment):
     def __init__(self,
@@ -108,7 +110,7 @@ class SegmentGroup(_BaseSegment):
     def __init__(self,
                  *segments: List[Segment],
                  duration,
-                 transformation=None ) -> None:
+                 transformation=None) -> None:
         super().__init__(duration=duration)
         self._transformation = transformation
         self._segments = segments
@@ -116,9 +118,9 @@ class SegmentGroup(_BaseSegment):
     def forge(self,
               SR: Number,
               **context: ContextDict) -> np.ndarray:
-        # new_context = self._transformation(context)
-        self._transformation(context)
-        new_context = context
+        new_context = self._transformation(context)
+        # self._transformation(context)
+        # new_context = context
         # n_samples = int(SR*self.get('duration'))
         # this is the simples implemenation without any time constraints
         return_array = np.array([])
