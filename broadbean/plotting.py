@@ -71,7 +71,7 @@ def _plot_object_forger(obj_to_plot: BBObject,
     """
 
     # hacky, hacky, quick insertion of Segment handling
-    if isinstance(obj_to_plot, Segment):
+    if any(isinstance(obj_to_plot, obj) for obj in [Segment, SegmentGroup]):
         return _segment_plot_forger(obj_to_plot, **forger_kwargs)
 
     if isinstance(obj_to_plot, BluePrint):
@@ -351,7 +351,10 @@ def _segment_plot_forger(segment: Segment, **kwargs) -> Dict[int, Dict]:
     if 'duration' in kwargs.keys():
         duration = kwargs.pop('duration')  # now the kwargs are only symbols
     else:
-        duration = segment._properties.get('duration', None)
+        try:
+            duration = segment.get('duration', **kwargs)
+        except KeyError:
+            duration = None
 
     if not duration:
         raise ValueError('Cannot plot segment, no duration specified')
