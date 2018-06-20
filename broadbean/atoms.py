@@ -1,3 +1,4 @@
+import numpy as np
 from functools import wraps, partial
 from broadbean.segment import Segment
 
