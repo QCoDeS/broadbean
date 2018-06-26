@@ -7,5 +7,4 @@ from .segment import Segment
 from .blueprint import BluePrint
 from .element import Element
 from .sequence import Sequence
-from .tools import makeVaryingSequence, repeatAndVarySequence
 from .broadbean import PulseAtoms
