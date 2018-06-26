@@ -7,7 +7,7 @@ import numpy as np
 
 from broadbean.segment import Segment
 
-ChannelType = Union[int,str]
+ChannelIDType = Union[int,str]
 
 class ElementDurationError(Exception):
     pass
@@ -19,7 +19,7 @@ class Element:
     are to be run simultaneously. The element consists of a number of channels
     that are then each filled with anything of the appropriate length.
     """
-    def __init__(self, segments:Dict[ChannelType, Segment]={},
+    def __init__(self, segments:Dict[ChannelIDType, Segment]={},
                  sequencing:Dict[str, int]={}):
         self.segments = segments
         self.sequencing = sequencing
