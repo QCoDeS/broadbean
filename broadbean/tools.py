@@ -40,7 +40,7 @@ def forged_sequence_dict_to_list(seq):
         list_of_elements = []
         for index in range(length):
             try:
-                list_of_elements.append(dict_content[index])
+                list_of_elements.append(copy(dict_content[index]))
             except KeyError:
                 log.error(f'Error converting forged sequence dict to list: '
                           f'The subsequence seems to be sparse (Element no. '
