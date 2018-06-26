@@ -20,6 +20,9 @@ def forged_sequence_dict_to_list(seq):
     data. This is not true for the `type` element. It therefore should
     only be used to read from it and not for writing to it.
     """
+    # don't do anything if it is applied to an already converted sequence
+    if type(seq) is list:
+        return seq
     # top level transformation (no subsequnces)
     length = len(seq.keys())
     list_of_elements = []
