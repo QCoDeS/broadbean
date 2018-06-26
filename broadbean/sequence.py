@@ -44,6 +44,6 @@ class Sequence:
                         'sequencing': subelem.sequencing}
             elif isinstance(elem, Element):
                 item['type'] = 'element'
-                item['content'][1] = {'data': elem.forge(SR, context)}
+                item['content'][0] = {'data': elem.forge(SR, context)}
             output[ie] = item
         return output
