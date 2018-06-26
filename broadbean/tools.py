@@ -25,6 +25,13 @@ def forged_sequence_dict_to_list(seq):
     list_of_elements = []
     for index in range(length):
         try:
+            # this copy call is needed so that in the next step where the
+            # value of 'content' is changed from a dictionary to a list
+            # only the new object is going to be changed not the old one with
+            # dictionary structure
+            # In general one could say we want to copy all, except for the
+            # lowest level values, i.e. we want to change the structure but
+            # not the content
             list_of_elements.append(copy(seq[index]))
         except KeyError:
             log.error(f'Error converting forged sequence dict to list: The '
@@ -40,6 +47,13 @@ def forged_sequence_dict_to_list(seq):
         list_of_elements = []
         for index in range(length):
             try:
+                # now this `copy` call here is a tricky one:
+                # It makes most sense to copy this dictionary, as its structure
+                # is already fully determined (`data` and `sequencing` as
+                # keys) and its values are purely references.
+                # when using :meth:`broadbean.routing.route` the value of
+                # `data` is changed (namely by replacing it with another dict).
+                # if we don't copy here also the original dict will be changed
                 list_of_elements.append(copy(dict_content[index]))
             except KeyError:
                 log.error(f'Error converting forged sequence dict to list: '

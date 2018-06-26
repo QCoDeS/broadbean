@@ -72,12 +72,3 @@ def route(seq: ForgedSequenceType,
                     new_dd[physical_channel] = v
             subelem['data'] = new_dd
     return seq
-
-# def get_mapped_channel(routes:RoutesDictType,
-#                        channel_id:ChannelIDType,
-#                        instrument:InstrumentBase=None)->PhysicalChannelType:
-"""
-Retrieves the physical channel of an instrument from the given routing
-dictionary `routes`.
-    channel_id: ID of the channel to be retreived, e.g. 'MyChannel'
-"""
