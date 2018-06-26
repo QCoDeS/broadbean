@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from broadbean import Sequence, BluePrint, Element, Segment
-from broadbean.sequence_simple import Sequence as SimpleSequence
+from broadbean.sequence import Sequence as SimpleSequence
 from broadbean.sequence import SequenceConsistencyError
 from broadbean.segment import SegmentGroup
 
