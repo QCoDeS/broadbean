@@ -8,3 +8,7 @@ def transformation(trans_func):
         result = trans_func(inp_dict.copy())
         return result
     return inner
+
+@transformation
+def identity(args_dict):
+    return args_dict
