@@ -8,6 +8,11 @@ PropertyDict = Dict[str, Property]
 ContextDict = Dict[str, Number]
 TimeType = np.ndarray
 
+def in_context(obj, **context:ContextDict) -> Union['Segment', 'GroupSegment', 'Element']:
+        ret = copy(obj)
+        ret.apply_context(**context)
+        return ret
+
 class Symbol:
     def __init__(self, value):
         self.value = value
@@ -52,6 +57,16 @@ class _BaseSegment:
         return {k: self.get(k, **context)
                 for k, v in self._properties.items()}
 
+    def apply_context(self, **context: ContextDict) -> None:
+        context = copy(context)
+        for prop_name, prop_value in self._properties.items():
+            if isinstance(prop_value, str) and prop_value in context:
+                self._properties[prop_name] = context.pop(prop_value)
+
+        if context: # is not empty
+            # TODO: write better warning
+            raise RuntimeWarning('Could not fully apply context')
+
     # convenience functions
     def _property_list(self):
         output = ''
@@ -60,12 +75,14 @@ class _BaseSegment:
                 valstr = f"'{value}'"
             else:
                 valstr = f"{value}"
-            output += f'{name}={valstr})'
+            output += f'{name}={valstr}, '
+        output = output[:-2]
         return output
 
     def __repr__(self) -> str:
-        output = '_BaseSegment(\n'
+        output = '_BaseSegment( '
         output += self._property_list()
+        output += ')'
         return output
 
 
@@ -100,8 +117,9 @@ class Segment(_BaseSegment):
 
     # convenience functions
     def __repr__(self) -> str:
-        output = f'Segment({self._function.__name__},\n'
+        output = f'Segment({self._function.__name__}, '
         output += self._property_list()
+        output += ')'
         return output
 
 
@@ -130,6 +148,10 @@ class SegmentGroup(_BaseSegment):
         for s in self._segments:
             return_array = np.append(return_array, s.forge(SR, **new_context))
         return return_array
+
+    def apply_context(self, **context: ContextDict) -> None:
+        for s in self._segments:
+            s.apply_context(**context)
 
     def get(self,
             name: str,

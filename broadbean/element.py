@@ -1,11 +1,11 @@
 # This file contains the Element definition
 
 from typing import Union, Dict, List
-from copy import deepcopy
+from copy import deepcopy, copy
 
 import numpy as np
 
-from broadbean.segment import Segment
+from broadbean.segment import Segment, ContextDict
 
 ChannelIDType = Union[int,str]
 
@@ -39,7 +39,11 @@ class Element:
             raise ElementDurationError
         return durations.pop()
 
-    def copy(self):
+    def apply_context(self, **context: ContextDict) -> None:
+        for channel, segment in self.segments.items():
+            segment.apply_context(**context)
+
+    def __copy__(self):
         return Element(deepcopy(self.segments),
                        deepcopy(self.sequencing))
 
