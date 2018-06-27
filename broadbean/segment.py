@@ -118,7 +118,10 @@ class SegmentGroup(_BaseSegment):
     def forge(self,
               SR: Number,
               **context: ContextDict) -> np.ndarray:
-        new_context = self._transformation(context)
+        if self._transformation is None:
+            new_context = context
+        else:
+            new_context = self._transformation(context)
         # self._transformation(context)
         # new_context = context
         # n_samples = int(SR*self.get('duration'))
