@@ -3,6 +3,7 @@ import numpy as np
 from typing import List, Dict, Any
 from schema import Schema, Or, Optional
 from .element import Element
+from .segment import ContextDict
 
 
 log = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ class Sequence:
         # if this is a subsequence
         self.sequencing = {}
 
-    def forge(self, SR, context) -> Dict[int, Dict]:
+    def forge(self, SR, context: ContextDict={}) -> Dict[int, Dict]:
         output: Dict[int, Dict] = {}
         for ie, elem in enumerate(self.elements):
             item = {}

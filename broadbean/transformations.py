@@ -5,7 +5,8 @@ from functools import wraps
 def transformation(trans_func):
     @wraps(trans_func)
     def inner(inp_dict):
-        result = trans_func(inp_dict.copy())
+        result = inp_dict.copy()
+        trans_func(result)
         return result
     return inner
 
