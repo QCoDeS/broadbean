@@ -10,7 +10,7 @@ TimeType = np.ndarray
 
 def in_context(obj, **context:ContextDict) -> Union['Segment', 'GroupSegment', 'Element']:
         ret = copy(obj)
-        ret.apply_context(**context)
+        ret.local_context = context
         return ret
 
 class Symbol:
@@ -57,15 +57,15 @@ class _BaseSegment:
         return {k: self.get(k, **context)
                 for k, v in self._properties.items()}
 
-    def apply_context(self, **context: ContextDict) -> None:
-        context = copy(context)
-        for prop_name, prop_value in self._properties.items():
-            if isinstance(prop_value, str) and prop_value in context:
-                self._properties[prop_name] = context.pop(prop_value)
+    #def apply_context(self, **context: ContextDict) -> None:
+    #     context = copy(context)
+    #     for prop_name, prop_value in self._properties.items():
+    #         if isinstance(prop_value, str) and prop_value in context:
+    #             self._properties[prop_name] = context.pop(prop_value)
 
-        if context: # is not empty
-            # TODO: write better warning
-            raise RuntimeWarning('Could not fully apply context')
+    #     if context: # is not empty
+    #         # TODO: write better warning
+    #         raise RuntimeWarning('Could not fully apply context')
 
     # convenience functions
     def _property_list(self):
@@ -98,7 +98,7 @@ class Segment(_BaseSegment):
 
     def forge(self,
               SR: Number,
-              **context: ContextDict) -> np.ndarray:
+              **context) -> np.ndarray:
         duration = self.get('duration', **context)
 
         # check minimum length
@@ -149,9 +149,9 @@ class SegmentGroup(_BaseSegment):
             return_array = np.append(return_array, s.forge(SR, **new_context))
         return return_array
 
-    def apply_context(self, **context: ContextDict) -> None:
-        for s in self._segments:
-            s.apply_context(**context)
+    # def apply_context(self, **context: ContextDict) -> None:
+    #     for s in self._segments:
+    #         s.apply_context(**context)
 
     def get(self,
             name: str,

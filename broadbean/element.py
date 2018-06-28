@@ -20,9 +20,11 @@ class Element:
     that are then each filled with anything of the appropriate length.
     """
     def __init__(self, segments:Dict[ChannelIDType, Segment]={},
-                 sequencing:Dict[str, int]={}):
+                 sequencing:Dict[str, int]={},
+                 local_context={}):
         self.segments = segments
         self.sequencing = sequencing
+        self.local_context = local_context
         # make sequencing options kwargs
         # define jump target maybe as element reference that gets dereferenced in sequence?
         # self._sequencing[pos] = {'twait': wait, 'nrep': nreps,
@@ -39,9 +41,9 @@ class Element:
             raise ElementDurationError
         return durations.pop()
 
-    def apply_context(self, **context: ContextDict) -> None:
-        for channel, segment in self.segments.items():
-            segment.apply_context(**context)
+    # def apply_context(self, **context: ContextDict) -> None:
+    #     for channel, segment in self.segments.items():
+    #         segment.apply_context(**context)
 
     def __copy__(self):
         return Element(deepcopy(self.segments),
@@ -49,7 +51,9 @@ class Element:
 
     # I think this should go into the main forge function. There is no point of forging an element outside of a sequence. This is different for a Segment.
     def forge(self, SR, context, include_time=False):
-        return {channel_id: segment.forge(SR, **context) for channel_id, segment in self.segments.items()}
+        context_arg = copy(context)
+        context_arg.update(self.local_context)
+        return {channel_id: segment.forge(SR, **context_arg) for channel_id, segment in self.segments.items()}
 
 
     # TODO: add methods/operators for stacking, concatenation, equality
