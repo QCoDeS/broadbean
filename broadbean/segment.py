@@ -2,6 +2,9 @@ import numpy as np
 from copy import copy, deepcopy
 
 from typing import Union, Dict, List
+
+from .transformations import get_transformed_context
+
 Number = Union[float, int, None]
 Property =  Union[Number, str, None]
 PropertyDict = Dict[str, Property]
@@ -136,13 +139,7 @@ class SegmentGroup(_BaseSegment):
     def forge(self,
               SR: Number,
               **context: ContextDict) -> np.ndarray:
-        if self._transformation is None:
-            new_context = context
-        else:
-            new_context = self._transformation(context)
-        # self._transformation(context)
-        # new_context = context
-        # n_samples = int(SR*self.get('duration'))
+        new_context = get_transformed_context(context, self._transformation)
         # this is the simples implemenation without any time constraints
         return_array = np.array([])
         for s in self._segments:
