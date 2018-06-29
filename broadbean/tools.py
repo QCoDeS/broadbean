@@ -5,10 +5,14 @@ import numpy as np
 import logging
 from copy import copy
 
-from broadbean.sequence import Sequence
+from broadbean.sequence import Sequence, Element
 
 log = logging.getLogger(__name__)
 
+def is_subsequence(elem: Element) -> bool:
+    # TODO: implement
+    return False
+    # isinstance(elem['content'], 
 
 def forged_sequence_dict_to_list(seq):
     """converts the dictionary style forged sequence into a list style one.

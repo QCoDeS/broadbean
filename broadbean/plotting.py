@@ -5,42 +5,41 @@ from typing import Tuple, Union, Dict, List
 import numpy as np
 import matplotlib.pyplot as plt
 
-from broadbean import Sequence, BluePrint, Element, Segment
+from broadbean import Sequence, Element, Segment, _BaseSegment
 from broadbean.sequence import Sequence as SimpleSequence
-from broadbean.sequence import SequenceConsistencyError
-from broadbean.segment import SegmentGroup
+from broadbean.tools import is_subsequence, forged_sequence_dict_to_list
 
 # The object we can/want to plot
-BBObject = Union[Sequence, BluePrint, Element, Segment, SegmentGroup]
+BBObject = Union[Sequence, Element, _BaseSegment]
 
 
-def getSIScalingAndPrefix(minmax: Tuple[float, float]) -> Tuple[float, str]:
+# def getSIScalingAndPrefix(minmax: Tuple[float, float]) -> Tuple[float, str]:
+def getSIScalingAndPrefix(v: float) -> Tuple[float, str]:
     """
-    Return the scaling exponent and unit prefix. E.g. (-2e-3, 1e-6) will
+    Return the scaling exponent and unit prefix. E.g. 2e-3 will
     return (1e3, 'm')
 
     Args:
-        minmax: The (min, max) value of the signal
+        minmax: The value of the signal
 
     Returns:
         A tuple of the scaling (inverse of the prefix) and the prefix
           string.
 
     """
-    v_max = max(map(abs, minmax))  # type: ignore
-    if v_max == 0:
-        v_max = 1  # type: ignore
-    exponent = np.log10(v_max)
+    if v == 0:
+        v = 1  # type: ignore
+    exponent = np.log10(v)
     prefix = ''
     scaling: float = 1
 
     if exponent < 0:
         prefix = 'm'
         scaling = 1e3
-    if exponent < -3:
+    elif exponent < -3:
         prefix = 'micro '
         scaling = 1e6
-    if exponent < -6:
+    elif exponent < -6:
         prefix = 'n'
         scaling = 1e9
 
@@ -52,15 +51,17 @@ def _plot_object_validator(obj_to_plot: BBObject) -> None:
     Validate the object
     """
     if isinstance(obj_to_plot, Sequence):
-        proceed = obj_to_plot.checkConsistency(verbose=True)
-        if not proceed:
-            raise SequenceConsistencyError
+        # TODO: implement sequence validation
+        proceed = True
 
     elif isinstance(obj_to_plot, Element):
-        obj_to_plot.validateDurations()
+        # TODO: implement sequence validation
+        proceed = True
 
-    elif isinstance(obj_to_plot, BluePrint):
-        assert obj_to_plot.SR is not None
+    elif isinstance(obj_to_plot, _BaseSegment):
+        # TODO: implement sequence validation
+        proceed = True
+        # obj_to_plot.validateDurations()
 
 
 def _plot_object_forger(obj_to_plot: BBObject,
@@ -69,33 +70,20 @@ def _plot_object_forger(obj_to_plot: BBObject,
     Make a forged sequence out of any object.
     Returns a forged sequence.
     """
-
-    # hacky, hacky, quick insertion of Segment handling
-    if any(isinstance(obj_to_plot, obj) for obj in [Segment, SegmentGroup]):
-        return _segment_plot_forger(obj_to_plot, **forger_kwargs)
-
-    if isinstance(obj_to_plot, BluePrint):
-        elem = Element()
-        elem.addBluePrint(1, obj_to_plot)
-        seq = Sequence()
-        seq.addElement(1, elem)
-        seq.setSR(obj_to_plot.SR)
-
+    if isinstance(obj_to_plot, list) or isinstance(obj_to_plot, dict):
+        # TODO: validate forged sequence
+        return obj_to_plot
+    if isinstance(obj_to_plot, Sequence):
+        seq = obj_to_plot
     elif isinstance(obj_to_plot, Element):
-        seq = Sequence()
-        seq.addElement(1, obj_to_plot)
-        seq.setSR(obj_to_plot._meta['SR'])
+        seq = Sequence([obj_to_plot])
+    elif isinstance(obj_to_plot, _BaseSegment):
+        elem = Element({'wfm': obj_to_plot})
+        seq = Sequence([elem])
+    else:
+        raise RuntimeWarning('Unexpected argument {obj_to_plot}')
 
-    elif isinstance(obj_to_plot, Sequence):
-        seq = obj_to_plot
-
-    elif isinstance(obj_to_plot, SimpleSequence):
-        seq = obj_to_plot
-
-    forged_seq = seq.forge(includetime=True, **forger_kwargs)
-
-    return forged_seq
-
+    return seq.forge(**forger_kwargs)
 
 def _plot_summariser(seq: Dict[int, Dict]) -> Dict[int, Dict[str, np.ndarray]]:
         """
@@ -142,62 +130,53 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
     into a sequence, forges it, and plots that.
     """
 
-    # TODO: Take axes as input
-
-    # strategy:
-    # * Validate
-    # * Forge
-    # * Plot
+    # TODO:
+    # - Take axes as input
+    # - Auto calculate SR based on durations and dpi
 
     _plot_object_validator(obj_to_plot)
-
     seq = _plot_object_forger(obj_to_plot, **forger_kwargs)
-
+    SR = forger_kwargs['SR']
+    # TODO: this is only for compatibilty
+    seq = forged_sequence_dict_to_list(seq)
     # Get the dimensions.
-    chans = seq[1]['content'][1]['data'].keys()
-    seqlen = len(seq.keys())
-
-    def update_minmax(chanminmax, wfmdata, chanind):
-        (thismin, thismax) = (wfmdata.min(), wfmdata.max())
-        if thismin < chanminmax[chanind][0]:
-            chanminmax[chanind] = [thismin, chanminmax[chanind][1]]
-        if thismax > chanminmax[chanind][1]:
-            chanminmax[chanind] = [chanminmax[chanind][0], thismax]
-        return chanminmax
+    chans = seq[0]['content'][0]['data'].keys()
+    seqlen = len(seq)
 
     # Then figure out the figure scalings
-    minf: float = -np.inf
-    inf: float = np.inf
-    chanminmax: List[Tuple[float, float]] = [(inf, minf)]*len(chans)
-    for chanind, chan in enumerate(chans):
-        for pos in range(1, seqlen+1):
-            if seq[pos]['type'] == 'element':
-                wfmdata = (seq[pos]['content'][1]
-                           ['data'][chan]['wfm'])
-                chanminmax = update_minmax(chanminmax, wfmdata, chanind)
-            elif seq[pos]['type'] == 'subsequence':
-                for pos2 in seq[pos]['content'].keys():
-                    elem = seq[pos]['content'][pos2]['data']
-                    wfmdata = elem[chan]['wfm']
-                    chanminmax = update_minmax(chanminmax,
-                                               wfmdata, chanind)
+    chanminmax: Dict[Tuple[float, float]] = {}
+    for chan in chans:
+        minmax = [np.inf, -np.inf]
+        for elem in seq:
+            if is_subsequence(elem):
+                for subelem in elem['content']:
+                    wfmdata = subelem['data'][chan]
+                    minmax = [min(minmax[0], wfmdata.min()),
+                              max(minmax[1], wfmdata.max())]
+            else:
+                wfmdata = elem['content'][0]['data'][chan]
+                minmax = [min(minmax[0], wfmdata.min()),
+                          max(minmax[1], wfmdata.max())]
+        chanminmax[chan] = minmax
 
     fig, axs = plt.subplots(len(chans), seqlen)
 
     # ...and do the plotting
     for chanind, chan in enumerate(chans):
-
         # figure out the channel voltage scaling
         # The entire channel shares a y-axis
 
-        minmax: Tuple[float, float] = chanminmax[chanind]
-
-        (voltagescaling, voltageprefix) = getSIScalingAndPrefix(minmax)
+        minmax: Tuple[float, float] = chanminmax[chan]
+        v_max = max(map(abs, minmax))  # type: ignore
+        (voltagescaling, voltageprefix) = getSIScalingAndPrefix(v_max)
         voltageunit = voltageprefix + 'V'
 
-        for pos in range(seqlen):
+        for pos, elem in enumerate(seq):
+        # for pos in range(seqlen):
+            # axes is np.ndarray.
             # 1 by N arrays are indexed differently than M by N arrays
             # and 1 by 1 arrays are not arrays at all...
+            # that is plt.subplots(10,1) returns array of shape (10,) and not (10,1)
             if len(chans) == 1 and seqlen > 1:
                 ax = axs[pos]
             if len(chans) > 1 and seqlen == 1:
@@ -210,16 +189,8 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
             # reduce the tickmark density (must be called before scaling)
             ax.locator_params(tight=True, nbins=4, prune='lower')
 
-            if seq[pos+1]['type'] == 'element':
-                content = seq[pos+1]['content'][1]['data'][chan]
-                wfm = content['wfm']
-                m1 = content.get('m1', np.zeros_like(wfm))
-                m2 = content.get('m2', np.zeros_like(wfm))
-                time = content['time']
-                newdurs = content.get('newdurations', [])
-
-            else:
-                arr_dict = _plot_summariser(seq[pos+1]['content'])
+            if is_subsequence(elem):
+                arr_dict = _plot_summariser(elem['content'])
                 wfm = arr_dict[chan]['wfm']
                 newdurs = []
 
@@ -227,63 +198,69 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
                             xycoords='axes fraction',
                             horizontalalignment='center')
                 time = np.linspace(0, 1, 2)  # needed for timeexponent
+            else:
+                wfm = elem['content'][0]['data'][chan]
+                # TODO: add support for markers
+                # m1 = content.get('m1', np.zeros_like(wfm))
+                # m2 = content.get('m2', np.zeros_like(wfm))
+                # TODO: is this correct?
+                npts = wfm.size
+                duration = npts/SR
+                time = np.linspace(0, duration, npts, endpoint=False)
+                # where do these come from? not used in this file
+                # newdurs = content.get('newdurations', [])
+                newdurs = []
 
             # Figure out the axes' scaling
-            timeexponent = np.log10(time.max())
-            timeunit = 's'
-            timescaling: float = 1.0
-            if timeexponent < 0:
-                timeunit = 'ms'
-                timescaling = 1e3
-            if timeexponent < -3:
-                timeunit = 'micro s'
-                timescaling = 1e6
-            if timeexponent < -6:
-                timeunit = 'ns'
-                timescaling = 1e9
+            (timescaling, prefix) = getSIScalingAndPrefix(time.max())
+            timeunit = prefix + 's'
 
-            if seq[pos+1]['type'] == 'element':
+            if not is_subsequence(elem):
                 ax.plot(timescaling*time, voltagescaling*wfm, lw=3,
                         color=(0.6, 0.4, 0.3), alpha=0.4)
 
-            ymax = voltagescaling * chanminmax[chanind][1]
-            ymin = voltagescaling * chanminmax[chanind][0]
+            ymax = voltagescaling * chanminmax[chan][1]
+            ymin = voltagescaling * chanminmax[chan][0]
             yrange = ymax - ymin
             ax.set_ylim([ymin-0.05*yrange, ymax+0.2*yrange])
 
-            if seq[pos+1]['type'] == 'element':
-                # TODO: make this work for more than two markers
+            # TODO: add support for markers, make loops to not repeat code
+            # markers
+            # if not is_subsequence(elem):
+            #     # TODO: make this work for more than two markers
 
-                # marker1 (red, on top)
-                y_m1 = ymax+0.15*yrange
-                marker_on = np.ones_like(m1)
-                marker_on[m1 == 0] = np.nan
-                marker_off = np.ones_like(m1)
-                ax.plot(timescaling*time, y_m1*marker_off,
-                        color=(0.6, 0.1, 0.1), alpha=0.2, lw=2)
-                ax.plot(timescaling*time, y_m1*marker_on,
-                        color=(0.6, 0.1, 0.1), alpha=0.6, lw=2)
+            #     # marker1 (red, on top)
+            #     y_m1 = ymax+0.15*yrange
+            #     marker_on = np.ones_like(m1)
+            #     marker_on[m1 == 0] = np.nan
+            #     marker_off = np.ones_like(m1)
+            #     ax.plot(timescaling*time, y_m1*marker_off,
+            #             color=(0.6, 0.1, 0.1), alpha=0.2, lw=2)
+            #     ax.plot(timescaling*time, y_m1*marker_on,
+            #             color=(0.6, 0.1, 0.1), alpha=0.6, lw=2)
 
-                # marker 2 (blue, below the red)
-                y_m2 = ymax+0.10*yrange
-                marker_on = np.ones_like(m2)
-                marker_on[m2 == 0] = np.nan
-                marker_off = np.ones_like(m2)
-                ax.plot(timescaling*time, y_m2*marker_off,
-                        color=(0.1, 0.1, 0.6), alpha=0.2, lw=2)
-                ax.plot(timescaling*time, y_m2*marker_on,
-                        color=(0.1, 0.1, 0.6), alpha=0.6, lw=2)
+            #     # marker 2 (blue, below the red)
+            #     y_m2 = ymax+0.10*yrange
+            #     marker_on = np.ones_like(m2)
+            #     marker_on[m2 == 0] = np.nan
+            #     marker_off = np.ones_like(m2)
+            #     ax.plot(timescaling*time, y_m2*marker_off,
+            #             color=(0.1, 0.1, 0.6), alpha=0.2, lw=2)
+            #     ax.plot(timescaling*time, y_m2*marker_on,
+            #             color=(0.1, 0.1, 0.6), alpha=0.6, lw=2)
 
-            # If subsequence, plot lines indicating min and max value
-            if seq[pos+1]['type'] == 'subsequence':
-                # min:
-                ax.plot(time, np.ones_like(time)*wfm[0],
-                        color=(0.12, 0.12, 0.12), alpha=0.2, lw=2)
-                # max:
-                ax.plot(time, np.ones_like(time)*wfm[1],
-                        color=(0.12, 0.12, 0.12), alpha=0.2, lw=2)
+            # # If subsequence, plot lines indicating min and max value
+            # else:
+            #     # min:
+            #     ax.plot(time, np.ones_like(time)*wfm[0],
+            #             color=(0.12, 0.12, 0.12), alpha=0.2, lw=2)
+            #     # max:
+            #     ax.plot(time, np.ones_like(time)*wfm[1],
+            #             color=(0.12, 0.12, 0.12), alpha=0.2, lw=2)
 
-                ax.set_xticks([])
+            #     ax.set_xticks([])
+
+
 
             # time step lines
             for dur in np.cumsum(newdurs):
@@ -295,7 +272,7 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
             # labels
             if pos == 0:
                 ax.set_ylabel('({})'.format(voltageunit))
-            if pos == seqlen - 1 and not(isinstance(obj_to_plot, BluePrint)):
+            if pos == seqlen - 1 and not(isinstance(obj_to_plot, _BaseSegment)):
                 newax = ax.twinx()
                 newax.set_yticks([])
 
@@ -305,7 +282,7 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
                     new_ylabel = chan
                 newax.set_ylabel(new_ylabel)
 
-            if seq[pos+1]['type'] == 'subsequence':
+            if is_subsequence(elem):
                 ax.set_xlabel('Time N/A')
             else:
                 ax.set_xlabel('({})'.format(timeunit))
@@ -336,36 +313,3 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
                     titlestring += '\u21b1{}'.format(seq_info['goto'])
 
                 ax.set_title(titlestring)
-
-
-def _segment_plot_forger(segment: Segment, **kwargs) -> Dict[int, Dict]:
-    """
-    Temporary quick function to forge a segment into a sequence
-    """
-
-    if 'SR' in kwargs.keys():
-        SR = kwargs.pop('SR')
-    else:
-        raise ValueError('Cannot plot segment, no sample rate provided')
-
-    if 'duration' in kwargs.keys():
-        duration = kwargs.pop('duration')  # now the kwargs are only symbols
-    else:
-        try:
-            duration = segment.get('duration', **kwargs)
-        except KeyError:
-            duration = None
-
-    if not duration:
-        raise ValueError('Cannot plot segment, no duration specified')
-
-    npts = int(duration*SR)
-    timeax = np.linspace(0, duration, npts, endpoint=False)
-    signal = segment.forge(SR, **kwargs)
-
-    data = {'': {'wfm': signal, 'time': timeax}}
-
-    forged_seq = {1: {'type': 'element',
-                      'content': {1: {'data': data}}}}
-
-    return forged_seq
