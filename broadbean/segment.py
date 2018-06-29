@@ -16,6 +16,10 @@ def in_context(obj, **context:ContextDict) -> Union['Segment', 'GroupSegment', '
         ret.local_context = context
         return ret
 
+# should the transformations be implemented already at the level of _BaseSegment
+# and so that the get method is simply overwritten?
+
+
 class Symbol:
     def __init__(self, value):
         self.value = value
@@ -146,11 +150,8 @@ class SegmentGroup(_BaseSegment):
             return_array = np.append(return_array, s.forge(SR, **new_context))
         return return_array
 
-    # def apply_context(self, **context: ContextDict) -> None:
-    #     for s in self._segments:
-    #         s.apply_context(**context)
-
     def get(self,
             name: str,
             **context: ContextDict) -> Number:
-        return super().get(name, **self._transformation(context))
+        new_context = get_transformed_context(context, self._transformation)
+        return super().get(name, **self._transformation(new_context))

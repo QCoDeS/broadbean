@@ -6,6 +6,7 @@ from copy import deepcopy, copy
 import numpy as np
 
 from broadbean.segment import Segment, ContextDict
+from broadbean.transformations import get_transformed_context
 
 ChannelIDType = Union[int,str]
 
@@ -21,10 +22,12 @@ class Element:
     """
     def __init__(self, segments:Dict[ChannelIDType, Segment]={},
                  sequencing:Dict[str, int]={},
-                 local_context={}):
+                 local_context={},
+                 transformation:callable={}):
         self.segments = segments
         self.sequencing = sequencing
         self.local_context = local_context
+        self._transformation = transformation
         # make sequencing options kwargs
         # define jump target maybe as element reference that gets dereferenced in sequence?
         # self._sequencing[pos] = {'twait': wait, 'nrep': nreps,
@@ -36,24 +39,26 @@ class Element:
         Returns the duration in seconds of the element, if said duration is
         well-defined. Else raises an error.
         """
+
         durations = set(s.get('duration', **context) for _, s in self.segments.items())
         if len(durations) != 1:
             raise ElementDurationError
         return durations.pop()
 
-    # def apply_context(self, **context: ContextDict) -> None:
-    #     for channel, segment in self.segments.items():
-    #         segment.apply_context(**context)
-
     def __copy__(self):
         return Element(deepcopy(self.segments),
-                       deepcopy(self.sequencing))
+                       deepcopy(self.sequencing),
+                       transformation=self._transformation)
 
     # I think this should go into the main forge function. There is no point of forging an element outside of a sequence. This is different for a Segment.
-    def forge(self, SR, context, include_time=False):
-        context_arg = copy(context)
-        context_arg.update(self.local_context)
-        return {channel_id: segment.forge(SR, **context_arg) for channel_id, segment in self.segments.items()}
+    def forge(self, SR, context):
+        # first apply local context
+        context = copy(context)
+        context.update(self.local_context)
+        # then apply transformation
+        context = get_transformed_context(context, self._transformation)
+        return {channel_id: segment.forge(SR, **context)
+                for channel_id, segment in self.segments.items()}
 
 
     # TODO: add methods/operators for stacking, concatenation, equality
