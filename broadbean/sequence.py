@@ -1,19 +1,11 @@
 import logging
 import numpy as np
 from typing import List, Dict, Any
-from schema import Schema, Or, Optional
 from .element import Element
 from .segment import ContextDict
 
 
 log = logging.getLogger(__name__)
-
-fs_schema = Schema({int: {'type': Or('subsequence', 'element'),
-                          'content': {int: {'data': {Or(str, int): {str: np.ndarray}},
-                                            Optional('sequencing'): {Optional(str):
-                                                                    int}}},
-                          'sequencing': {Optional(str): int}}})
-
 
 # Until I can be bothered
 ForgedSequenceType = Any
@@ -32,19 +24,14 @@ class Sequence:
         self.sequencing = {}
 
     def forge(self, SR, context: ContextDict={}) -> Dict[int, Dict]:
-        output: Dict[int, Dict] = {}
-        for ie, elem in enumerate(self.elements):
-            item = {}
-            item['sequencing'] = elem.sequencing
-            item['content'] = {}
+        output: ForgedSequenceType = []
+        for elem in self.elements:
             if isinstance(elem, Sequence):
-                item['type'] = 'subsequence'
-                for ies, subelem in enumerate(elem.elements):
-                    item['content'][ise] = {
-                        'data': subelem.forge(SR, context),
-                        'sequencing': subelem.sequencing}
-            elif isinstance(elem, Element):
-                item['type'] = 'element'
-                item['content'][0] = {'data': elem.forge(SR, context)}
-            output[ie] = item
+                data = [{'data': subelem.forge(SR, context),
+                         'sequencing': subelem.sequencing}
+                         for subelem in elem.elements]
+            else:
+                data = elem.forge(SR, context)
+            output.append({'data': data,
+                           'sequencing': elem.sequencing})
         return output

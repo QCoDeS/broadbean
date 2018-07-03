@@ -11,6 +11,8 @@ PropertyDict = Dict[str, Property]
 ContextDict = Dict[str, Number]
 TimeType = np.ndarray
 
+
+
 def in_context(obj, **context:ContextDict) -> Union['Segment', 'GroupSegment', 'Element']:
         ret = copy(obj)
         ret.local_context = context

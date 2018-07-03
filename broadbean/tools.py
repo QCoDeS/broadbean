@@ -9,9 +9,8 @@ from broadbean.sequence import Sequence, Element
 
 log = logging.getLogger(__name__)
 
-def is_subsequence(elem: Element) -> bool:
-    # TODO: implement
-    return False
+def is_subsequence(elem_in_forged_sequence) -> bool:
+    return isinstance(elem_in_forged_sequence['data'], list)
     # isinstance(elem['content'], 
 
 def forged_sequence_dict_to_list(seq):
@@ -74,3 +73,22 @@ def forged_sequence_dict_to_list(seq):
                           f'elements.')
         elem['content'] = list_of_elements
     return return_val
+
+def forged_sequence_list_to_dict(seq):
+    if type(seq) is dict:
+        return seq
+    ret = {}
+    for i, elem in enumerate(seq):
+        elemdict = {}
+        if is_subsequence(elem):
+            subdict = {}
+            for subi, subelem in enumerate(elem['data']):
+                subdict[subi] = subelem
+            elemdict['type'] = 'subsequence'
+            elemdict['content'] = subdict
+        else:
+            elemdict['type'] = 'element'
+            elemdict['content'] = {1: {'data': {'wfm':elem['data']}}}
+        elemdict['sequencing'] = elem['sequencing']
+        ret[i] = elemdict
+    return ret
