@@ -1,15 +1,12 @@
 import logging
 import numpy as np
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union
 from .element import Element
-from .segment import ContextDict
+from .types import RoutesDictType, ForgedSequenceType, ContextDict
 
 
 log = logging.getLogger(__name__)
 
-# Until I can be bothered
-ForgedSequenceType = Any
-# ForgedSequenceType = Dict[int, Dict[str, Union[str, Dict[]]]]
 
 class Sequence:
     """
@@ -23,15 +20,22 @@ class Sequence:
         # if this is a subsequence
         self.sequencing = {}
 
-    def forge(self, SR, context: ContextDict={}) -> Dict[int, Dict]:
+    def forge(self,
+              SR: Union[float, int],
+              context: ContextDict={},
+              routes: RoutesDictType=None,
+              instrument_name: str=None) -> ForgedSequenceType:
         output: ForgedSequenceType = []
+        forge_element = lambda elem: elem.forge(SR, context,
+                                                routes, instrument_name)
         for elem in self.elements:
             if isinstance(elem, Sequence):
-                data = [{'data': subelem.forge(SR, context),
+                data = [{'data': forge_element(subelem),
                          'sequencing': subelem.sequencing}
                          for subelem in elem.elements]
             else:
-                data = elem.forge(SR, context)
+                data = forge_element(elem)
             output.append({'data': data,
                            'sequencing': elem.sequencing})
         return output
+

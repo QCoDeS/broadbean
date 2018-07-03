@@ -4,11 +4,10 @@ from copy import copy, deepcopy
 from typing import Union, Dict, List
 
 from .transformations import get_transformed_context
+from .types import ContextDict, Number
 
-Number = Union[float, int, None]
 Property =  Union[Number, str, None]
 PropertyDict = Dict[str, Property]
-ContextDict = Dict[str, Number]
 TimeType = np.ndarray
 
 
