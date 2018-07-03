@@ -140,7 +140,7 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
     # TODO: this is only for compatibilty
     seq = forged_sequence_dict_to_list(seq)
     # Get the dimensions.
-    chans = seq[0]['content'][0]['data'].keys()
+    chans = seq[0]['data'].keys()
     seqlen = len(seq)
 
     # Then figure out the figure scalings
@@ -149,12 +149,12 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
         minmax = [np.inf, -np.inf]
         for elem in seq:
             if is_subsequence(elem):
-                for subelem in elem['content']:
+                for subelem in elem['data']:
                     wfmdata = subelem['data'][chan]
                     minmax = [min(minmax[0], wfmdata.min()),
                               max(minmax[1], wfmdata.max())]
             else:
-                wfmdata = elem['content'][0]['data'][chan]
+                wfmdata = elem['data'][chan]
                 minmax = [min(minmax[0], wfmdata.min()),
                           max(minmax[1], wfmdata.max())]
         chanminmax[chan] = minmax
@@ -199,7 +199,7 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
                             horizontalalignment='center')
                 time = np.linspace(0, 1, 2)  # needed for timeexponent
             else:
-                wfm = elem['content'][0]['data'][chan]
+                wfm = elem['data'][chan]
                 # TODO: add support for markers
                 # m1 = content.get('m1', np.zeros_like(wfm))
                 # m2 = content.get('m2', np.zeros_like(wfm))
