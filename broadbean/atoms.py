@@ -11,7 +11,7 @@ def atom(function):
 
 @atom
 def sine(time, frequency, amplitude=1, phase=0):
-    return amplitude*np.sin(frequency*np.pi*time + phase)
+    return amplitude*np.sin(frequency*2*np.pi*time + phase)
 
 @atom
 def ramp(time, start=0, stop=1):
