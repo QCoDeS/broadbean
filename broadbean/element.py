@@ -57,7 +57,8 @@ class Element:
               SR,
               context: ContextDict,
               routes: RoutesDictType=None,
-              instrument_name: str=None):
+              instrument_name: str=None,
+              meta_data_only: bool=False):
         """
         forge and apply routing to a forged sequence.
         This function forges the element and returns a dictionary of the channel data
@@ -102,7 +103,9 @@ class Element:
             if (instrument_name == None or
                 selected_instrument == None or
                 selected_instrument == instrument_name):
-                ret[physical_channel] = segment.forge(SR, **context)
+                ret[physical_channel] = segment.forge(SR,
+                                                      meta_data_only=meta_data_only,
+                                                      **context)
         return ret
 
 

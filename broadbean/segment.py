@@ -106,6 +106,7 @@ class Segment(_BaseSegment):
 
     def forge(self,
               SR: Number,
+              meta_data_only: bool=False,
               **context) -> np.ndarray:
         duration = self.get('duration', **context)
 
@@ -116,10 +117,16 @@ class Segment(_BaseSegment):
             raise ValueError('Cannot forge segment; forging must result in at'
                              ' least two points, but this segment has only '
                              f'{int_dur}')
+
+        kwargs = self.get_all_properties(**context)
+
+        if meta_data_only:
+                return {'atom': self._function.__name__,
+                        'args': kwargs}
+
+        kwargs.pop('duration')
         # create time array
         time_array = np.linspace(0, duration, int_dur, endpoint=False)
-        kwargs = self.get_all_properties(**context)
-        kwargs.pop('duration')
         return self._function(time=time_array,
                               **kwargs)
 
@@ -143,8 +150,15 @@ class SegmentGroup(_BaseSegment):
 
     def forge(self,
               SR: Number,
+              meta_data_only: bool=False,
               **context: ContextDict) -> np.ndarray:
         new_context = get_transformed_context(context, self._transformation)
+
+        if meta_data_only:
+            return tuple(s.forge(SR, **new_context,
+                                 meta_data_only=meta_data_only)
+                         for s in self._segments)
+
         # this is the simples implemenation without any time constraints
         return_array = np.array([])
         for s in self._segments:

@@ -24,10 +24,14 @@ class Sequence:
               SR: Union[float, int],
               context: ContextDict={},
               routes: RoutesDictType=None,
-              instrument_name: str=None) -> ForgedSequenceType:
+              instrument_name: str=None,
+              meta_data_only: bool=False) -> ForgedSequenceType:
         output: ForgedSequenceType = []
-        forge_element = lambda elem: elem.forge(SR, context,
-                                                routes, instrument_name)
+        forge_element = lambda elem: elem.forge(SR=SR,
+                                                context=context,
+                                                routes=routes,
+                                                instrument_name=instrument_name,
+                                                meta_data_only=meta_data_only)
         for elem in self.elements:
             if isinstance(elem, Sequence):
                 data = [{'data': forge_element(subelem),
