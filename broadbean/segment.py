@@ -111,7 +111,7 @@ class Segment(_BaseSegment):
         duration = self.get('duration', **context)
 
         # check minimum length
-        int_dur = int(duration*SR)
+        int_dur = round(duration*SR)
         if int_dur < 2:
             # get rid of this restriction, which is totally unecessary
             raise ValueError('Cannot forge segment; forging must result in at'
