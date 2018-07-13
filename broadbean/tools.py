@@ -5,13 +5,41 @@ import numpy as np
 import logging
 from copy import copy
 
-from broadbean.sequence import Sequence, Element
+from .sequence import Sequence
+from .element import Element
 
 log = logging.getLogger(__name__)
 
-def is_subsequence(elem_in_forged_sequence) -> bool:
-    return isinstance(elem_in_forged_sequence['data'], list)
-    # isinstance(elem['content'], 
+# tools operating on the forged sequence
+def is_subsequence(forged_element) -> bool:
+    return isinstance(forged_element['data'], list)
+
+def get_element_channel_ids(forged_element):
+    if is_subsequence(forged_element):
+        raise NotImplementedError()
+    else:
+        return forged_element['data'].keys()
+
+def get_element_duration(forged_element, channel_id=None):
+    if is_subsequence(forged_element):
+        raise NotImplementedError()
+    else:
+        if channel_id == None:
+            channel_id = get_element_channel_ids(forged_element)[0]
+        return forged_element['data'][channel_id].size
+
+# checks
+def check_element_duration_consistent(forged_element):
+    if is_subsequence(forged_element):
+        raise NotImplementedError()
+    durations = [get_element_duration(forged_element, elem_id)
+                 for elem_id
+                 in get_element_channel_ids(forged_element)]
+    assert len(set(durations)) == 1
+
+def check_sequence_duration_consistent(forged_sequence):
+    for elem in forged_sequence:
+        check_element_duration_consistent(elem)
 
 def forged_sequence_dict_to_list(seq):
     """converts the dictionary style forged sequence into a list style one.
