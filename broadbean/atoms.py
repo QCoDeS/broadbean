@@ -44,8 +44,8 @@ def marker_pulse(time, delay, marker_duration):
         return off(time)
     SR = time[1] - time[0]
     # TODO: make checks on delay and marker_duration
-    index_start = round(delay/SR)
-    index_stop = round((delay+marker_duration)/SR)
+    index_start = int(round(delay/SR))
+    index_stop = int(round((delay+marker_duration)/SR))
     output = np.zeros(time.shape)
     output[index_start:index_stop] = 1
     return output
