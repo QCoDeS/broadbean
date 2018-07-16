@@ -3,6 +3,7 @@ from functools import wraps, partial
 from broadbean.segment import Segment
 
 def atom(function):
+    # wraps is incorrect here, we need to pop the kwarg 'time' and add duration
     @wraps(function)
     def decorated_func(*args, **kwargs):
         return Segment(function=function, *args, **kwargs)
@@ -30,9 +31,21 @@ def zero(time):
 
 # for markers
 @atom
-def on(time):
+def marker_on(time):
     return np.ones(time.shape)
 
 @atom
-def off(time):
+def marker_off(time):
     return np.zeros(time.shape)
+
+@atom
+def marker_pulse(time, delay, marker_duration):
+    if time.size < 2:
+        return off(time)
+    SR = time[1] - time[0]
+    # TODO: make checks on delay and marker_duration
+    index_start = round(delay/SR)
+    index_stop = round((delay+marker_duration)/SR)
+    output = np.zeros(time.shape)
+    output[index_start:index_stop] = 1
+    return output
