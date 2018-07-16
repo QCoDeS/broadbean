@@ -108,6 +108,13 @@ class Segment(_BaseSegment):
               SR: Number,
               meta_data_only: bool=False,
               **context) -> np.ndarray:
+
+        kwargs = self.get_all_properties(**context)
+
+        if meta_data_only:
+                return {'atom': self._function.__name__,
+                        'args': kwargs}
+
         duration = self.get('duration', **context)
 
         # check minimum length
@@ -118,11 +125,6 @@ class Segment(_BaseSegment):
                              ' least two points, but this segment has only '
                              f'{int_dur}')
 
-        kwargs = self.get_all_properties(**context)
-
-        if meta_data_only:
-                return {'atom': self._function.__name__,
-                        'args': kwargs}
 
         kwargs.pop('duration')
         # create time array
