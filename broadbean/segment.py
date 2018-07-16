@@ -172,3 +172,12 @@ class SegmentGroup(_BaseSegment):
             **context: ContextDict) -> Number:
         new_context = get_transformed_context(context, self._transformation)
         return super().get(name, **self._transformation(new_context))
+
+    # convenience functions
+    def __repr__(self) -> str:
+        output = f'SegmentGroup('
+        for s in self._segments:
+                output += str(s) + ', '
+        output += self._property_list()
+        output += ')'
+        return output
