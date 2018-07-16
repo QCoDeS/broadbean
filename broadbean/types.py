@@ -48,4 +48,5 @@ ForgedSequenceType = Any
 # ForgedSequenceType = Dict[int, Dict[str, Union[str, Dict[]]]]
 
 Number = Union[float, int, None]
-ContextDict = Dict[str, Number]
+Symbol = str
+ContextDict = Dict[Symbol, Number]
