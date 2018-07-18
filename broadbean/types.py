@@ -6,19 +6,18 @@ from typing import Union, Any, Dict, Tuple
 
 _channel_dict = {Or(str, int): np.ndarray}
 _sequencing_dict = {Optional(str): int}
-fs_schema = Schema(
-    [
-        {'data': Or(
+_element_dict = {
+    'data': Or(
             [
                 {'data': _channel_dict,
                  'sequencing': _sequencing_dict}
             ],
             _channel_dict
             ),
-         'sequencing': _sequencing_dict
-        }
-    ]
-)
+    'sequencing': _sequencing_dict
+}
+forged_element_schema = Schema(_element_dict)
+fs_schema = Schema([_element_dict])
 
 fs_schema_old = Schema({int: {'type': Or('subsequence', 'element'),
                           'content': {int: {'data': {Or(str, int): {str: np.ndarray}},

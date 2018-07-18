@@ -1,5 +1,6 @@
 # A little helper module for plotting of broadbean objects
 
+import logging
 from typing import Tuple, Union, Dict, List
 
 import numpy as np
@@ -8,10 +9,14 @@ import matplotlib.pyplot as plt
 from broadbean import Sequence, Element, Segment, _BaseSegment
 from broadbean.sequence import Sequence as SimpleSequence
 from broadbean.tools import is_subsequence, forged_sequence_dict_to_list
+from broadbean.types import fs_schema, forged_element_schema
+from schema import SchemaError
 
 # The object we can/want to plot
 BBObject = Union[Sequence, Element, _BaseSegment]
 
+
+log = logging.getLogger(__name__)
 
 # def getSIScalingAndPrefix(minmax: Tuple[float, float]) -> Tuple[float, str]:
 def getSIScalingAndPrefix(v: float) -> Tuple[float, str]:
@@ -71,9 +76,31 @@ def _plot_object_forger(obj_to_plot: BBObject,
     Returns a forged sequence.
     """
     if isinstance(obj_to_plot, list) or isinstance(obj_to_plot, dict):
-        # TODO: validate forged sequence
-        return obj_to_plot
-    if isinstance(obj_to_plot, Sequence):
+        # try to interprete as forged sequence
+        forged_sequence_error = ''
+        forged_element_error = ''
+        try:
+            fs_schema.validate(obj_to_plot)
+            return obj_to_plot
+        except SchemaError as e1:
+            forged_sequence_error = str(e1)
+        # try to interprete as forged element
+        try:
+            forged_element_schema.validate(obj_to_plot)
+            return [obj_to_plot]
+        except SchemaError as e2:
+            forged_element_error = str(e2)
+
+        raise RuntimeWarning(
+            f'Tried to plot object that is list or dict but did neither '
+            f'qualify as forged sequence nor forged element.\n'
+            f'The argument was {obj_to_plot}.\n'
+            f'Error when interpreting as forged sequence:\n'
+            f'{forged_sequence_error}\n'
+            f'\n'
+            f'Error when interpreting as forged element:\n'
+            f'{forged_sequence_error}\n')
+    elif isinstance(obj_to_plot, Sequence):
         seq = obj_to_plot
     elif isinstance(obj_to_plot, Element):
         seq = Sequence([obj_to_plot])
@@ -81,7 +108,7 @@ def _plot_object_forger(obj_to_plot: BBObject,
         elem = Element({'wfm': obj_to_plot})
         seq = Sequence([elem])
     else:
-        raise RuntimeWarning('Unexpected argument {obj_to_plot}')
+        raise RuntimeWarning(f'Tried to plot object that is neither an element, sequence, segment nor a forged_sequence or forged_element. The argument was {obj_to_plot}')
 
     return seq.forge(**forger_kwargs)
 
