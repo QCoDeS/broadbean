@@ -14,7 +14,7 @@ ChannelIDType = Union[int,str]
 class ElementDurationError(Exception):
     pass
 
-
+ 
 class Element:
     """
     Object representing an element. An element is a collection of waves that
@@ -50,7 +50,8 @@ class Element:
     def __copy__(self):
         return Element(deepcopy(self.segments),
                        deepcopy(self.sequencing),
-                       transformation=self._transformation)
+                       transformation=self._transformation,
+                       local_context=deepcopy(self.local_context))
 
     # I think this should go into the main forge function. There is no point of forging an element outside of a sequence. This is different for a Segment.
     def forge(self,

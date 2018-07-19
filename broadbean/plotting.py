@@ -321,22 +321,22 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
                 ax.set_yticks([])
             fig.subplots_adjust(hspace=0, wspace=0)
 
-            # display sequencer information
-            if chanind == 0 and isinstance(obj_to_plot, Sequence):
-                seq_info = seq[pos+1]['sequencing']
-                titlestring = ''
-                if seq_info['twait'] == 1:  # trigger wait
-                    titlestring += 'T '
-                if seq_info['nrep'] > 1:  # nreps
-                    titlestring += '\u21BB{} '.format(seq_info['nrep'])
-                if seq_info['nrep'] == 0:
-                    titlestring += '\u221E '
-                if seq_info['jump_input'] != 0:
-                    if seq_info['jump_input'] == -1:
-                        titlestring += 'E\u2192 '
-                    else:
-                        titlestring += 'E{} '.format(seq_info['jump_input'])
-                if seq_info['goto'] > 0:
-                    titlestring += '\u21b1{}'.format(seq_info['goto'])
+            # # display sequencer information
+            # if chanind == 0 and isinstance(obj_to_plot, Sequence):
+            #     seq_info = seq[pos+1]['sequencing']
+            #     titlestring = ''
+            #     if seq_info['twait'] == 1:  # trigger wait
+            #         titlestring += 'T '
+            #     if seq_info['nrep'] > 1:  # nreps
+            #         titlestring += '\u21BB{} '.format(seq_info['nrep'])
+            #     if seq_info['nrep'] == 0:
+            #         titlestring += '\u221E '
+            #     if seq_info['jump_input'] != 0:
+            #         if seq_info['jump_input'] == -1:
+            #             titlestring += 'E\u2192 '
+            #         else:
+            #             titlestring += 'E{} '.format(seq_info['jump_input'])
+            #     if seq_info['goto'] > 0:
+            #         titlestring += '\u21b1{}'.format(seq_info['goto'])
 
-                ax.set_title(titlestring)
+            #     ax.set_title(titlestring)
