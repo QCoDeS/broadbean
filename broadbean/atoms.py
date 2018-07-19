@@ -12,10 +12,14 @@ def atom(function):
 
 @atom
 def sine(time, frequency, amplitude=1, phase=0):
+    if time.size == 1:
+        return 0
     return amplitude*np.sin(frequency*2*np.pi*time + phase)
 
 @atom
 def ramp(time, start=0, stop=1):
+    if time.size == 1:
+        return (start+stop)/2
     #TODO: is this correct or do we need todo something about the endpoint?
     dur = time[-1]-time[0]
     return (stop-start)*time/dur+start
@@ -40,8 +44,8 @@ def marker_off(time):
 
 @atom
 def marker_pulse(time, delay, marker_duration):
-    if time.size < 2:
-        return off(time)
+    if time.size == 1:
+        return marker_on(time)
     SR = time[1] - time[0]
     # TODO: make checks on delay and marker_duration
     index_start = int(round(delay/SR))

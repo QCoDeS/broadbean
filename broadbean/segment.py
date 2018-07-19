@@ -119,13 +119,15 @@ class Segment(_BaseSegment):
 
         # check minimum length
         int_dur = round(duration*SR)
-        if int_dur < 2:
-            # get rid of this restriction, which is totally unecessary
-            raise ValueError('Cannot forge segment; forging must result in at'
-                             ' least two points, but this segment has only '
-                             f'{int_dur}')
+        # TODO: make this a warning
+        # if int_dur < 2:
+        #     # get rid of this restriction, which is totally unecessary
+        #     raise ValueError('Cannot forge segment; forging must result in at'
+        #                      ' least two points, but this segment has only '
+        #                      f'{int_dur}')
 
-
+        if int_dur == 0:
+                return np.empty(0)
         kwargs.pop('duration')
         # create time array
         time_array = np.linspace(0, duration, int_dur, endpoint=False)
