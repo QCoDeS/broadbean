@@ -38,6 +38,7 @@ def check_element_duration_consistent(forged_element):
     assert len(set(durations)) == 1
 
 def check_sequence_duration_consistent(forged_sequence):
+    # TODO: add a good error message here, including index
     for elem in forged_sequence:
         check_element_duration_consistent(elem)
 

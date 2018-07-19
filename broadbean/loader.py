@@ -62,3 +62,47 @@ def read_simple_transformation(data):
     return make_delcarative_linear_transformation(items)
 
 
+
+def write_segment(seg):
+    if isinstance(seg, SegmentGroup):
+        ret = copy(seg._properties)
+        ret['segmetns'] = [write_segment(subseg) for subseg in seg._segments]
+        ret['transformation'] = write_transformation(seg._transformation)
+    elif isinstance(seg, Segment):
+        return {seg._function: seg._properties}
+    else:
+        raise RuntimeError(f'Tried to read object of type {type(seg)} as segment')
+
+# simply copy and paste from read versions
+# def write_element(elem):
+#     seg_dict = {}
+#     duration = data['duration']
+#     for channel_id, channel_data in data['segments'].items():
+#         if isinstance(channel_data, list):
+#             segs = [read_segment(seg) for seg in channel_data]
+#             seg = SegmentGroup(*segs, duration=duration)
+#         else:
+#             seg = read_segment(channel_data)
+#         seg_dict[channel_id] = seg
+
+#     transformation_yaml = data.get('transformation', None)
+#     transformation = read_transformation(transformation_yaml)
+#     return Element(segments=seg_dict,
+#                    sequencing=data.get('sequencing', {}),
+#                    local_context=data.get('local_context', {}),
+#                    transformation=transformation)
+
+# def write_transformation(data):
+#         transformation = None
+#         if data:
+#             if data['type'] == 'declarative_linear_transformation':
+#                 transformation = read_simple_transformation(data['data'])
+#         return transformation
+
+# def write_simple_transformation(data):
+#     items = []
+#     for item in data:
+#         assigned, l = get_single_entry(item)
+#         independents = [tuple(pair) for pair in l]
+#         items.append((assigned, independents))
+#     return make_delcarative_linear_transformation(items)
