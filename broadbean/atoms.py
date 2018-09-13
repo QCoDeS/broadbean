@@ -11,10 +11,10 @@ def atom(function):
 
 
 @atom
-def sine(time, frequency, amplitude=1, phase=0):
+def sine(time, frequency, amplitude=1, phase=0, offset=0):
     if time.size == 1:
         return 0
-    return amplitude*np.sin(frequency*2*np.pi*time + phase)
+    return offset + amplitude*np.sin(frequency*2*np.pi*time + phase)
 
 @atom
 def ramp(time, start=0, stop=1):
