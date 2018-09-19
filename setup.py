@@ -2,16 +2,16 @@ from setuptools import setup
 
 setup(
     name='broadbean',
-    version='0.9',
+    version='0.9.1',
 
     # We might as well require what we know will work
     # although older numpy and matplotlib version will probably work too
     install_requires=['numpy>=1.12.1',
-                      'matplotlib>=2.0.1',
+                      'matplotlib',
                       'schema'],
 
     author='William H.P. Nielsen',
-    author_email='whpn@mailbox.org',
+    author_email='William.Nielsen@microsoft.com',
 
     description=("Package for easily generating and manipulating signal "
                  "pulses. Developed for use with qubits in the quantum "
