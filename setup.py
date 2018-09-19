@@ -7,7 +7,7 @@ setup(
     # We might as well require what we know will work
     # although older numpy and matplotlib version will probably work too
     install_requires=['numpy>=1.12.1',
-                      'matplotlib==2.2.3',
+                      'matplotlib',
                       'schema'],
 
     author='William H.P. Nielsen',
