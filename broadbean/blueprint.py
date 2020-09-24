@@ -759,10 +759,10 @@ def _subelementBuilder(blueprint: BluePrint, SR: int,
     # and raise an exception if the segment ends up with less than
     # two points
 
-    intdurations = np.zeros(len(newdurations))
+    intdurations = np.zeros(len(newdurations), dtype=int)
 
     for ii, dur in enumerate(newdurations):
-        int_dur = round(dur*SR)
+        int_dur = int(round(dur*SR))
         if int_dur < 2:
             raise SegmentDurationError('Too short segment detected! '
                                        'Segment "{}" at position {} '
