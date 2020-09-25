@@ -118,8 +118,8 @@ def test_addArray():
 
 
 @settings(max_examples=25)
-@given(SR1=hst.integers(1), SR2=hst.integers(1),
-       N=hst.integers(2), M=hst.integers(2))
+@given(SR1=hst.integers(min_value=1,max_value=25e8), SR2=hst.integers(min_value = 1,max_value = 25e8),
+       N=hst.integers(min_value=2,max_value=25e6), M=hst.integers(min_value=2,max_value=25e6))
 def test_invalid_durations(SR1, SR2, N, M):
     """
     There are soooo many ways to have invalid durations, here
@@ -207,7 +207,7 @@ def test_input_fail1(improper_bp):
 
 
 @settings(max_examples=25)
-@given(SR=hst.integers(1), N=hst.integers(2))
+@given(SR=hst.integers(min_value=1,max_value=25e8), N=hst.integers(min_value=2,max_value=25e6))
 def test_points(SR, N):
     elem = Element()
 
