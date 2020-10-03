@@ -491,6 +491,7 @@ class Sequence:
                 desc[str(pos)]['sequencing'] = seqdict
             except KeyError:
                 desc[str(pos)]['sequencing'] = 'Not set'
+        desc['awgspecs'] = self._awgspecs
         return desc
 
     @property
