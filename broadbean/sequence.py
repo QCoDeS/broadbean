@@ -478,19 +478,19 @@ class Sequence:
         """
         desc = {}
 
-        for pos, elem in self._data.items():
+        for pos, elem in self._data.items():           
             desc[str(pos)] = {}
             desc[str(pos)]['channels'] = elem.description
             try:
                 sequencing = self._sequencing[pos]
-                seqdict = {'Wait trigger': sequencing[0],
-                           'Repeat': sequencing[1],
-                           'Event jump to': sequencing[2],
-                           'Go to': sequencing[3]}
+                seqdict = {'Wait trigger': sequencing['twait'],
+                           'Repeat': sequencing['nrep'],
+                           'jump_input': sequencing['jump_input'],
+                           'jump_target': sequencing['jump_target'],
+                           'Go to': sequencing['goto']}
                 desc[str(pos)]['sequencing'] = seqdict
             except KeyError:
                 desc[str(pos)]['sequencing'] = 'Not set'
-
         return desc
 
     @property
