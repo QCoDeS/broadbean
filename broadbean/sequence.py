@@ -547,8 +547,8 @@ class Sequence:
                         bp_seg.insertSegment(i,knowfunctions[SegDict['function']], arguments,name = re.sub("\d", "", SegDict['name']), dur=SegDict['durations'])
                     i+=1
                     bp_sum = bp_sum + bp_seg
-                bp_sum.maker1 = data_loaded[Ele]['channels'][chan]['marker1_abs']
-                bp_sum.maker2 = data_loaded[Ele]['channels'][chan]['marker2_abs']
+                bp_sum.marker1 = data_loaded[Ele]['channels'][chan]['marker1_abs']
+                bp_sum.marker2 = data_loaded[Ele]['channels'][chan]['marker2_abs']
                 listmarker1 = data_loaded[Ele]['channels'][chan]['marker1_rel']
                 listmarker2 = data_loaded[Ele]['channels'][chan]['marker2_rel']
                 bp_sum._segmark1 = [tuple(mark) for mark in listmarker1]
