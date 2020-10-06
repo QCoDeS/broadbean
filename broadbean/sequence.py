@@ -508,7 +508,7 @@ class Sequence:
             json.dump(self.description, fp) 
 
     @classmethod
-    def init_from_json(cls,path_to_file:str) -> 'Sequence':
+    def init_from_json(cls,path_to_file:str):# -> 'Sequence':
         """
         Reads sequense from JSON file
 
@@ -521,7 +521,6 @@ class Sequence:
         with open(path_to_file, 'r') as fp:
             data_loaded = json.load(fp)  
         knowfunctions = dict([('function PulseAtoms.{}'.format(fun), getattr(PulseAtoms, fun)) for fun in dir(PulseAtoms) if '__' not in fun])
-    
         awgspecs = data_loaded['awgspecs']
         SR = awgspecs['SR']
         ElemList = list(data_loaded.keys())
@@ -535,11 +534,17 @@ class Sequence:
                 bp_sum = BluePrint()
                 i = 0
                 for Seg in Seglist:
-                    bla = data_loaded[Ele]['channels'][chan][Seg]
+                    SegDict = data_loaded[Ele]['channels'][chan][Seg]
                     bp_seg = BluePrint()
-                    bp_seg.setSR(SR) 
-                    arguments = tuple(data_loaded[Ele]['channels'][chan][Seg]['arguments'].values())
-                    bp_seg.insertSegment(i,knowfunctions[bla['function']], arguments,name = re.sub("\d", "", bla['name']), dur=bla['durations'])
+                    bp_seg.setSR(SR)
+                    if SegDict['function'] == 'waituntil':
+                        arguments = data_loaded[Ele]['channels'][chan][Seg]['arguments'].values()
+                        arguments = (list(arguments)[0][0],)
+                        print(arguments)
+                        bp_seg.insertSegment(i,'waituntil', arguments)
+                    else:               
+                        arguments = tuple(data_loaded[Ele]['channels'][chan][Seg]['arguments'].values())
+                        bp_seg.insertSegment(i,knowfunctions[SegDict['function']], arguments,name = re.sub("\d", "", SegDict['name']), dur=SegDict['durations'])
                     i+=1
                     bp_sum = bp_sum + bp_seg
                 bp_sum.maker1 = data_loaded[Ele]['channels'][chan]['marker1_abs']
