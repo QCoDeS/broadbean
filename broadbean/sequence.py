@@ -531,7 +531,7 @@ class Sequence:
         ElemList = list(data_loaded.keys())
 
         for Ele in ElemList[:-1]:
-            ChannelsList = SegMarlist = list(data_loaded[Ele]['channels'].keys())
+            ChannelsList = list(data_loaded[Ele]['channels'].keys())
             elem = Element()
             for chan in ChannelsList:
                 SegMarlist = list(data_loaded[Ele]['channels'][chan].keys())
