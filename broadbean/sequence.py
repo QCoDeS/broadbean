@@ -497,39 +497,44 @@ class Sequence:
         desc['awgspecs'] = self._awgspecs
         return desc
 
-    def write_to_json(self,path_to_file:str) -> None:
+    def write_to_json(self, path_to_file: str) -> None:
         """
         Writes sequences to JSON file
 
         Args: 
-            path_to_file: the path to the file to write to ex: path_to_file/sequense.json
+            path_to_file: the path to the file to write to ex:
+            path_to_file/sequense.json
         """
         with open(path_to_file, 'w') as fp:
-            json.dump(self.description, fp) 
+            json.dump(self.description, fp)
 
     @classmethod
-    def init_from_json(cls,path_to_file:str):# -> 'Sequence':
+    def init_from_json(cls, path_to_file: str):  # -> 'Sequence':
         """
         Reads sequense from JSON file
 
         Args: 
-            path_to_file: the path to the file to be read ex: path_to_file/sequense.json
+            path_to_file: the path to the file to be read ex:
+            path_to_file/sequense.json
             This function is the inverse of write_to_json
-            The JSON file needs to be structured as if it was writen by the function write_to_json
+            The JSON file needs to be structured as if it was writen
+            by the function write_to_json
         """
         new_instance = cls()
         with open(path_to_file, 'r') as fp:
             data_loaded = json.load(fp)  
-        knowfunctions = dict([('function PulseAtoms.{}'.format(fun), getattr(PulseAtoms, fun)) for fun in dir(PulseAtoms) if '__' not in fun])
+        knowfunctions = dict([('function PulseAtoms.{}'.format(fun),
+                               getattr(PulseAtoms, fun)) for fun in
+                             dir(PulseAtoms) if '__' not in fun])
         awgspecs = data_loaded['awgspecs']
         SR = awgspecs['SR']
         ElemList = list(data_loaded.keys())
 
         for Ele in ElemList[:-1]:
-            ChannelsList = SegMarlist =list(data_loaded[Ele]['channels'].keys())
+            ChannelsList = SegMarlist = list(data_loaded[Ele]['channels'].keys())
             elem = Element()
             for chan in ChannelsList:
-                SegMarlist =list(data_loaded[Ele]['channels'][chan].keys())
+                SegMarlist = list(data_loaded[Ele]['channels'][chan].keys())
                 Seglist = [s for s in SegMarlist if 'segment' in s]
                 bp_sum = BluePrint()
                 i = 0
@@ -541,11 +546,12 @@ class Sequence:
                         arguments = data_loaded[Ele]['channels'][chan][Seg]['arguments'].values()
                         arguments = (list(arguments)[0][0],)
                         print(arguments)
-                        bp_seg.insertSegment(i,'waituntil', arguments)
-                    else:               
+                        bp_seg.insertSegment(i, 'waituntil', arguments)
+                    else:
                         arguments = tuple(data_loaded[Ele]['channels'][chan][Seg]['arguments'].values())
-                        bp_seg.insertSegment(i,knowfunctions[SegDict['function']], arguments,name = re.sub("\d", "", SegDict['name']), dur=SegDict['durations'])
-                    i+=1
+                        bp_seg.insertSegment(i, knowfunctions[SegDict['function']],
+                                             arguments, name=re.sub(r'\d', "", SegDict['name']), dur=SegDict['durations'])
+                    i += 1
                     bp_sum = bp_sum + bp_seg
                 bp_sum.marker1 = data_loaded[Ele]['channels'][chan]['marker1_abs']
                 bp_sum.marker2 = data_loaded[Ele]['channels'][chan]['marker2_abs']
@@ -554,13 +560,12 @@ class Sequence:
                 bp_sum._segmark1 = [tuple(mark) for mark in listmarker1]
                 bp_sum._segmark2 = [tuple(mark) for mark in listmarker2]
                 bp_sum.setSR(SR)
-                elem.addBluePrint(int(chan),bp_sum)
+                elem.addBluePrint(int(chan), bp_sum)
 
                 ChannelAmplitude = awgspecs['channel{}_amplitude'.format(chan)]
                 new_instance.setChannelAmplitude(int(chan), ChannelAmplitude)  # Call signature: channel, amplitude (peak-to-peak)
                 ChannelOffset = awgspecs['channel{}_offset'.format(chan)]
                 new_instance.setChannelOffset(int(chan), ChannelOffset)
-
 
             new_instance.addElement(int(Ele), elem)
             sequencedict = data_loaded[Ele]['sequencing']
@@ -570,7 +575,7 @@ class Sequence:
             new_instance.setSequencingEventJumpTarget(int(Ele), sequencedict['jump_target'])
             new_instance.setSequencingGoto(int(Ele), sequencedict['Go to'])
         new_instance.setSR(SR)
-        return  new_instance
+        return new_instance
 
     @property
     def name(self):
