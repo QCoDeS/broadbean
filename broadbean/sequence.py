@@ -506,7 +506,7 @@ class Sequence:
             path_to_file/sequense.json
         """
         with open(path_to_file, 'w') as fp:
-            json.dump(self.description, fp)
+            json.dump(self.description, fp, indent=4)
 
     @classmethod
     def init_from_json(cls, path_to_file: str):  # -> 'Sequence':
