@@ -528,32 +528,32 @@ class Sequence:
                              dir(PulseAtoms) if '__' not in fun])
         awgspecs = data_loaded['awgspecs']
         SR = awgspecs['SR']
-        ElemList = list(data_loaded.keys())
+        elem_list = list(data_loaded.keys())
 
-        for Ele in ElemList[:-1]:
-            ChannelsList = list(data_loaded[Ele]['channels'].keys())
+        for ele in elem_list[:-1]:
+            channels_list = list(data_loaded[ele]['channels'].keys())
             elem = Element()
-            for chan in ChannelsList:
-                SegMarlist = list(data_loaded[Ele]['channels'][chan].keys())
-                Seglist = [s for s in SegMarlist if 'segment' in s]
+            for chan in channels_list:
+                seg_mar_list = list(data_loaded[ele]['channels'][chan].keys())
+                seg_list = [s for s in seg_mar_list if 'segment' in s]
                 bp_sum = BluePrint()
-                for i, Seg in enumerate(Seglist):
-                    SegDict = data_loaded[Ele]['channels'][chan][Seg]
+                for i, seg in enumerate(seg_list):
+                    seg_dict = data_loaded[ele]['channels'][chan][seg]
                     bp_seg = BluePrint()
                     bp_seg.setSR(SR)
-                    if SegDict['function'] == 'waituntil':
-                        arguments = data_loaded[Ele]['channels'][chan][Seg]['arguments'].values()
+                    if seg_dict['function'] == 'waituntil':
+                        arguments = data_loaded[ele]['channels'][chan][seg]['arguments'].values()
                         arguments = (list(arguments)[0][0],)
                         bp_seg.insertSegment(i, 'waituntil', arguments)
                     else:
-                        arguments = tuple(data_loaded[Ele]['channels'][chan][Seg]['arguments'].values())
-                        bp_seg.insertSegment(i, knowfunctions[SegDict['function']],
-                                             arguments, name=re.sub(r'\d', "", SegDict['name']), dur=SegDict['durations'])
+                        arguments = tuple(data_loaded[ele]['channels'][chan][seg]['arguments'].values())
+                        bp_seg.insertSegment(i, knowfunctions[seg_dict['function']],
+                                             arguments, name=re.sub(r'\d', "", seg_dict['name']), dur=seg_dict['durations'])
                     bp_sum = bp_sum + bp_seg
-                bp_sum.marker1 = data_loaded[Ele]['channels'][chan]['marker1_abs']
-                bp_sum.marker2 = data_loaded[Ele]['channels'][chan]['marker2_abs']
-                listmarker1 = data_loaded[Ele]['channels'][chan]['marker1_rel']
-                listmarker2 = data_loaded[Ele]['channels'][chan]['marker2_rel']
+                bp_sum.marker1 = data_loaded[ele]['channels'][chan]['marker1_abs']
+                bp_sum.marker2 = data_loaded[ele]['channels'][chan]['marker2_abs']
+                listmarker1 = data_loaded[ele]['channels'][chan]['marker1_rel']
+                listmarker2 = data_loaded[ele]['channels'][chan]['marker2_rel']
                 bp_sum._segmark1 = [tuple(mark) for mark in listmarker1]
                 bp_sum._segmark2 = [tuple(mark) for mark in listmarker2]
                 bp_sum.setSR(SR)
@@ -564,13 +564,13 @@ class Sequence:
                 ChannelOffset = awgspecs['channel{}_offset'.format(chan)]
                 new_instance.setChannelOffset(int(chan), ChannelOffset)
 
-            new_instance.addElement(int(Ele), elem)
-            sequencedict = data_loaded[Ele]['sequencing']
-            new_instance.setSequencingTriggerWait(int(Ele), sequencedict['Wait trigger'])
-            new_instance.setSequencingNumberOfRepetitions(int(Ele), sequencedict['Repeat'])
-            new_instance.setSequencingEventInput(int(Ele), sequencedict['jump_input'])
-            new_instance.setSequencingEventJumpTarget(int(Ele), sequencedict['jump_target'])
-            new_instance.setSequencingGoto(int(Ele), sequencedict['Go to'])
+            new_instance.addElement(int(ele), elem)
+            sequencedict = data_loaded[ele]['sequencing']
+            new_instance.setSequencingTriggerWait(int(ele), sequencedict['Wait trigger'])
+            new_instance.setSequencingNumberOfRepetitions(int(ele), sequencedict['Repeat'])
+            new_instance.setSequencingEventInput(int(ele), sequencedict['jump_input'])
+            new_instance.setSequencingEventJumpTarget(int(ele), sequencedict['jump_target'])
+            new_instance.setSequencingGoto(int(ele), sequencedict['Go to'])
         new_instance.setSR(SR)
         return new_instance
 
