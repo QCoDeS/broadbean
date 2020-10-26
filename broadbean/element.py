@@ -4,6 +4,7 @@ from typing import Union, Dict, List
 from copy import deepcopy
 
 import numpy as np
+import json
 
 from .broadbean import marked_for_deletion, PulseAtoms
 from broadbean.blueprint import BluePrint, _subelementBuilder
@@ -263,6 +264,48 @@ class Element:
                 desc[str(key)] = 'array'
 
         return desc
+
+    def write_to_json(self, path_to_file: str) -> None:
+        """
+        Writes element to JSON file
+
+        Args:
+            path_to_file: the path to the file to write to ex:
+            path_to_file/element.json
+        """
+        with open(path_to_file, 'w') as fp:
+            json.dump(self.description, fp, indent=4)
+
+    def element_from_description(element_dict):
+        """
+        Returns a blueprint from a description given as a dict
+
+        Args:
+            element_dict: a dict in the same form as returned by
+            Element.description
+        """
+        channels_list = list(element_dict.keys())
+        elem = Element()
+        for chan in channels_list:
+            bp_sum = BluePrint.blueprint_from_description(element_dict[chan])
+            elem.addBluePrint(int(chan), bp_sum)
+        return elem
+
+    @classmethod
+    def init_from_json(cls, path_to_file: str) -> 'Element':
+        """
+        Reads Element from JSON file
+
+        Args:
+            path_to_file: the path to the file to be read ex:
+            path_to_file/Element.json
+            This function is the inverse of write_to_json
+            The JSON file needs to be structured as if it was writen
+            by the function write_to_json
+        """
+        with open(path_to_file, 'r') as fp:
+            data_loaded = json.load(fp)
+        return cls.element_from_description(data_loaded)    
 
     def changeArg(self, channel: Union[str, int],
                   name: str, arg: Union[str, int], value: Union[int, float],
