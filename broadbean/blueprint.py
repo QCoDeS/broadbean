@@ -4,6 +4,8 @@ import warnings
 from inspect import signature
 import functools as ft
 from typing import List, Dict
+import json
+import re
 
 import numpy as np
 
@@ -262,6 +264,72 @@ class BluePrint():
         desc['marker2_rel'] = self._segmark2
 
         return desc
+
+    def write_to_json(self, path_to_file: str) -> None:
+        """
+        Writes blueprint to JSON file
+
+        Args:
+            path_to_file: the path to the file to write to ex:
+            path_to_file/blueprint.json
+        """
+        with open(path_to_file, 'w') as fp:
+            json.dump(self.description, fp, indent=4)
+
+    def blueprint_from_description(blue_dict):
+        """
+        Returns a blueprint from a description given as a dict
+
+        Args:
+            blue_dict: a dict in the same form as returned by
+            BluePrint.description
+        """
+        knowfunctions = dict([('function PulseAtoms.{}'.format(fun),
+                             getattr(PulseAtoms, fun)) for fun in
+                             dir(PulseAtoms) if '__' not in fun])
+        seg_mar_list = list(blue_dict.keys())
+        seg_list = [s for s in seg_mar_list if 'segment' in s]
+        bp_sum = BluePrint()
+        for i, seg in enumerate(seg_list):
+            seg_dict = blue_dict[seg]
+            bp_seg = BluePrint()
+            if seg_dict['function'] == 'waituntil':
+                arguments = blue_dict[seg]['arguments'].values()
+                arguments = (list(arguments)[0][0],)
+                bp_seg.insertSegment(i, 'waituntil', arguments)
+            else:
+                arguments = tuple(blue_dict[seg]['arguments'].values())
+                bp_seg.insertSegment(i, knowfunctions[seg_dict['function']],
+                                     arguments, name=re.sub(r'\d', "", seg_dict['name']), dur=seg_dict['durations'])
+            bp_sum = bp_sum + bp_seg
+        bp_sum.marker1 = blue_dict['marker1_abs']
+        bp_sum.marker2 = blue_dict['marker2_abs']
+        listmarker1 = blue_dict['marker1_rel']
+        listmarker2 = blue_dict['marker2_rel']
+        bp_sum._segmark1 = [tuple(mark) for mark in listmarker1]
+        bp_sum._segmark2 = [tuple(mark) for mark in listmarker2]
+        return bp_sum
+
+    @classmethod
+    def init_from_json(cls, path_to_file: str) -> 'BluePrint':
+        """
+        Reads blueprint from JSON file
+
+        Args:
+            path_to_file: the path to the file to be read ex:
+            path_to_file/blueprint.json
+            This function is the inverse of write_to_json
+            The JSON file needs to be structured as if it was writen
+            by the function write_to_json
+        """
+        with open(path_to_file, 'r') as fp:
+            data_loaded = json.load(fp)
+        return cls.blueprint_from_description(data_loaded)
+
+
+
+
+
 
     def _makeWaitDurations(self):
         """
