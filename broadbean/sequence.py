@@ -509,6 +509,13 @@ class Sequence:
             json.dump(self.description, fp, indent=4)
 
     def sequence_from__description(seq_dict: dict) -> 'Sequence':
+        """
+        Returns a sequence from a description given as a dict
+
+        Args:
+            seq_dict: a dict in the same form as returned by
+            Sequence.description
+        """
         
         awgspecs = seq_dict['awgspecs']
         SR = awgspecs['SR']
