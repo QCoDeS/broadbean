@@ -236,3 +236,11 @@ def test_points(SR, N):
     elem.addBluePrint(1, bp)
 
     assert elem.points == N
+
+
+def test_write_read_element(blueprint_tophat):
+    elem = Element()
+    elem.addBluePrint(1, blueprint_tophat)
+    elem.write_to_json('testfile.json')
+    readback_elem = Element.init_from_json('testfile.json')
+    assert elem.description == readback_elem.description
