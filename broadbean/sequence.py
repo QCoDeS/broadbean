@@ -534,31 +534,9 @@ class Sequence:
             channels_list = list(data_loaded[ele]['channels'].keys())
             elem = Element()
             for chan in channels_list:
-                seg_mar_list = list(data_loaded[ele]['channels'][chan].keys())
-                seg_list = [s for s in seg_mar_list if 'segment' in s]
-                bp_sum = BluePrint()
-                for i, seg in enumerate(seg_list):
-                    seg_dict = data_loaded[ele]['channels'][chan][seg]
-                    bp_seg = BluePrint()
-                    bp_seg.setSR(SR)
-                    if seg_dict['function'] == 'waituntil':
-                        arguments = data_loaded[ele]['channels'][chan][seg]['arguments'].values()
-                        arguments = (list(arguments)[0][0],)
-                        bp_seg.insertSegment(i, 'waituntil', arguments)
-                    else:
-                        arguments = tuple(data_loaded[ele]['channels'][chan][seg]['arguments'].values())
-                        bp_seg.insertSegment(i, knowfunctions[seg_dict['function']],
-                                             arguments, name=re.sub(r'\d', "", seg_dict['name']), dur=seg_dict['durations'])
-                    bp_sum = bp_sum + bp_seg
-                bp_sum.marker1 = data_loaded[ele]['channels'][chan]['marker1_abs']
-                bp_sum.marker2 = data_loaded[ele]['channels'][chan]['marker2_abs']
-                listmarker1 = data_loaded[ele]['channels'][chan]['marker1_rel']
-                listmarker2 = data_loaded[ele]['channels'][chan]['marker2_rel']
-                bp_sum._segmark1 = [tuple(mark) for mark in listmarker1]
-                bp_sum._segmark2 = [tuple(mark) for mark in listmarker2]
+                bp_sum = BluePrint.blueprint_from_description(data_loaded[ele]['channels'][chan])
                 bp_sum.setSR(SR)
                 elem.addBluePrint(int(chan), bp_sum)
-
                 ChannelAmplitude = awgspecs['channel{}_amplitude'.format(chan)]
                 new_instance.setChannelAmplitude(int(chan), ChannelAmplitude)  # Call signature: channel, amplitude (peak-to-peak)
                 ChannelOffset = awgspecs['channel{}_offset'.format(chan)]
