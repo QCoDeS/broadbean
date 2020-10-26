@@ -276,7 +276,8 @@ class BluePrint():
         with open(path_to_file, 'w') as fp:
             json.dump(self.description, fp, indent=4)
 
-    def blueprint_from_description(blue_dict):
+    @classmethod
+    def blueprint_from_description(cls, blue_dict):
         """
         Returns a blueprint from a description given as a dict
 
@@ -289,7 +290,7 @@ class BluePrint():
                              dir(PulseAtoms) if '__' not in fun])
         seg_mar_list = list(blue_dict.keys())
         seg_list = [s for s in seg_mar_list if 'segment' in s]
-        bp_sum = BluePrint()
+        bp_sum = cls()
         for i, seg in enumerate(seg_list):
             seg_dict = blue_dict[seg]
             bp_seg = BluePrint()

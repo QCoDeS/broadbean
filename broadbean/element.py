@@ -276,7 +276,8 @@ class Element:
         with open(path_to_file, 'w') as fp:
             json.dump(self.description, fp, indent=4)
 
-    def element_from_description(element_dict):
+    @classmethod
+    def element_from_description(cls, element_dict):
         """
         Returns a blueprint from a description given as a dict
 
@@ -285,7 +286,7 @@ class Element:
             Element.description
         """
         channels_list = list(element_dict.keys())
-        elem = Element()
+        elem = cls()
         for chan in channels_list:
             bp_sum = BluePrint.blueprint_from_description(element_dict[chan])
             elem.addBluePrint(int(chan), bp_sum)

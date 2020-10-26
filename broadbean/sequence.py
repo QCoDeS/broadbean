@@ -508,7 +508,8 @@ class Sequence:
         with open(path_to_file, 'w') as fp:
             json.dump(self.description, fp, indent=4)
 
-    def sequence_from__description(seq_dict: dict) -> 'Sequence':
+    @classmethod
+    def sequence_from__description(cls, seq_dict: dict) -> 'Sequence':
         """
         Returns a sequence from a description given as a dict
 
@@ -520,7 +521,7 @@ class Sequence:
         awgspecs = seq_dict['awgspecs']
         SR = awgspecs['SR']
         elem_list = list(seq_dict.keys())
-        new_instance = Sequence()
+        new_instance = cls()
 
         for ele in elem_list[:-1]:
             channels_list = list(seq_dict[ele]['channels'].keys())
@@ -550,7 +551,7 @@ class Sequence:
         """
         Reads sequense from JSON file
 
-        Args: 
+        Args:
             path_to_file: the path to the file to be read ex:
             path_to_file/sequense.json
             This function is the inverse of write_to_json
