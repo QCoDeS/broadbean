@@ -508,6 +508,36 @@ class Sequence:
         with open(path_to_file, 'w') as fp:
             json.dump(self.description, fp, indent=4)
 
+    def sequence_from__description(seq_dict: dict) -> 'Sequence':
+        
+        awgspecs = seq_dict['awgspecs']
+        SR = awgspecs['SR']
+        elem_list = list(seq_dict.keys())
+        new_instance = Sequence()
+
+        for ele in elem_list[:-1]:
+            channels_list = list(seq_dict[ele]['channels'].keys())
+            elem = Element()
+            for chan in channels_list:
+                bp_sum = BluePrint.blueprint_from_description(seq_dict[ele]['channels'][chan])
+                bp_sum.setSR(SR)
+                elem.addBluePrint(int(chan), bp_sum)
+                ChannelAmplitude = awgspecs['channel{}_amplitude'.format(chan)]
+                new_instance.setChannelAmplitude(int(chan), ChannelAmplitude)  # Call signature: channel, amplitude (peak-to-peak)
+                ChannelOffset = awgspecs['channel{}_offset'.format(chan)]
+                new_instance.setChannelOffset(int(chan), ChannelOffset)
+
+            new_instance.addElement(int(ele), elem)
+            sequencedict = seq_dict[ele]['sequencing']
+            new_instance.setSequencingTriggerWait(int(ele), sequencedict['Wait trigger'])
+            new_instance.setSequencingNumberOfRepetitions(int(ele), sequencedict['Repeat'])
+            new_instance.setSequencingEventInput(int(ele), sequencedict['jump_input'])
+            new_instance.setSequencingEventJumpTarget(int(ele), sequencedict['jump_target'])
+            new_instance.setSequencingGoto(int(ele), sequencedict['Go to'])
+        new_instance.setSR(SR)
+        return new_instance
+
+
     @classmethod
     def init_from_json(cls, path_to_file: str) -> 'Sequence':
         """
@@ -522,35 +552,12 @@ class Sequence:
         """
         new_instance = cls()
         with open(path_to_file, 'r') as fp:
-            data_loaded = json.load(fp)  
-        knowfunctions = dict([('function PulseAtoms.{}'.format(fun),
-                               getattr(PulseAtoms, fun)) for fun in
-                             dir(PulseAtoms) if '__' not in fun])
-        awgspecs = data_loaded['awgspecs']
-        SR = awgspecs['SR']
-        elem_list = list(data_loaded.keys())
+            data_loaded = json.load(fp)
 
-        for ele in elem_list[:-1]:
-            channels_list = list(data_loaded[ele]['channels'].keys())
-            elem = Element()
-            for chan in channels_list:
-                bp_sum = BluePrint.blueprint_from_description(data_loaded[ele]['channels'][chan])
-                bp_sum.setSR(SR)
-                elem.addBluePrint(int(chan), bp_sum)
-                ChannelAmplitude = awgspecs['channel{}_amplitude'.format(chan)]
-                new_instance.setChannelAmplitude(int(chan), ChannelAmplitude)  # Call signature: channel, amplitude (peak-to-peak)
-                ChannelOffset = awgspecs['channel{}_offset'.format(chan)]
-                new_instance.setChannelOffset(int(chan), ChannelOffset)
-
-            new_instance.addElement(int(ele), elem)
-            sequencedict = data_loaded[ele]['sequencing']
-            new_instance.setSequencingTriggerWait(int(ele), sequencedict['Wait trigger'])
-            new_instance.setSequencingNumberOfRepetitions(int(ele), sequencedict['Repeat'])
-            new_instance.setSequencingEventInput(int(ele), sequencedict['jump_input'])
-            new_instance.setSequencingEventJumpTarget(int(ele), sequencedict['jump_target'])
-            new_instance.setSequencingGoto(int(ele), sequencedict['Go to'])
-        new_instance.setSR(SR)
+        new_instance = Sequence.sequence_from__description(data_loaded)
         return new_instance
+
+        
 
     @property
     def name(self):
