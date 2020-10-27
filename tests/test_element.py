@@ -239,10 +239,11 @@ def test_points(SR, N):
     assert elem.points == N
 
 
-def test_write_read_element(blueprint_tophat, tmp_path_factory):
+def test_write_read_element(blueprint_tophat, tmp_path):
     elem = Element()
     elem.addBluePrint(1, blueprint_tophat)
-    path = str(tmp_path_factory.mktemp("Element"))
-    elem.write_to_json(os.path.join(path, "ele.json"))
-    readback_elem = Element.init_from_json(os.path.join(path, "ele.json"))
+    d = tmp_path / "Element"
+    d.mkdir()
+    elem.write_to_json(os.path.join(d, "ele.json"))
+    readback_elem = Element.init_from_json(os.path.join(d, "ele.json"))
     assert elem.description == readback_elem.description
