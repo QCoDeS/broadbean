@@ -7,9 +7,12 @@ import logging
 
 import numpy as np
 from schema import Schema, Or, Optional
+import json
+import re
 
 from broadbean.ripasso import applyInverseRCFilter
 from broadbean.element import Element  # TODO: change import to element.py
+from broadbean.blueprint import BluePrint
 from .broadbean import _channelListSorter  # TODO: change import to helpers.py
 from .broadbean import marked_for_deletion
 from .broadbean import PulseAtoms
@@ -478,20 +481,91 @@ class Sequence:
         """
         desc = {}
 
-        for pos, elem in self._data.items():
+        for pos, elem in self._data.items():           
             desc[str(pos)] = {}
             desc[str(pos)]['channels'] = elem.description
             try:
                 sequencing = self._sequencing[pos]
-                seqdict = {'Wait trigger': sequencing[0],
-                           'Repeat': sequencing[1],
-                           'Event jump to': sequencing[2],
-                           'Go to': sequencing[3]}
+                seqdict = {'Wait trigger': sequencing['twait'],
+                           'Repeat': sequencing['nrep'],
+                           'jump_input': sequencing['jump_input'],
+                           'jump_target': sequencing['jump_target'],
+                           'Go to': sequencing['goto']}
                 desc[str(pos)]['sequencing'] = seqdict
             except KeyError:
                 desc[str(pos)]['sequencing'] = 'Not set'
-
+        desc['awgspecs'] = self._awgspecs
         return desc
+
+    def write_to_json(self, path_to_file: str) -> None:
+        """
+        Writes sequences to JSON file
+
+        Args: 
+            path_to_file: the path to the file to write to ex:
+            path_to_file/sequense.json
+        """
+        with open(path_to_file, 'w') as fp:
+            json.dump(self.description, fp, indent=4)
+
+    @classmethod
+    def sequence_from_description(cls, seq_dict: dict) -> 'Sequence':
+        """
+        Returns a sequence from a description given as a dict
+
+        Args:
+            seq_dict: a dict in the same form as returned by
+            Sequence.description
+        """
+        
+        awgspecs = seq_dict['awgspecs']
+        SR = awgspecs['SR']
+        elem_list = list(seq_dict.keys())
+        new_instance = cls()
+
+        for ele in elem_list[:-1]:
+            channels_list = list(seq_dict[ele]['channels'].keys())
+            elem = Element()
+            for chan in channels_list:
+                bp_sum = BluePrint.blueprint_from_description(seq_dict[ele]['channels'][chan])
+                bp_sum.setSR(SR)
+                elem.addBluePrint(int(chan), bp_sum)
+                ChannelAmplitude = awgspecs['channel{}_amplitude'.format(chan)]
+                new_instance.setChannelAmplitude(int(chan), ChannelAmplitude)  # Call signature: channel, amplitude (peak-to-peak)
+                ChannelOffset = awgspecs['channel{}_offset'.format(chan)]
+                new_instance.setChannelOffset(int(chan), ChannelOffset)
+
+            new_instance.addElement(int(ele), elem)
+            sequencedict = seq_dict[ele]['sequencing']
+            new_instance.setSequencingTriggerWait(int(ele), sequencedict['Wait trigger'])
+            new_instance.setSequencingNumberOfRepetitions(int(ele), sequencedict['Repeat'])
+            new_instance.setSequencingEventInput(int(ele), sequencedict['jump_input'])
+            new_instance.setSequencingEventJumpTarget(int(ele), sequencedict['jump_target'])
+            new_instance.setSequencingGoto(int(ele), sequencedict['Go to'])
+        new_instance.setSR(SR)
+        return new_instance
+
+
+    @classmethod
+    def init_from_json(cls, path_to_file: str) -> 'Sequence':
+        """
+        Reads sequense from JSON file
+
+        Args:
+            path_to_file: the path to the file to be read ex:
+            path_to_file/sequense.json
+            This function is the inverse of write_to_json
+            The JSON file needs to be structured as if it was writen
+            by the function write_to_json
+        """
+        new_instance = cls()
+        with open(path_to_file, 'r') as fp:
+            data_loaded = json.load(fp)
+
+        new_instance = Sequence.sequence_from_description(data_loaded)
+        return new_instance
+
+        
 
     @property
     def name(self):
