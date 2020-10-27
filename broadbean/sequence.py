@@ -509,7 +509,7 @@ class Sequence:
             json.dump(self.description, fp, indent=4)
 
     @classmethod
-    def sequence_from__description(cls, seq_dict: dict) -> 'Sequence':
+    def sequence_from_description(cls, seq_dict: dict) -> 'Sequence':
         """
         Returns a sequence from a description given as a dict
 
@@ -562,7 +562,7 @@ class Sequence:
         with open(path_to_file, 'r') as fp:
             data_loaded = json.load(fp)
 
-        new_instance = Sequence.sequence_from__description(data_loaded)
+        new_instance = Sequence.sequence_from_description(data_loaded)
         return new_instance
 
         
