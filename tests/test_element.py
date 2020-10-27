@@ -9,6 +9,7 @@ import numpy as np
 from broadbean.element import ElementDurationError, Element
 from hypothesis import given, settings
 import hypothesis.strategies as hst
+import os
 
 ramp = bb.PulseAtoms.ramp
 sine = bb.PulseAtoms.sine
@@ -238,9 +239,10 @@ def test_points(SR, N):
     assert elem.points == N
 
 
-def test_write_read_element(blueprint_tophat):
+def test_write_read_element(blueprint_tophat, tmp_path_factory):
     elem = Element()
     elem.addBluePrint(1, blueprint_tophat)
-    elem.write_to_json('testfile.json')
-    readback_elem = Element.init_from_json('testfile.json')
+    path = str(tmp_path_factory.mktemp("Element"))
+    elem.write_to_json(os.path.join(path, "ele.json"))
+    readback_elem = Element.init_from_json(os.path.join(path, "ele.json"))
     assert elem.description == readback_elem.description

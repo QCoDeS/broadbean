@@ -6,6 +6,7 @@
 # sequences and try to break them. If we can't, everything is prolly OK
 
 import pytest
+import os
 import broadbean as bb
 from broadbean.sequence import (SequenceCompatibilityError,
                                 SequenceConsistencyError, Sequence)
@@ -427,8 +428,9 @@ def test_repeatAndVarySequence_same_elements(protosequence1, pos):
     assert newseq.element(pos) == protosequence1.element(2)
 
 
-def test_write_read_sequence(protosequence1, protosequence2):
+def test_write_read_sequence(protosequence1, protosequence2, tmp_path_factory):
+    path = str(tmp_path_factory.mktemp("Sequence"))
     for seq in (protosequence1, protosequence2):
-        seq.write_to_json('testfile.json')
-        readbackseq = Sequence.init_from_json('testfile.json')
+        seq.write_to_json(os.path.join(path, "Seq.json"))
+        readbackseq = Sequence.init_from_json(os.path.join(path, "Seq.json"))
         assert seq == readbackseq
