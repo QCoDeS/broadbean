@@ -7,7 +7,7 @@ import pytest
 import broadbean as bb
 import numpy as np
 from broadbean.element import ElementDurationError, Element
-from hypothesis import given, settings
+from hypothesis import HealthCheck, given, settings
 import hypothesis.strategies as hst
 import os
 
@@ -118,7 +118,7 @@ def test_addArray():
         elem.addArray(2, wfm, SR, m2=m2[3:])
 
 
-@settings(max_examples=25)
+@settings(max_examples=25, suppress_health_check=(HealthCheck.function_scoped_fixture,))
 @given(SR1=hst.integers(min_value=1,max_value=25e8), SR2=hst.integers(min_value = 1,max_value = 25e8),
        N=hst.integers(min_value=2,max_value=25e6), M=hst.integers(min_value=2,max_value=25e6))
 def test_invalid_durations(SR1, SR2, N, M):
@@ -207,7 +207,7 @@ def test_input_fail1(improper_bp):
 # Properties
 
 
-@settings(max_examples=25)
+@settings(max_examples=25, suppress_health_check=(HealthCheck.function_scoped_fixture,))
 @given(SR=hst.integers(min_value=1,max_value=25e8), N=hst.integers(min_value=2,max_value=25e6))
 def test_points(SR, N):
     elem = Element()
