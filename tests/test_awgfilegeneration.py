@@ -3,7 +3,7 @@
 # that a valid .awg file is actually generated
 
 import pytest
-from hypothesis import given, settings
+from hypothesis import HealthCheck, given, settings
 import hypothesis.strategies as hst
 
 import broadbean as bb
@@ -86,7 +86,7 @@ def should_raise_sequencingerror(wait, nrep, jump_to, goto, num_elms):
     return False
 
 
-@settings(max_examples=25)
+@settings(max_examples=25, suppress_health_check=(HealthCheck.function_scoped_fixture,))
 @given(wait=hst.integers(), nrep=hst.integers(), jump_to=hst.integers(),
        goto=hst.integers())
 def test_awg_output_validations(protosequence1, wait, nrep, jump_to, goto):

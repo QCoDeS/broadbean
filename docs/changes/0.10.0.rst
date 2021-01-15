@@ -1,0 +1,19 @@
+Changelog for broadbean 0.10.0
+===========================
+
+The January 2021 release of broadbean.
+
+
+Breaking Changes:
+_________________
+
+There are no breaking changes in this release of broadbean
+
+
+New:
+____
+
+- Support for reading and writing broadbean Sequences, elements and bluprints to and from a json file  
+- made broadbean compatiple with numpy version 1.18
+- Include LICENSE in package
+
