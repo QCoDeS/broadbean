@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='broadbean',
-    version='0.9.1',
+    version='0.10.0',
 
     # We might as well require what we know will work
     # although older numpy and matplotlib version will probably work too
