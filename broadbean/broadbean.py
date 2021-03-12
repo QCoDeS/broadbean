@@ -56,6 +56,22 @@ class PulseAtoms:
         centre = dur/2
         baregauss = np.exp((-(time-mu-centre)**2/(2*sigma**2)))
         return ampl*baregauss+offset
+    
+    @staticmethod
+    def gaussian_smooth_cutoff(ampl, sigma, mu, offset, SR, npts):
+        """
+        Returns a Gaussian of peak height ampl (when offset==0)
+
+        Is by default centred in the middle of the interval
+
+        smooth cutoff by making offsetting the Gaussian so endpoint = 0 and normalizing the hight to 1   
+        """
+        dur = npts/SR
+        time = np.linspace(0, dur, npts, endpoint=False)
+        centre = dur/2
+        baregauss = np.exp((-(time-mu-centre)**2/(2*sigma**2)))-np.exp((-(0-mu-centre)**2/(2*sigma**2)))
+        normalization = 1/(1.0-np.exp((-(0-mu-centre)**2/(2*sigma**2))))
+        return ampl*baregauss/normalization+offset
 
 
 def marked_for_deletion(replaced_by: Union[str, None]=None) -> Callable:
