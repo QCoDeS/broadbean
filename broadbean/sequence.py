@@ -1036,6 +1036,38 @@ class Sequence:
         return (trig_waits, nreps, jump_states, jump_tos, gotos,
                 waveforms, amplitudes, self.name)
 
+    def outputForSEQXFileWithFlags(self) -> Tuple[List[int], List[int], 
+                                         List[int], List[int], List[int],
+                                         List[List[np.ndarray]],
+                                         List[float], str, List[int]]:
+        """
+        Generate a tuple matching the call signature of the QCoDeS
+        AWG70000A driver's `makeSEQXFile` function. Same as outputForSEQXFile(),
+        but also includes information about the flags.
+
+        Returns:
+            A tuple holding (trig_waits, nreps, event_jumps, event_jump_to,
+                go_to, wfms, amplitudes, seqname, flags)
+        """
+        
+        elements = self._prepareForOutputting()
+        seqlen = len(elements)
+        channels = self.element(1).channels
+
+        # add flags for every element and channel
+        all_flags = []
+        for chanind, chan in enumerate(channels):
+            flags_pos = []
+            for pos in range(1, seqlen+1):
+                if 'flags' in elements[pos-1][chan]:
+                    flags = elements[pos-1][chan]['flags']
+                else:
+                    flags = [0, 0, 0, 0]
+                flags_pos.append(flags)
+            all_flags.append(flags_pos)
+
+        return (self.outputForSEQXFile()+(all_flags,))
+
     def outputForAWGFile(self):
         """
         Returns a sliceable object with items matching the call
