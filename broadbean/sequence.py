@@ -842,6 +842,11 @@ class Sequence:
 
                 if 'blueprint' in element._data[chan].keys():
                     blueprint = element._data[chan]['blueprint']
+                    # prevent information about flags to be lost
+                    if 'flags' in element._data[chan].keys():
+                        flags = element._data[chan]['flags']
+                    else:
+                        flags=None
 
                     # update existing waituntils
                     for segpos in range(len(blueprint._funlist)):
@@ -857,7 +862,11 @@ class Sequence:
                         blueprint.insertSegment(-1, PulseAtoms.ramp, (0, 0),
                                                 dur=maxdelay-delay)
                     # TODO: is the next line even needed?
+                    # If not, remove the code updating the flags below
+                    # and the one remembering them above
                     element.addBluePrint(chan, blueprint)
+                    if flags != None:
+                        element.addFlags(chan, flags)
 
                 else:
                     arrays = element[chan]['array']
