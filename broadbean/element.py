@@ -58,6 +58,25 @@ class Element:
         self._data[channel] = {}
         self._data[channel]['blueprint'] = newprint
 
+    def addFlags(self, channel: Union[str, int],
+                 flags: [int]) -> None:
+        """
+        Adds flags for the specified channel.
+        List of 4 flags, each of which should be 0 for 'No change', 1 for 'High',
+        2 for 'Low', or 3 for 'Swap'.
+        """
+        if not isinstance(flags, list):
+            raise ValueError('Flags should be given as a list.')
+
+        if len(flags) != 4:
+            raise ValueError('There should be 4 flags in the list.')
+
+        for i in flags:
+            if i not in [0,1,2,3]:
+                raise ValueError('Each flag should equal 0, 1, 2, or 3.')
+
+        self._data[channel]['flags'] = flags
+
     def addArray(self, channel: Union[int, str], waveform: np.ndarray,
                  SR: int, **kwargs) -> None:
         """
