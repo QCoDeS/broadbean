@@ -59,7 +59,7 @@ class Element:
         self._data[channel]['blueprint'] = newprint
 
     def addFlags(self, channel: Union[str, int],
-                 flags: [int]) -> None:
+                 flags: List[int]) -> None:
         """
         Adds flags for the specified channel.
         List of 4 flags, each of which should be 0 for 'No change', 1 for 'High',
