@@ -282,6 +282,9 @@ class Element:
             elif 'array' in val.keys():
                 desc[str(key)] = 'array'
 
+            if 'flags' in val.keys():
+                desc[str(key)]['flags'] = str(val['flags'])
+
         return desc
 
     def write_to_json(self, path_to_file: str) -> None:
