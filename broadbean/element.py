@@ -204,6 +204,8 @@ class Element:
                 SR = bp.SR
                 forged_bp = _subelementBuilder(bp, SR, durs)
                 outdict[channel] = forged_bp
+                if 'flags' in signal.keys():
+                    outdict[channel]['flags'] = signal['flags']
                 if not includetime:
                     outdict[channel].pop('time')
                     outdict[channel].pop('newdurations')
