@@ -63,7 +63,7 @@ class Element:
         """
         Adds flags for the specified channel.
         List of 4 flags, each of which should be 0 for 'No change', 1 for 'High',
-        2 for 'Low', or 3 for 'Swap'.
+        2 for 'Low', 3 for 'Toggle', or 4 for 'Pulse'.
         """
         if not isinstance(flags, list):
             raise ValueError('Flags should be given as a list.')
@@ -72,7 +72,7 @@ class Element:
             raise ValueError('There should be 4 flags in the list.')
 
         for i in flags:
-            if i not in [0,1,2,3]:
+            if i not in [0,1,2,3,4]:
                 raise ValueError('Each flag should equal 0, 1, 2, or 3.')
 
         self._data[channel]['flags'] = flags
