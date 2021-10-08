@@ -73,7 +73,8 @@ class Element:
 
         for i in flags:
             if i not in [0,1,2,3,4]:
-                raise ValueError('Each flag should equal 0, 1, 2, or 3.')
+                raise ValueError('Invalid flag. Allowed flags are 0 (No change), '
+                                 '1 (High), 2 (Low), 3 (Toggle), or 4 (Pulse).')
 
         self._data[channel]['flags'] = flags
 
