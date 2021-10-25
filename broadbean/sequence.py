@@ -1039,7 +1039,7 @@ class Sequence:
     def outputForSEQXFileWithFlags(self) -> Tuple[List[int], List[int], 
                                          List[int], List[int], List[int],
                                          List[List[np.ndarray]],
-                                         List[float], str, List[int]]:
+                                         List[float], str, List[List[List[int]]]]:
         """
         Generate a tuple matching the call signature of the QCoDeS
         AWG70000A driver's `makeSEQXFile` function. Same as outputForSEQXFile(),
