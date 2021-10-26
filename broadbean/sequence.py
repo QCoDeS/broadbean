@@ -865,7 +865,7 @@ class Sequence:
                     # If not, remove the code updating the flags below
                     # and the one remembering them above
                     element.addBluePrint(chan, blueprint)
-                    if flags != None:
+                    if flags is not None:
                         element.addFlags(chan, flags)
 
                 else:
