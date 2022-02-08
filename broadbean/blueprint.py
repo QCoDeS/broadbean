@@ -53,19 +53,18 @@ class BluePrint():
         # Are the lists of matching lengths?
         lenlist = [len(funlist), len(argslist), len(namelist), len(durslist)]
 
-        if len(set(lenlist)) is not 1:
+        if any(l != lenlist[0] for l in lenlist):
             raise ValueError('All input lists must be of same length. '
                              'Received lengths: {}'.format(lenlist))
         # Are the names valid names?
         for name in namelist:
             if not isinstance(name, str):
                 raise ValueError('All segment names must be strings. '
-                                 'Received {}'.format(name))
-            elif name is not '':
-                if name[-1].isdigit():
-                    raise ValueError('Segment names are not allowed to end'
-                                     ' in a number. {} is '.format(name) +
-                                     'therefore not a valid name.')
+                                f'Received {name}.')
+            if name != '' and name[-1].isdigit():
+                raise ValueError('Segment names are not allowed to end'
+                                f' in a number. {name} is '
+                                 'therefore not a valid name.')
 
         self._funlist = funlist
 
@@ -326,11 +325,6 @@ class BluePrint():
         with open(path_to_file, 'r') as fp:
             data_loaded = json.load(fp)
         return cls.blueprint_from_description(data_loaded)
-
-
-
-
-
 
     def _makeWaitDurations(self):
         """
@@ -863,11 +857,11 @@ def _subelementBuilder(blueprint: BluePrint, SR: int,
     elapsed_times = np.cumsum([0.0] + list(newdurations))
 
     for pos, spec in enumerate(segmark1):
-        if spec[1] is not 0:
+        if spec[1] != 0:
             ontime = elapsed_times[pos] + spec[0]  # spec is (delay, duration)
             marker1.append((ontime, spec[1]))
     for pos, spec in enumerate(segmark2):
-        if spec[1] is not 0:
+        if spec[1] != 0:
             ontime = elapsed_times[pos] + spec[0]  # spec is (delay, duration)
             marker2.append((ontime, spec[1]))
     msettings = [marker1, marker2]
@@ -878,7 +872,7 @@ def _subelementBuilder(blueprint: BluePrint, SR: int,
             chunk = int(np.round(dur*SR))
             marker[ind:ind+chunk] = 1
 
-    output = np.array(output)  # TODO: Why is this sometimes needed?
+    output = np.asarray(output)  # TODO: Why is this sometimes needed?
 
     outdict = {'wfm': output, 'm1': m1, 'm2': m2, 'time': time,
                'newdurations': newdurations}
