@@ -843,14 +843,15 @@ def _subelementBuilder(blueprint: BluePrint, SR: int,
             newdurations[ii] = int_dur/SR
 
     # The actual forging of the waveform
+    wf_length = np.sum(intdurations)
     parts = [ft.partial(fun, *args) for (fun, args) in zip(funlist, argslist)]
-    blocks = [list(p(SR, d)) for (p, d) in zip(parts, intdurations)]
-    output = [block for sl in blocks for block in sl]
+    blocks = [p(SR, d) for (p, d) in zip(parts, intdurations)]
+    output = np.fromiter((block for sl in blocks for block in sl), float, count=wf_length)
 
     # now make the markers
-    time = np.linspace(0, sum(newdurations), len(output), endpoint=False)
+    time = np.linspace(0, sum(newdurations), wf_length, endpoint=False)
     m1 = np.zeros_like(time)
-    m2 = m1.copy()
+    m2 = np.zeros_like(time)
 
     # update the 'absolute time' marker list with 'relative time'
     # (segment bound) markers converted to absolute time
@@ -871,8 +872,6 @@ def _subelementBuilder(blueprint: BluePrint, SR: int,
             ind = np.abs(time-t).argmin()
             chunk = int(np.round(dur*SR))
             marker[ind:ind+chunk] = 1
-
-    output = np.asarray(output)  # TODO: Why is this sometimes needed?
 
     outdict = {'wfm': output, 'm1': m1, 'm2': m2, 'time': time,
                'newdurations': newdurations}
