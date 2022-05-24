@@ -9,7 +9,7 @@ import re
 
 import numpy as np
 
-from .broadbean import PulseAtoms, marked_for_deletion
+from .broadbean import PulseAtoms
 
 
 class SegmentDurationError(Exception):
@@ -679,10 +679,6 @@ class BluePrint():
         del self._durslist[position]
 
         self._namelist = self._make_names_unique(self._namelist)
-
-    @marked_for_deletion(replaced_by='broadbean.plotting.plotter')
-    def plot(self, SR=None):
-        pass
 
     def __add__(self, other):
         """

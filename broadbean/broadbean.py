@@ -182,8 +182,3 @@ class _AWGOutput:
             return output
 
         raise KeyError('Key must be int or slice!')
-
-
-@marked_for_deletion(replaced_by='broadbean.plotting.plotter')
-def bluePrintPlotter(blueprints, fig=None, axs=None):
-    pass
