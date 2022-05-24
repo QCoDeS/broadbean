@@ -25,10 +25,11 @@ def getSIScalingAndPrefix(minmax: Tuple[float, float]) -> Tuple[float, str]:
           string.
 
     """
-    v_max = max(map(abs, minmax))  # type: ignore
+    # due to https://github.com/python/mypy/issues/6697
+    v_max: float = max(map(abs, minmax))  # type: ignore[arg-type, type-var, assignment]
     if v_max == 0:
-        v_max = 1  # type: ignore
-    exponent = np.log10(v_max)  # type: ignore
+        v_max = 1
+    exponent = np.log10(v_max)
     prefix = ''
     scaling: float = 1
 

@@ -2,5 +2,5 @@ hypothesis
 pytest
 pytest-cov
 coverage[toml]
-mypy
+mypy==0.950
 jupyter
