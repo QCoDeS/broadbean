@@ -4,9 +4,6 @@ on:
     workflows:
       - "build docs"
       - "Run mypy and pytest"
-      - ..
-      - "run qcodes.pytest()"??
-      - ..
       - "Install all deps from conda-forge and run pytest"
       - "CodeQL"
     types:
