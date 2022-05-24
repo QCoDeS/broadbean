@@ -74,8 +74,8 @@ jobs:
       run: pip install .
     - name: Build docs on linux
       run: |
-        make -f docs/Makefile execute
-        make -f docs/Makefile gh-pages
+        cd docs
+        make -f Makefile execute
       if: runner.os == 'Linux'
     - name: Build docs on windows
       run: |
