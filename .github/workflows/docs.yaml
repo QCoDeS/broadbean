@@ -79,7 +79,8 @@ jobs:
       if: runner.os == 'Linux'
     - name: Build docs on windows
       run: |
-        docs/execute_notebooks.cmd
+        cd docs
+        execute_notebooks.cmd
       if: runner.os == 'Windows'
     - name: Upload build docs
       uses: actions/upload-artifact@v3.1.0
