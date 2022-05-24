@@ -1,4 +1,6 @@
 hypothesis
 pytest
+pytest-cov
+coverage[toml]
 mypy
 jupyter
