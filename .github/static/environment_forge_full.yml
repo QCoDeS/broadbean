@@ -1,0 +1,19 @@
+name: broadbean_forge
+channels:
+ - conda-forge
+dependencies:
+ - python=3.9
+ # recommended to be explicitly specified by conda-incubator/setup-miniconda@v2
+ - pip
+ # dependencies for setup.py
+ - numpy>=1.12.1
+ - matplotlib>=2.2.3
+ - schema
+ # test requirements
+ - hypothesis>=5.49.0
+ - pytest>=6.0.0
+ - mypy
+ - mypy_extensions
+ # docs requirements
+ - sphinx
+ - sphinx_rtd_theme

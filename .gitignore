@@ -143,3 +143,10 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# IDEs
+.idea/
+.vscode/
+
+# Mac files
+.DS_Store
