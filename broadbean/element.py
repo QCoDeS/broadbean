@@ -6,7 +6,7 @@ from copy import deepcopy
 import numpy as np
 import json
 
-from .broadbean import marked_for_deletion, PulseAtoms
+from .broadbean import PulseAtoms
 from broadbean.blueprint import BluePrint, _subelementBuilder
 
 
@@ -432,10 +432,6 @@ class Element:
         new._data = deepcopy(self._data)
         new._meta = deepcopy(self._meta)
         return new
-
-    @marked_for_deletion(replaced_by='broadbean.plotting.plotter')
-    def plotElement(self):
-        pass
 
     def __eq__(self, other):
         if not isinstance(other, Element):
