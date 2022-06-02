@@ -119,7 +119,7 @@ def test_addArray():
 
 
 @settings(max_examples=25, suppress_health_check=(HealthCheck.function_scoped_fixture,))
-@given(SR1=hst.integers(min_value=1,max_value=25e8), SR2=hst.integers(min_value = 1,max_value = 25*10**8),
+@given(SR1=hst.integers(min_value=1,max_value=25*10**8), SR2=hst.integers(min_value = 1,max_value = 25*10**8),
        N=hst.integers(min_value=2,max_value=25*10**6), M=hst.integers(min_value=2,max_value=25*10**6))
 def test_invalid_durations(SR1, SR2, N, M):
     """
@@ -208,7 +208,7 @@ def test_input_fail1(improper_bp):
 
 
 @settings(max_examples=25, suppress_health_check=(HealthCheck.function_scoped_fixture,))
-@given(SR=hst.integers(min_value=1,max_value=25e8), N=hst.integers(min_value=2,max_value=25e6))
+@given(SR=hst.integers(min_value=1,max_value=25*10**8), N=hst.integers(min_value=2,max_value=25*10**6))
 def test_points(SR, N):
     elem = Element()
 
