@@ -1,3 +1,16 @@
+
+[build-system]
+requires = [
+    "setuptools >= 56.0",
+    "wheel >= 0.29.0",
+    "versioningit ~= 1.1.0",
+]
+build-backend = 'setuptools.build_meta'
+
+[tool.pytest.ini_options]
+junit_family = "legacy"
+addopts = "--strict-markers"
+
 [tool.mypy]
 ignore_missing_imports = true
 show_error_codes = true
@@ -5,3 +18,31 @@ enable_error_code = "ignore-without-code"
 warn_unused_ignores = true
 warn_unused_configs = true
 warn_redundant_casts = true
+
+[[tool.mypy.overrides]]
+module = [
+    "broadbean.tests.*",
+]
+disallow_untyped_defs = false
+
+[tool.versioningit]
+default-version = "0.0"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{branch}.{vcs}{rev}"
+dirty = "{version}"
+# At the moment, before releasing via making a Git tag we need to change a line
+# in ``conf.ini`` file that's part of the package, which makes the repo "dirty",
+# which in turn makes versioningit use the "dirty" version format, while what
+# we need is the "clean" part only. As a workaround, for "dirty" situations,
+# we now ask versioningit to only use ``version``.
+distance-dirty = "{next_version}.dev{distance}+{branch}.{vcs}{rev}.dirty"
+
+[tool.versioningit.vcs]
+method = "git"
+match = ["v*"]
+
+[tool.versioningit.onbuild]
+source-file = "broadbean/_version.py"
+build-file = "broadbean/_version.py"
+
