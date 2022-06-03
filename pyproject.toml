@@ -18,12 +18,6 @@ warn_unused_ignores = true
 warn_unused_configs = true
 warn_redundant_casts = true
 
-[[tool.mypy.overrides]]
-module = [
-    "broadbean.tests.*",
-]
-disallow_untyped_defs = false
-
 [tool.versioningit]
 default-version = "0.0"
 
