@@ -50,7 +50,7 @@ jobs:
       run: mypy broadbean
     - name: Run tests
       run: |
-        pytest --cov=broadbean --cov-report xml --hypothesis-profile broadbean
+        pytest --cov=broadbean --cov-report xml -cov-append --hypothesis-profile ci broadbean
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3.1.0
       with:
