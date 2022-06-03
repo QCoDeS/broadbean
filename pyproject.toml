@@ -1,4 +1,3 @@
-
 [build-system]
 requires = [
     "setuptools >= 56.0",
@@ -30,12 +29,7 @@ default-version = "0.0"
 
 [tool.versioningit.format]
 distance = "{next_version}.dev{distance}+{branch}.{vcs}{rev}"
-dirty = "{version}"
-# At the moment, before releasing via making a Git tag we need to change a line
-# in ``conf.ini`` file that's part of the package, which makes the repo "dirty",
-# which in turn makes versioningit use the "dirty" version format, while what
-# we need is the "clean" part only. As a workaround, for "dirty" situations,
-# we now ask versioningit to only use ``version``.
+dirty = "{next_version}.dev{distance}+{branch}.{vcs}{rev}.dirty"
 distance-dirty = "{next_version}.dev{distance}+{branch}.{vcs}{rev}.dirty"
 
 [tool.versioningit.vcs]
@@ -45,4 +39,3 @@ match = ["v*"]
 [tool.versioningit.onbuild]
 source-file = "broadbean/_version.py"
 build-file = "broadbean/_version.py"
-
