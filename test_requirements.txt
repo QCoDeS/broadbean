@@ -1,4 +1,4 @@
-hypothesis
+hypothesis==6.46.7
 pytest
 pytest-cov
 coverage[toml]
