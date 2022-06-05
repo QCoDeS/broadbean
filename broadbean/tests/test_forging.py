@@ -65,7 +65,7 @@ def _has_period(array: np.ndarray, period: int) -> bool:
     return True
 
 
-@given(SR=hst.integers(min_value=100, max_value=50e9),
+@given(SR=hst.integers(min_value=100, max_value=50*10**9),
        ratio=hst.floats(min_value=1e-6, max_value=10))
 def test_too_short_durations_rejected(SR, ratio):
 
