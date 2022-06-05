@@ -1,3 +1,10 @@
+
+[tool.darker]
+isort = true
+
+[tool.isort]
+profile = "black"
+
 [tool.mypy]
 ignore_missing_imports = true
 show_error_codes = true
