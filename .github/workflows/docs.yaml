@@ -17,14 +17,14 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: [3.8, 3.9, "3.10"]
+        python-version: [3.7, 3.9, "3.10"]
         exclude:
           - os: windows-latest
             python-version: 3.9
           - os: windows-latest
             python-version: 3.10
           - os: ubuntu-latest
-            python-version: 3.8
+            python-version: 3.7
     env:
       DISPLAY: ':99.0'
       OS: ${{ matrix.os }}
@@ -61,7 +61,7 @@ jobs:
       uses: actions/cache@v3.0.2
       with:
         path: ${{ steps.prepare-cache-pip.outputs.cache-dir }}
-        key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/setup.py') }}
+        key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/setup.cfg') }}
         restore-keys: |
           ${{ runner.os }}-${{ matrix.python-version }}-pip-
 
