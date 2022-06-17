@@ -291,7 +291,7 @@ class Element:
                 desc[str(key)] = 'array'
 
             if 'flags' in val.keys():
-                desc[str(key)]['flags'] = str(val['flags'])
+                desc[str(key)]['flags'] = val['flags']
 
         return desc
 

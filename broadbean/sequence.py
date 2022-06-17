@@ -528,6 +528,11 @@ class Sequence:
                 bp_sum = BluePrint.blueprint_from_description(seq_dict[ele]['channels'][chan])
                 bp_sum.setSR(SR)
                 elem.addBluePrint(int(chan), bp_sum)
+                if 'flags' in seq_dict[ele]['channels'][chan]:
+                    flags = seq_dict[ele]['channels'][chan]['flags']
+                else:
+                    flags = [0,0,0,0]
+                elem.addFlags(int(chan),flags)
                 ChannelAmplitude = awgspecs['channel{}_amplitude'.format(chan)]
                 new_instance.setChannelAmplitude(int(chan), ChannelAmplitude)  # Call signature: channel, amplitude (peak-to-peak)
                 ChannelOffset = awgspecs['channel{}_offset'.format(chan)]
