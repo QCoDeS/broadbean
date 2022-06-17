@@ -2,7 +2,7 @@
 
 from typing import Union, Dict, List
 from copy import deepcopy
-
+from collections.abc import Sequence
 import numpy as np
 import json
 
@@ -59,13 +59,13 @@ class Element:
         self._data[channel]['blueprint'] = newprint
 
     def addFlags(self, channel: Union[str, int],
-                 flags: List[int]) -> None:
+                 flags: Sequence) -> None:
         """
         Adds flags for the specified channel.
         List of 4 flags, each of which should be 0 for 'No change', 1 for 'High',
         2 for 'Low', 3 for 'Toggle', or 4 for 'Pulse'.
         """
-        if not isinstance(flags, list):
+        if not isinstance(flags, Sequence):
             raise ValueError('Flags should be given as a list.')
 
         if len(flags) != 4:
