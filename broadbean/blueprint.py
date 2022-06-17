@@ -9,7 +9,7 @@ import re
 
 import numpy as np
 
-from .broadbean import PulseAtoms, marked_for_deletion
+from .broadbean import PulseAtoms
 
 
 class SegmentDurationError(Exception):
@@ -53,19 +53,18 @@ class BluePrint():
         # Are the lists of matching lengths?
         lenlist = [len(funlist), len(argslist), len(namelist), len(durslist)]
 
-        if len(set(lenlist)) is not 1:
+        if any(l != lenlist[0] for l in lenlist):
             raise ValueError('All input lists must be of same length. '
                              'Received lengths: {}'.format(lenlist))
         # Are the names valid names?
         for name in namelist:
             if not isinstance(name, str):
                 raise ValueError('All segment names must be strings. '
-                                 'Received {}'.format(name))
-            elif name is not '':
-                if name[-1].isdigit():
-                    raise ValueError('Segment names are not allowed to end'
-                                     ' in a number. {} is '.format(name) +
-                                     'therefore not a valid name.')
+                                f'Received {name}.')
+            if name != '' and name[-1].isdigit():
+                raise ValueError('Segment names are not allowed to end'
+                                f' in a number. {name} is '
+                                 'therefore not a valid name.')
 
         self._funlist = funlist
 
@@ -326,11 +325,6 @@ class BluePrint():
         with open(path_to_file, 'r') as fp:
             data_loaded = json.load(fp)
         return cls.blueprint_from_description(data_loaded)
-
-
-
-
-
 
     def _makeWaitDurations(self):
         """
@@ -686,10 +680,6 @@ class BluePrint():
 
         self._namelist = self._make_names_unique(self._namelist)
 
-    @marked_for_deletion(replaced_by='broadbean.plotting.plotter')
-    def plot(self, SR=None):
-        pass
-
     def __add__(self, other):
         """
         Add two BluePrints. The second argument is appended to the first
@@ -849,25 +839,26 @@ def _subelementBuilder(blueprint: BluePrint, SR: int,
             newdurations[ii] = int_dur/SR
 
     # The actual forging of the waveform
+    wf_length = np.sum(intdurations)
     parts = [ft.partial(fun, *args) for (fun, args) in zip(funlist, argslist)]
-    blocks = [list(p(SR, d)) for (p, d) in zip(parts, intdurations)]
-    output = [block for sl in blocks for block in sl]
+    blocks = [p(SR, d) for (p, d) in zip(parts, intdurations)]
+    output = np.fromiter((block for sl in blocks for block in sl), float, count=wf_length)
 
     # now make the markers
-    time = np.linspace(0, sum(newdurations), len(output), endpoint=False)
+    time = np.linspace(0, sum(newdurations), wf_length, endpoint=False)
     m1 = np.zeros_like(time)
-    m2 = m1.copy()
+    m2 = np.zeros_like(time)
 
     # update the 'absolute time' marker list with 'relative time'
     # (segment bound) markers converted to absolute time
     elapsed_times = np.cumsum([0.0] + list(newdurations))
 
     for pos, spec in enumerate(segmark1):
-        if spec[1] is not 0:
+        if spec[1] != 0:
             ontime = elapsed_times[pos] + spec[0]  # spec is (delay, duration)
             marker1.append((ontime, spec[1]))
     for pos, spec in enumerate(segmark2):
-        if spec[1] is not 0:
+        if spec[1] != 0:
             ontime = elapsed_times[pos] + spec[0]  # spec is (delay, duration)
             marker2.append((ontime, spec[1]))
     msettings = [marker1, marker2]
@@ -877,8 +868,6 @@ def _subelementBuilder(blueprint: BluePrint, SR: int,
             ind = np.abs(time-t).argmin()
             chunk = int(np.round(dur*SR))
             marker[ind:ind+chunk] = 1
-
-    output = np.array(output)  # TODO: Why is this sometimes needed?
 
     outdict = {'wfm': output, 'm1': m1, 'm2': m2, 'time': time,
                'newdurations': newdurations}

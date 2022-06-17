@@ -1,6 +1,9 @@
-## QCoDeS Pulsebuilder aka broadbean
+## Broadbean aka QCoDeS Pulse Builder
 
-[![Documentation Status](https://readthedocs.org/projects/broadbean/badge/?version=latest)](http://broadbean.readthedocs.io/en/latest/?badge=latest)
+[ ![PyPi](https://badge.fury.io/py/broadbean.svg) ](https://badge.fury.io/py/broadbean)
+[ ![DOCS](https://readthedocs.org/projects/broadbean/badge/?version=latest) ](http://broadbean.readthedocs.io/en/latest/?badge=latest)
+[ ![PyPI python versions](https://img.shields.io/pypi/pyversions/broadbean.svg) ](https://pypi.python.org/pypi/broadbean/)
+[ ![Build Status Github](https://github.com/QCoDeS/broadbean/workflows/Run%20mypy%20and%20pytest/badge.svg) ](https://github.com/QCoDeS/broadbean/actions?query=workflow%3A%22Run+mypy+and+pytest%22)
 
 A library for making pulses. Supposed to be used with QCoDeS (in
 particular its Tektronix AWG 5014 driver), but works as standalone.
@@ -56,3 +59,4 @@ $ cd docs
 $ make html
 ```
 then ignore all warnings and just have a look at the file `bbdir/docs/build/html/index.html`.
+

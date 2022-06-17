@@ -8,13 +8,11 @@ import logging
 import numpy as np
 from schema import Schema, Or, Optional
 import json
-import re
 
 from broadbean.ripasso import applyInverseRCFilter
 from broadbean.element import Element  # TODO: change import to element.py
 from broadbean.blueprint import BluePrint
 from .broadbean import _channelListSorter  # TODO: change import to helpers.py
-from .broadbean import marked_for_deletion
 from .broadbean import PulseAtoms
 from .broadbean import _AWGOutput
 
@@ -676,14 +674,6 @@ class Sequence:
                                 'time': np.linspace(0, 1, 2)}
 
         return output
-
-    @marked_for_deletion(replaced_by='broadbean.plotting.plotter')
-    def plotSequence(self) -> None:
-        pass
-
-    @marked_for_deletion(replaced_by='broadbean.plotting.plotter')
-    def plotAWGOutput(self):
-        pass
 
     def forge(self, apply_delays: bool=True,
               apply_filters: bool=True,
