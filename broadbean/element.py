@@ -76,14 +76,12 @@ class Element:
                 raise ValueError('Invalid flag. Allowed flags are 0 or "" (No change), '
                                  '1 or "H" (High), 2 or "L" (Low), 3 or "T" (Toggle), '
                                  '4 or "P" (Pulse).')
-            # if user has used aliases, replace them with integers
-            flag_aliases = {"":0,"H":1,"L":2,"T":3,"P":4}
-            if i in ["","H","L","T","P"]:
-                 flags[cnt] = flag_aliases[i]
-        
-                
 
-        self._data[channel]['flags'] = flags
+        # replace flag aliases with integers
+        flag_aliases = {"":0,"H":1,"L":2,"T":3,"P":4,0:0,1:1,2:2,3:3,4:4}
+        flags_int = [flag_aliases[x] for x in flags]    
+
+        self._data[channel]['flags'] = flags_int
 
     def addArray(self, channel: Union[int, str], waveform: np.ndarray,
                  SR: int, **kwargs) -> None:
