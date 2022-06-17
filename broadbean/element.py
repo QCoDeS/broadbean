@@ -62,8 +62,8 @@ class Element:
                  flags: Sequence) -> None:
         """
         Adds flags for the specified channel.
-        List of 4 flags, each of which should be 0 for 'No change', 1 for 'High',
-        2 for 'Low', 3 for 'Toggle', or 4 for 'Pulse'.
+        List of 4 flags, each of which should be 0 or "" for 'No change', 1 or "H" for 'High',
+        2 or "L" for 'Low', 3 or "T" for 'Toggle', 4 or "P" for 'Pulse'.
         """
         if not isinstance(flags, Sequence):
             raise ValueError('Flags should be given as a sequence (e.g. a list or a tuple).')
@@ -71,10 +71,17 @@ class Element:
         if len(flags) != 4:
             raise ValueError('There should be 4 flags in the list.')
 
-        for i in flags:
-            if i not in [0,1,2,3,4]:
-                raise ValueError('Invalid flag. Allowed flags are 0 (No change), '
-                                 '1 (High), 2 (Low), 3 (Toggle), or 4 (Pulse).')
+        for cnt,i in enumerate(flags):
+            if i not in [0,1,2,3,4,"","H","L","T","P"]:
+                raise ValueError('Invalid flag. Allowed flags are 0 or "" (No change), '
+                                 '1 or "H" (High), 2 or "L" (Low), 3 or "T" (Toggle), '
+                                 '4 or "P" (Pulse).')
+            # if user has used aliases, replace them with integers
+            flag_aliases = {"":0,"H":1,"L":2,"T":3,"P":4}
+            if i in ["","H","L","T","P"]:
+                 flags[cnt] = flag_aliases[i]
+        
+                
 
         self._data[channel]['flags'] = flags
 
