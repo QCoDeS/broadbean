@@ -66,7 +66,7 @@ class Element:
         2 for 'Low', 3 for 'Toggle', or 4 for 'Pulse'.
         """
         if not isinstance(flags, Sequence):
-            raise ValueError('Flags should be given as a list.')
+            raise ValueError('Flags should be given as a sequence (e.g. a list or a tuple).')
 
         if len(flags) != 4:
             raise ValueError('There should be 4 flags in the list.')
