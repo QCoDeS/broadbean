@@ -1055,7 +1055,7 @@ class Sequence:
             flags_pos = []
             for pos in range(1, seqlen+1):
                 if 'flags' in elements[pos-1][chan]:
-                    flags = elements[pos-1][chan]['flags']
+                    flags = elements[pos-1][chan]['flags'].tolist()
                 else:
                     flags = [0, 0, 0, 0]
                 flags_pos.append(flags)
