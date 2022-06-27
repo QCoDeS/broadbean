@@ -53,10 +53,10 @@ class PulseAtoms:
         """
         dur = npts/SR
         time = np.linspace(0, dur, int(npts), endpoint=False)
-        centre = dur/2
-        baregauss = np.exp((-(time-mu-centre)**2/(2*sigma**2)))
-        return ampl*baregauss+offset
-    
+        centre = dur / 2
+        baregauss = np.exp(-((time - mu - centre) ** 2) / (2 * sigma**2))
+        return ampl * baregauss + offset
+
     @staticmethod
     def gaussian_smooth_cutoff(ampl, sigma, mu, offset, SR, npts):
         """
@@ -64,14 +64,16 @@ class PulseAtoms:
 
         Is by default centred in the middle of the interval
 
-        smooth cutoff by making offsetting the Gaussian so endpoint = 0 and normalizing the hight to 1   
+        smooth cutoff by making offsetting the Gaussian so endpoint = 0 and normalizing the hight to 1
         """
         dur = npts/SR
         time = np.linspace(0, dur, int(npts), endpoint=False)
-        centre = dur/2
-        baregauss = np.exp((-(time-mu-centre)**2/(2*sigma**2)))-np.exp((-(0-mu-centre)**2/(2*sigma**2)))
-        normalization = 1/(1.0-np.exp((-(0-mu-centre)**2/(2*sigma**2))))
-        return ampl*baregauss/normalization+offset
+        centre = dur / 2
+        baregauss = np.exp(-((time - mu - centre) ** 2) / (2 * sigma**2)) - np.exp(
+            -((0 - mu - centre) ** 2) / (2 * sigma**2)
+        )
+        normalization = 1 / (1.0 - np.exp(-((0 - mu - centre) ** 2) / (2 * sigma**2)))
+        return ampl * baregauss / normalization + offset
 
 
 def marked_for_deletion(replaced_by: Union[str, None]=None) -> Callable:
@@ -155,7 +157,7 @@ class _AWGOutput:
 
                 return output
             else:
-                raise KeyError('{} is not a valid key.'.format(key))
+                raise KeyError(f"{key} is not a valid key.")
 
         if isinstance(key, slice):
             start = key.start

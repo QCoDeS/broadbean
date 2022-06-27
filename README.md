@@ -59,4 +59,3 @@ $ cd docs
 $ make html
 ```
 then ignore all warnings and just have a look at the file `bbdir/docs/build/html/index.html`.
-

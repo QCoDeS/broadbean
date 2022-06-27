@@ -304,9 +304,9 @@ class Element:
             The JSON file needs to be structured as if it was writen
             by the function write_to_json
         """
-        with open(path_to_file, 'r') as fp:
+        with open(path_to_file) as fp:
             data_loaded = json.load(fp)
-        return cls.element_from_description(data_loaded)    
+        return cls.element_from_description(data_loaded)
 
     def changeArg(self, channel: Union[str, int],
                   name: str, arg: Union[str, int], value: Union[int, float],
@@ -335,8 +335,8 @@ class Element:
         if channel not in self.channels:
             raise ValueError(f'Nothing assigned to channel {channel}')
 
-        if 'blueprint' not in self._data[channel].keys():
-            raise ValueError('No blueprint on channel {}.'.format(channel))
+        if "blueprint" not in self._data[channel].keys():
+            raise ValueError(f"No blueprint on channel {channel}.")
 
         bp = self._data[channel]['blueprint']
 
@@ -363,8 +363,8 @@ class Element:
         if channel not in self.channels:
             raise ValueError(f'Nothing assigned to channel {channel}')
 
-        if 'blueprint' not in self._data[channel].keys():
-            raise ValueError('No blueprint on channel {}.'.format(channel))
+        if "blueprint" not in self._data[channel].keys():
+            raise ValueError(f"No blueprint on channel {channel}.")
 
         bp = self._data[channel]['blueprint']
 
@@ -386,7 +386,7 @@ class Element:
             raise ValueError('Incorrect number of delays specified.'
                              ' Must match the number of channels.')
 
-        if not sum([d >= 0 for d in delays]) == len(delays):
+        if not sum(d >= 0 for d in delays) == len(delays):
             raise ValueError('Negative delays not allowed.')
 
         # The strategy is:

@@ -160,9 +160,9 @@ class BluePrint():
             for ii, ind in enumerate(inds):
                 # Do not append numbers to the first occurence
                 if ii == 0:
-                    lst[ind] = '{}'.format(un)
+                    lst[ind] = f"{un}"
                 else:
-                    lst[ind] = '{}{}'.format(un, ii+1)
+                    lst[ind] = f"{un}{ii+1}"
 
         return lst
 
@@ -240,7 +240,7 @@ class BluePrint():
         no_segs = len(self._namelist)
 
         for sn in range(no_segs):
-            segkey = 'segment_{:02d}'.format(sn+1)
+            segkey = f"segment_{sn+1:02d}"
             desc[segkey] = {}
             desc[segkey]['name'] = self._namelist[sn]
             if self._funlist[sn] == 'waituntil':
@@ -284,9 +284,11 @@ class BluePrint():
             blue_dict: a dict in the same form as returned by
             BluePrint.description
         """
-        knowfunctions = dict([('function PulseAtoms.{}'.format(fun),
-                             getattr(PulseAtoms, fun)) for fun in
-                             dir(PulseAtoms) if '__' not in fun])
+        knowfunctions = {
+            f"function PulseAtoms.{fun}": getattr(PulseAtoms, fun)
+            for fun in dir(PulseAtoms)
+            if "__" not in fun
+        }
         seg_mar_list = list(blue_dict.keys())
         seg_list = [s for s in seg_mar_list if 'segment' in s]
         bp_sum = cls()
@@ -322,7 +324,7 @@ class BluePrint():
             The JSON file needs to be structured as if it was writen
             by the function write_to_json
         """
-        with open(path_to_file, 'r') as fp:
+        with open(path_to_file) as fp:
             data_loaded = json.load(fp)
         return cls.blueprint_from_description(data_loaded)
 
@@ -353,9 +355,11 @@ class BluePrint():
             wait_time = argslist[pos][0]
             dur = wait_time - elapsed_time
             if dur < 0:
-                raise ValueError('Inconsistent timing. Can not wait until ' +
-                                 '{} at position {}.'.format(wait_time, pos) +
-                                 ' {} elapsed already'.format(elapsed_time))
+                raise ValueError(
+                    "Inconsistent timing. Can not wait until "
+                    + f"{wait_time} at position {pos}."
+                    + f" {elapsed_time} elapsed already"
+                )
             else:
                 durations[pos] = dur
 
@@ -441,10 +445,12 @@ class BluePrint():
             # Each function has two 'secret' arguments, SR and dur
             user_params = len(sig.parameters)-2
             if isinstance(arg, int) and (arg not in range(user_params)):
-                raise ValueError('No argument {} '.format(arg) +
-                                 'of function {}.'.format(function.__name__) +
-                                 ' Has {} '.format(user_params) +
-                                 'arguments.')
+                raise ValueError(
+                    f"No argument {arg} "
+                    + f"of function {function.__name__}."
+                    + f" Has {user_params} "
+                    + "arguments."
+                )
 
             # allow the user to input single values instead of (val,)
             no_of_args = len(self._argslist[position])
@@ -669,7 +675,7 @@ class BluePrint():
         try:
             position = self._namelist.index(name)
         except ValueError:
-            raise KeyError('No segment called {} in blueprint.'.format(name))
+            raise KeyError(f"No segment called {name} in blueprint.")
 
         del self._funlist[position]
         del self._argslist[position]
@@ -799,9 +805,11 @@ def _subelementBuilder(blueprint: BluePrint, SR: int,
         wait_time = argslist[pos][0]
         dur = wait_time - elapsed_time
         if dur < 0:
-            raise ValueError('Inconsistent timing. Can not wait until ' +
-                             '{} at position {}.'.format(wait_time, pos) +
-                             ' {} elapsed already'.format(elapsed_time))
+            raise ValueError(
+                "Inconsistent timing. Can not wait until "
+                + f"{wait_time} at position {pos}."
+                + f" {elapsed_time} elapsed already"
+            )
         else:
             durations[pos] = dur
 

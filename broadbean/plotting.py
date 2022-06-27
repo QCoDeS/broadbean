@@ -286,8 +286,8 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
 
             # labels
             if pos == 0:
-                ax.set_ylabel('({})'.format(voltageunit))
-            if pos == seqlen - 1 and not(isinstance(obj_to_plot, BluePrint)):
+                ax.set_ylabel(f"({voltageunit})")
+            if pos == seqlen - 1 and not (isinstance(obj_to_plot, BluePrint)):
                 newax = ax.twinx()
                 newax.set_yticks([])
                 if isinstance(chan, int):
@@ -299,7 +299,7 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
             if seq[pos+1]['type'] == 'subsequence':
                 ax.set_xlabel('Time N/A')
             else:
-                ax.set_xlabel('({})'.format(timeunit))
+                ax.set_xlabel(f"({timeunit})")
 
             # remove excess space from the plot
             if not chanind+1 == len(chans):
