@@ -8,17 +8,19 @@ Welcome to broadbean's documentation!
 The broadbean package is a tool for creating and manipulating pulse
 sequences.
 
-=====================================
+
+Documentation
+-------------
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+    :maxdepth: 2
 
-.. automodule:: broadbean.broadbean
-    :members:
-
-.. automodule:: broadbean.ripasso
-    :members:
+    examples/Pulse_Building_Tutorial.ipynb
+    examples/Making_output_for_Tektronix_AWG70000A.ipynb
+    examples/Example_Write_Read_JSON.ipynb
+    examples/Filter_compensation.ipynb
+    examples/Subsequences.ipynb
+    changes/index
 
 Indices and tables
 ==================
