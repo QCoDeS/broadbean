@@ -42,7 +42,7 @@ jobs:
       run: sudo apt install pandoc
       if: runner.os == 'Linux'
     - name: Install pandoc on windows
-      uses: Wandalen/wretry.action@v1.0.20
+      uses: Wandalen/wretry.action@v1.0.27
       with:
         action: crazy-max/ghaction-chocolatey@v1.6.0
         with: |
@@ -51,26 +51,23 @@ jobs:
         attempt_delay: 1000
       if: runner.os == 'Windows'
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3.1.2
+      uses: actions/setup-python@v4.0.0
       with:
         python-version: ${{ matrix.python-version }}
     - name: prepare pip cache
       id: prepare-cache-pip
       uses: ./.github/actions/prepare-cache-pip
     - name: pip cache
-      uses: actions/cache@v3.0.2
+      uses: actions/cache@v3.0.4
       with:
         path: ${{ steps.prepare-cache-pip.outputs.cache-dir }}
-        key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('**/test_requirements.txt') }}-${{ hashFiles('**/docs_requirements.txt') }}-${{ hashFiles('**/setup.py') }}
+        key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/setup.cfg') }}
         restore-keys: |
           ${{ runner.os }}-${{ matrix.python-version }}-pip-
 
-    - name: install test_requirements.txt
+    - name: install requirements.txt
       run: |
-        pip install -r test_requirements.txt
-    - name: install docs_requirements.txt
-      run: |
-        pip install -r docs_requirements.txt
+        pip install -r requirements.txt
     - name: install broadbean
       run: pip install .
     - name: Build docs on linux
@@ -89,7 +86,7 @@ jobs:
         name: docs_${{ matrix.python-version }}_${{ matrix.os }}
         path: ${{ github.workspace }}/docs/_build/html
     - name: Deploy to gh pages
-      uses: JamesIves/github-pages-deploy-action@v4.3.3
+      uses: JamesIves/github-pages-deploy-action@v4.3.4
       with:
         branch: gh-pages
         folder: ${{ github.workspace }}/docs/_build/html

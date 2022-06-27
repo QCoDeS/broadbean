@@ -73,12 +73,17 @@ def test_too_short_durations_rejected(SR, ratio):
     # _subelementBuilder to yield two points
     # (is that desired?)
     shortdur = ratio*1/SR
+    # however, since this is caluclated as dur*SR
+    # it is possible for ratio > 1.5 but
+    # shortdur*SR to be smaller due to fp roundoff
+    # here we explicitly use shortdur*SR for that reason
+    round_tripped_ratio = shortdur*SR
 
     bp = bb.BluePrint()
     bp.setSR(SR)
     bp.insertSegment(0, ramp, (0, 1), dur=shortdur)
 
-    if ratio < 1.5:
+    if round_tripped_ratio < 1.5:
         with pytest.raises(SegmentDurationError):
             _subelementBuilder(bp, SR, [shortdur])
     else:

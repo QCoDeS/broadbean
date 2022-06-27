@@ -1,9 +1,14 @@
+[build-system]
+requires = [
+    "setuptools >= 56.0",
+    "wheel >= 0.29.0",
+    "versioningit ~= 1.1.1",
+]
+build-backend = 'setuptools.build_meta'
 
-[tool.darker]
-isort = true
-
-[tool.isort]
-profile = "black"
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
 
 [tool.mypy]
 ignore_missing_imports = true
@@ -12,3 +17,25 @@ enable_error_code = "ignore-without-code"
 warn_unused_ignores = true
 warn_unused_configs = true
 warn_redundant_casts = true
+
+[tool.versioningit]
+default-version = "0.0"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{branch}.{vcs}{rev}"
+dirty = "{next_version}.dev{distance}+{branch}.{vcs}{rev}.dirty"
+distance-dirty = "{next_version}.dev{distance}+{branch}.{vcs}{rev}.dirty"
+
+[tool.versioningit.vcs]
+method = "git"
+match = ["v*"]
+
+[tool.versioningit.onbuild]
+source-file = "broadbean/_version.py"
+build-file = "broadbean/_version.py"
+
+[tool.darker]
+isort = true
+
+[tool.isort]
+profile = "black"
