@@ -52,16 +52,16 @@ extensions = [
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_sphinx_templates']
+templates_path = ["_sphinx_templates"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
 project = "broadbean"
@@ -93,7 +93,7 @@ exclude_patterns = [
 ]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
@@ -122,7 +122,7 @@ html_static_path = ["_static"]
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'broadbeandoc'
+htmlhelp_basename = "broadbeandoc"
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -131,15 +131,12 @@ latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     #
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     #
     # 'preamble': '',
-
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
@@ -163,10 +160,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'broadbean', 'broadbean Documentation',
-     [author], 1)
-]
+man_pages = [(master_doc, "broadbean", "broadbean Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output -------------------------------------------
@@ -175,9 +169,15 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'broadbean', 'broadbean Documentation',
-     author, 'broadbean', 'One line description of project.',
-     'Miscellaneous'),
+    (
+        master_doc,
+        "broadbean",
+        "broadbean Documentation",
+        author,
+        "broadbean",
+        "One line description of project.",
+        "Miscellaneous",
+    ),
 ]
 
 
@@ -199,7 +199,7 @@ epub_copyright = copyright
 # epub_uid = ''
 
 # A list of files that should not be packed into the epub file.
-epub_exclude_files = ['search.html']
+epub_exclude_files = ["search.html"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
