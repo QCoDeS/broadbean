@@ -73,12 +73,14 @@ jobs:
     - name: Build docs on linux
       run: |
         cd docs
-        make -f Makefile execute
+        export SPHINXOPTS="-W -v"
+        make html
       if: runner.os == 'Linux'
     - name: Build docs on windows
       run: |
         cd docs
-        ./execute_notebooks.cmd
+        $env:SPHINXOPTS = "-W -v"
+        ./make.bat html
       if: runner.os == 'Windows'
     - name: Upload build docs
       uses: actions/upload-artifact@v3.1.0
