@@ -51,11 +51,6 @@ goto end
 %SPHINXBUILD% -M html %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O% -D nbsphinx_execute=never
 goto end
 
-REM leftover for backwards compatibility. Equivalent to html
-:htmlapi
-%SPHINXBUILD% -M html %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
-goto end
-
 :clean
 del /q /s "_auto"
 del /q /s "api\generated"

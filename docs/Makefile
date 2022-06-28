@@ -33,14 +33,6 @@ genapi:
 htmlfast: genapi
 	@$(SPHINXBUILD) -M html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O) -D nbsphinx_execute=never
 
-# this is only left for backwards compatibility.
-.PHONY: html-api
-html-api: html
-
-# this is only left for backwards compatibility.
-.PHONY: htmlapi
-htmlapi: html
-
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile genapi
