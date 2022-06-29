@@ -77,7 +77,7 @@ class Element:
         for cnt, i in enumerate(flags):
             if i not in [0, 1, 2, 3, 4, "", "H", "L", "T", "P"]:
                 raise ValueError(
-                    'Invalid flag. Allowed flags are 0 or "" (No change), '
+                    'Invalid flag at index {cnt}. Allowed flags are 0 or "" (No change), '
                     '1 or "H" (High), 2 or "L" (Low), 3 or "T" (Toggle), '
                     '4 or "P" (Pulse).'
                 )
