@@ -342,7 +342,7 @@ class Element:
         return elem
 
     @classmethod
-    def init_from_json(cls, path_to_file: str) -> 'Element':
+    def init_from_json(cls, path_to_file: str) -> Element:
         """
         Reads Element from JSON file
 
