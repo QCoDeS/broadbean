@@ -15,12 +15,14 @@ Documentation
 .. toctree::
     :maxdepth: 2
 
+    api/generated/broadbean
     examples/Pulse_Building_Tutorial.ipynb
     examples/Making_output_for_Tektronix_AWG70000A.ipynb
     examples/Example_Write_Read_JSON.ipynb
     examples/Filter_compensation.ipynb
     examples/Subsequences.ipynb
     changes/index
+    
 
 Indices and tables
 ==================
