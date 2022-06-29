@@ -33,3 +33,9 @@ match = ["v*"]
 [tool.versioningit.onbuild]
 source-file = "broadbean/_version.py"
 build-file = "broadbean/_version.py"
+
+[tool.darker]
+isort = true
+
+[tool.isort]
+profile = "black"

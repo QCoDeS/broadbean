@@ -117,16 +117,15 @@ class Sequence:
         newseq = Sequence()
         N = len(self._data)
 
-        newdata1 = dict([(key, self.element(key).copy())
-                         for key in self._data.keys()])
-        newdata2 = dict([(key+N, other.element(key).copy())
-                         for key in other._data.keys()])
+        newdata1 = {key: self.element(key).copy() for key in self._data.keys()}
+        newdata2 = {key + N: other.element(key).copy() for key in other._data.keys()}
         newdata1.update(newdata2)
 
         newseq._data = newdata1
 
-        newsequencing1 = dict([(key, self._sequencing[key].copy())
-                               for key in self._sequencing.keys()])
+        newsequencing1 = {
+            key: self._sequencing[key].copy() for key in self._sequencing.keys()
+        }
         newsequencing2 = dict()
 
         for key, item in other._sequencing.items():
@@ -268,9 +267,9 @@ class Sequence:
                       ' Use setChannelAmplitude and SetChannelOffset '
                       'instead.')
 
-        keystr = 'channel{}_amplitude'.format(channel)
+        keystr = f"channel{channel}_amplitude"
         self._awgspecs[keystr] = ampl
-        keystr = 'channel{}_offset'.format(channel)
+        keystr = f"channel{channel}_offset"
         self._awgspecs[keystr] = offset
 
     def setChannelAmplitude(self, channel: Union[int, str],
@@ -283,7 +282,7 @@ class Sequence:
             channel: The channel number
             ampl: The channel peak-to-peak amplitude (V)
         """
-        keystr = 'channel{}_amplitude'.format(channel)
+        keystr = f"channel{channel}_amplitude"
         self._awgspecs[keystr] = ampl
 
     def setChannelOffset(self, channel: Union[int, str],
@@ -296,7 +295,7 @@ class Sequence:
             channel: The channel number/name
             offset: The channel offset (V)
         """
-        keystr = 'channel{}_offset'.format(channel)
+        keystr = f"channel{channel}_offset"
         self._awgspecs[keystr] = offset
 
     def setChannelDelay(self, channel: Union[int, str],
@@ -316,7 +315,7 @@ class Sequence:
                 given.
         """
 
-        self._awgspecs['channel{}_delay'.format(channel)] = delay
+        self._awgspecs[f"channel{channel}_delay"] = delay
 
     def setChannelFilterCompensation(self, channel: Union[str, int],
                                      kind: str, order: int=1,
@@ -356,9 +355,13 @@ class Sequence:
                                                   ' constant and a cut-off '
                                                   'frequency.')
 
-        keystr = 'channel{}_filtercompensation'.format(channel)
-        self._awgspecs[keystr] = {'kind': kind, 'order': order, 'f_cut': f_cut,
-                                  'tau': tau}
+        keystr = f"channel{channel}_filtercompensation"
+        self._awgspecs[keystr] = {
+            "kind": kind,
+            "order": order,
+            "f_cut": f_cut,
+            "tau": tau,
+        }
 
     def addElement(self, position: int, element: Element) -> None:
         """
@@ -479,7 +482,7 @@ class Sequence:
         """
         desc = {}
 
-        for pos, elem in self._data.items():           
+        for pos, elem in self._data.items():
             desc[str(pos)] = {}
             desc[str(pos)]['channels'] = elem.description
             try:
@@ -499,7 +502,7 @@ class Sequence:
         """
         Writes sequences to JSON file
 
-        Args: 
+        Args:
             path_to_file: the path to the file to write to ex:
             path_to_file/sequense.json
         """
@@ -515,7 +518,7 @@ class Sequence:
             seq_dict: a dict in the same form as returned by
             Sequence.description
         """
-        
+
         awgspecs = seq_dict['awgspecs']
         SR = awgspecs['SR']
         elem_list = list(seq_dict.keys())
@@ -531,9 +534,11 @@ class Sequence:
                 if 'flags' in seq_dict[ele]['channels'][chan]:
                     flags = seq_dict[ele]['channels'][chan]['flags']
                     elem.addFlags(int(chan),flags)
-                ChannelAmplitude = awgspecs['channel{}_amplitude'.format(chan)]
-                new_instance.setChannelAmplitude(int(chan), ChannelAmplitude)  # Call signature: channel, amplitude (peak-to-peak)
-                ChannelOffset = awgspecs['channel{}_offset'.format(chan)]
+                ChannelAmplitude = awgspecs[f"channel{chan}_amplitude"]
+                new_instance.setChannelAmplitude(
+                    int(chan), ChannelAmplitude
+                )  # Call signature: channel, amplitude (peak-to-peak)
+                ChannelOffset = awgspecs[f"channel{chan}_offset"]
                 new_instance.setChannelOffset(int(chan), ChannelOffset)
 
             new_instance.addElement(int(ele), elem)
@@ -560,13 +565,11 @@ class Sequence:
             by the function write_to_json
         """
         new_instance = cls()
-        with open(path_to_file, 'r') as fp:
+        with open(path_to_file) as fp:
             data_loaded = json.load(fp)
 
         new_instance = Sequence.sequence_from_description(data_loaded)
         return new_instance
-
-        
 
     @property
     def name(self):
@@ -814,7 +817,7 @@ class Sequence:
 
         # Verify physical amplitude specifiations
         for chan in channels:
-            ampkey = 'channel{}_amplitude'.format(chan)
+            ampkey = f"channel{chan}_amplitude"
             if ampkey not in self._awgspecs.keys():
                 raise KeyError('No amplitude specified for channel '
                                '{}. Can not continue.'.format(chan))
@@ -823,7 +826,7 @@ class Sequence:
         delays = []
         for chan in channels:
             try:
-                delays.append(self._awgspecs['channel{}_delay'.format(chan)])
+                delays.append(self._awgspecs[f"channel{chan}_delay"])
             except KeyError:
                 delays.append(0)
         maxdelay = max(delays)
@@ -876,7 +879,7 @@ class Sequence:
 
         # Now that the numerical arrays exist, we can apply filter compensation
         for chan in channels:
-            keystr = 'channel{}_filtercompensation'.format(chan)
+            keystr = f"channel{chan}_filtercompensation"
             if keystr in self._awgspecs.keys():
                 kind = self._awgspecs[keystr]['kind']
                 order = self._awgspecs[keystr]['order']
@@ -924,7 +927,7 @@ class Sequence:
         channels = self.element(1).channels
 
         for chan in channels:
-            offkey = 'channel{}_offset'.format(chan)
+            offkey = f"channel{chan}_offset"
             if offkey in self._awgspecs.keys():
                 log.warning("Found a specified offset for channel "
                             "{}, but .seqx files can't contain offset "
@@ -938,7 +941,7 @@ class Sequence:
 
         amplitudes = []
         for chan in channels:
-            ampl = self._awgspecs['channel{}_amplitude'.format(chan)]
+            ampl = self._awgspecs[f"channel{chan}_amplitude"]
             amplitudes.append(ampl)
         if len(amplitudes) == 1:
             amplitudes.append(0)
@@ -946,8 +949,8 @@ class Sequence:
         for pos in range(1, seqlen+1):
             element = elements[pos-1]
             for chan in channels:
-                ampl = self._awgspecs['channel{}_amplitude'.format(chan)]
-                wfm = element[chan]['wfm']
+                ampl = self._awgspecs[f"channel{chan}_amplitude"]
+                wfm = element[chan]["wfm"]
                 # check the waveform length
                 if len(wfm) < 2400:
                     raise ValueError('Waveform too short on channel '
@@ -955,18 +958,22 @@ class Sequence:
                                      'The required minimum is 2400 points.'
                                      ''.format(chan, pos, len(wfm)))
                 # check whether the waveform voltages can be realised
-                if wfm.max() > ampl/2:
-                    raise ValueError('Waveform voltages exceed channel range '
-                                     'on channel {}'.format(chan) +
-                                     ' sequence element {}.'.format(pos) +
-                                     ' {} > {}!'.format(wfm.max(), ampl/2))
-                if wfm.min() < -ampl/2:
-                    raise ValueError('Waveform voltages exceed channel range '
-                                     'on channel {}'.format(chan) +
-                                     ' sequence element {}. '.format(pos) +
-                                     '{} < {}!'.format(wfm.min(), -ampl/2))
-                element[chan]['wfm'] = wfm
-            elements[pos-1] = element
+                if wfm.max() > ampl / 2:
+                    raise ValueError(
+                        "Waveform voltages exceed channel range "
+                        "on channel {}".format(chan)
+                        + f" sequence element {pos}."
+                        + f" {wfm.max()} > {ampl/2}!"
+                    )
+                if wfm.min() < -ampl / 2:
+                    raise ValueError(
+                        "Waveform voltages exceed channel range "
+                        "on channel {}".format(chan)
+                        + f" sequence element {pos}. "
+                        + f"{wfm.min()} < {-ampl/2}!"
+                    )
+                element[chan]["wfm"] = wfm
+            elements[pos - 1] = element
 
         # Finally cast the lists into the shapes required by the AWG driver
 
@@ -1083,7 +1090,7 @@ class Sequence:
         channels = self.element(1).channels
 
         for chan in channels:
-            offkey = 'channel{}_offset'.format(chan)
+            offkey = f"channel{chan}_offset"
             if offkey not in self._awgspecs.keys():
                 raise ValueError("No specified offset for channel "
                                  "{}, can not continue."
@@ -1098,20 +1105,24 @@ class Sequence:
         for pos in range(1, seqlen+1):
             element = elements[pos-1]
             for chan in channels:
-                ampl = self._awgspecs['channel{}_amplitude'.format(chan)]
-                off = self._awgspecs['channel{}_offset'.format(chan)]
-                wfm = element[chan]['wfm']
+                ampl = self._awgspecs[f"channel{chan}_amplitude"]
+                off = self._awgspecs[f"channel{chan}_offset"]
+                wfm = element[chan]["wfm"]
                 # check whether the waveform voltages can be realised
-                if wfm.max() > ampl/2+off:
-                    raise ValueError('Waveform voltages exceed channel range '
-                                     'on channel {}'.format(chan) +
-                                     ' sequence element {}.'.format(pos) +
-                                     ' {} > {}!'.format(wfm.max(), ampl/2+off))
-                if wfm.min() < -ampl/2+off:
-                    raise ValueError('Waveform voltages exceed channel range '
-                                     'on channel {}'.format(chan) +
-                                     ' sequence element {}. '.format(pos) +
-                                     '{} < {}!'.format(wfm.min(), -ampl/2+off))
+                if wfm.max() > ampl / 2 + off:
+                    raise ValueError(
+                        "Waveform voltages exceed channel range "
+                        "on channel {}".format(chan)
+                        + f" sequence element {pos}."
+                        + f" {wfm.max()} > {ampl/2+off}!"
+                    )
+                if wfm.min() < -ampl / 2 + off:
+                    raise ValueError(
+                        "Waveform voltages exceed channel range "
+                        "on channel {}".format(chan)
+                        + f" sequence element {pos}. "
+                        + f"{wfm.min()} < {-ampl/2+off}!"
+                    )
                 wfm = rescaler(wfm, ampl, off)
                 element[chan]['wfm'] = wfm
             elements[pos-1] = element

@@ -42,7 +42,7 @@ jobs:
       run: sudo apt install pandoc
       if: runner.os == 'Linux'
     - name: Install pandoc on windows
-      uses: Wandalen/wretry.action@v1.0.25
+      uses: Wandalen/wretry.action@v1.0.27
       with:
         action: crazy-max/ghaction-chocolatey@v1.6.0
         with: |
@@ -73,12 +73,14 @@ jobs:
     - name: Build docs on linux
       run: |
         cd docs
-        make -f Makefile execute
+        export SPHINXOPTS="-W -v"
+        make html
       if: runner.os == 'Linux'
     - name: Build docs on windows
       run: |
         cd docs
-        ./execute_notebooks.cmd
+        $env:SPHINXOPTS = "-W -v"
+        ./make.bat html
       if: runner.os == 'Windows'
     - name: Upload build docs
       uses: actions/upload-artifact@v3.1.0
@@ -86,7 +88,7 @@ jobs:
         name: docs_${{ matrix.python-version }}_${{ matrix.os }}
         path: ${{ github.workspace }}/docs/_build/html
     - name: Deploy to gh pages
-      uses: JamesIves/github-pages-deploy-action@v4.3.3
+      uses: JamesIves/github-pages-deploy-action@v4.3.4
       with:
         branch: gh-pages
         folder: ${{ github.workspace }}/docs/_build/html

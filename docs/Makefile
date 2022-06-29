@@ -1,50 +1,36 @@
-# Minimal makefile for Sphinx documentation
-# Carefully tested on 18 May 2017
+# Makefile for Sphinx documentation
+#
 
-# You can set these variables from the command line.
-SPHINXOPTS    =
-SPHINXBUILD   = sphinx-build
-SPHINXPROJ    = broadbean
-SOURCEDIR     = source
-BUILDDIR      = build
-GH_PAGES_SOURCES = docs broadbean
+# You can set these variables from the command line, and also
+# from the environment for the first two.
+SPHINXOPTS    ?=
+SPHINXBUILD   ?= sphinx-build
+SOURCEDIR     = .
+BUILDDIR      = _build
 
 # Put it first so that "make" without argument is like "make help".
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-.PHONY: help Makefile
+.PHONY: help Makefile clean genapi htmlfast
 
+clean:
+	rm -rf $(BUILDDIR)/*
+	rm -rf _auto
+	rm -rf api/generated
+	@$(SPHINXBUILD) -M clean "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-.PHONY: html
-html:
-	$(SPHINXBUILD) -b html $(SPHINXOPTS) . $(BUILDDIR)/html
-	@echo
-	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+# generate api docs for instruments automatically
+genapi:
+	sphinx-apidoc  -o  _auto  -d 10 ../broadbean
+	mkdir -p api/generated/
+	cp _auto/broadbean.* api/generated/
 
+# faster build by skipping execution of all notebooks
+htmlfast: genapi
+	@$(SPHINXBUILD) -M html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O) -D nbsphinx_execute=never
 
-gh-pages:
-	git config --global user.email "bot@travics.com"
-	git config --global user.name "Documentation Bot"
-	git remote add upstream https://${GITHUB_API_KEY}@github.com/QCoDeS/broadbean.git
-	git fetch upstream
-	git checkout gh-pages
-	rm -rf ./*
-	git checkout master $(GH_PAGES_SOURCES)
-	git reset HEAD
-	cd docs  && make html
-	mv -fv docs/$(BUILDDIR)/html/* ../
-	rm -rf $(GH_PAGES_SOURCES) build
-	git add -A
-	git commit -m "Generated gh-pages for `git log master -1 --pretty=short \
-	--abbrev-commit`" && git push https://${GITHUB_API_KEY}@github.com/QCoDeS/broadbean.git gh-pages ; git checkout master
-
-
-.PHONY: execute
-execute:
-	echo "Running the notebooks..."
-	jupyter nbconvert --to notebook --execute "Pulse Building Tutorial.ipynb"
-	jupyter nbconvert --to notebook --execute "Filter compensation.ipynb"
-	jupyter nbconvert --to notebook --execute "Subsequences.ipynb"
-	echo "Cleaning up the generated output..."
-	rm *nbconvert.ipynb
+# Catch-all target: route all unknown targets to Sphinx using the new
+# "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
+%: Makefile genapi
+	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
