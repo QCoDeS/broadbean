@@ -26,6 +26,7 @@ Documentation
     :maxdepth: 2
 
     api/generated/broadbean
+    start/index
     examples/index
     changes/index
 

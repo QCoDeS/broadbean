@@ -5,10 +5,10 @@
 [ ![PyPI python versions](https://img.shields.io/pypi/pyversions/broadbean.svg) ](https://pypi.python.org/pypi/broadbean/)
 [ ![Build Status Github](https://github.com/QCoDeS/broadbean/workflows/Run%20mypy%20and%20pytest/badge.svg) ](https://github.com/QCoDeS/broadbean/actions?query=workflow%3A%22Run+mypy+and+pytest%22)
 
-A library for making pulses. Supposed to be used with QCoDeS (in
-particular its Tektronix AWG 5014 driver), but works as standalone.
+A library for making pulses that can be leveraged with QCoDeS (in
+particular its Tektronix AWG 5014 driver), but also works as standalone.
 
-The usage is documented in the jupyter notebooks found in the `docs` folder.
+The usage is documented in example notebooks TODO: add link to hosted docs.
 
 Short description: The broadbean module lets the user compose and
 manipulate pulse sequences. The aim of the module is to reduce pulse
@@ -26,36 +26,8 @@ The name: The broad bean is one of my favourite pulses.
 
 ### Formal requirements
 
-The broadbean package only works with python 3.6+
+The broadbean package only works with python 3.7+
 
 ### Installation
 
-On a good day, installation is as easy as
-```
-$ git clone https://github.com/QCoDeS/broadbean.git bbdir
-$ cd bbdir
-$ pip install .
-```
-behind the scenes, `numpy`, `matplotlib`, and `PyQt5` are installed if
-not found. If `pip` failed you, you may need to run it as root. But a
-better idea is to use a [virtual enviroment](https://github.com/pyenv/pyenv-virtualenv).
-
-You can now fire up a python 3 interpreter and go
-```
->>> import broadbean as bb
->>> from broadbean import ripasso as rp
-```
-
-### Documentation
-
-Apart from the example notebooks, auto-generated documentation is
-available. As for now, the user must built it herself, but that is
-luckily easy.
-
-In the `bbdir` folder, do:
-```
-$ pip install -r docs_requirements.txt
-$ cd docs
-$ make html
-```
-then ignore all warnings and just have a look at the file `bbdir/docs/build/html/index.html`.
+TODO: add link to installation from docs
