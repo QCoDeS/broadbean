@@ -8,9 +8,6 @@ SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = .
 BUILDDIR      = _build
 
-# this is to to autmagic gh-pages
-GH_PAGES_SOURCES = docs broadbean CONTRIBUTING.rst LICENSE
-
 # Put it first so that "make" without argument is like "make help".
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

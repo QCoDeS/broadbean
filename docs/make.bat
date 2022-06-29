@@ -41,7 +41,6 @@ mkdir api\generated\
 copy _auto\broadbean.* api\generated\
 
 if "%1" == "htmlfast" goto htmlfast
-if "%1" == "htmlapi" goto htmlapi
 
 REM default build used if no other brach is used
 %SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
