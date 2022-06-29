@@ -531,6 +531,9 @@ class Sequence:
                 bp_sum = BluePrint.blueprint_from_description(seq_dict[ele]['channels'][chan])
                 bp_sum.setSR(SR)
                 elem.addBluePrint(int(chan), bp_sum)
+                if "flags" in seq_dict[ele]["channels"][chan]:
+                    flags = seq_dict[ele]["channels"][chan]["flags"]
+                    elem.addFlags(int(chan), flags)
                 ChannelAmplitude = awgspecs[f"channel{chan}_amplitude"]
                 new_instance.setChannelAmplitude(
                     int(chan), ChannelAmplitude
@@ -835,6 +838,11 @@ class Sequence:
 
                 if 'blueprint' in element._data[chan].keys():
                     blueprint = element._data[chan]['blueprint']
+                    # prevent information about flags to be lost
+                    if "flags" in element._data[chan].keys():
+                        flags = element._data[chan]["flags"]
+                    else:
+                        flags = None
 
                     # update existing waituntils
                     for segpos in range(len(blueprint._funlist)):
@@ -850,7 +858,11 @@ class Sequence:
                         blueprint.insertSegment(-1, PulseAtoms.ramp, (0, 0),
                                                 dur=maxdelay-delay)
                     # TODO: is the next line even needed?
+                    # If not, remove the code updating the flags below
+                    # and the one remembering them above
                     element.addBluePrint(chan, blueprint)
+                    if flags is not None:
+                        element.addFlags(chan, flags)
 
                 else:
                     arrays = element[chan]['array']
@@ -1023,6 +1035,47 @@ class Sequence:
 
         return (trig_waits, nreps, jump_states, jump_tos, gotos,
                 waveforms, amplitudes, self.name)
+
+    def outputForSEQXFileWithFlags(
+        self,
+    ) -> Tuple[
+        List[int],
+        List[int],
+        List[int],
+        List[int],
+        List[int],
+        List[List[np.ndarray]],
+        List[float],
+        str,
+        List[List[List[int]]],
+    ]:
+        """
+        Generate a tuple matching the call signature of the QCoDeS
+        AWG70000A driver's `makeSEQXFile` function. Same as outputForSEQXFile(),
+        but also includes information about the flags.
+
+        Returns:
+            A tuple holding (trig_waits, nreps, event_jumps, event_jump_to,
+                go_to, wfms, amplitudes, seqname, flags)
+        """
+
+        elements = self._prepareForOutputting()
+        seqlen = len(elements)
+        channels = self.element(1).channels
+
+        # add flags for every element and channel
+        all_flags = []
+        for chanind, chan in enumerate(channels):
+            flags_pos = []
+            for pos in range(1, seqlen + 1):
+                if "flags" in elements[pos - 1][chan]:
+                    flags = elements[pos - 1][chan]["flags"].tolist()
+                else:
+                    flags = [0, 0, 0, 0]
+                flags_pos.append(flags)
+            all_flags.append(flags_pos)
+
+        return self.outputForSEQXFile() + (all_flags,)
 
     def outputForAWGFile(self):
         """

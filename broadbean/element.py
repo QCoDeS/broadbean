@@ -1,13 +1,16 @@
 # This file contains the Element definition
+from __future__ import annotations
 
-from typing import Union, Dict, List
+import json
+from collections.abc import Sequence
 from copy import deepcopy
+from typing import Dict, List, Union
 
 import numpy as np
-import json
+
+from broadbean.blueprint import BluePrint, _subelementBuilder
 
 from .broadbean import PulseAtoms
-from broadbean.blueprint import BluePrint, _subelementBuilder
 
 
 class ElementDurationError(Exception):
@@ -57,6 +60,47 @@ class Element:
 
         self._data[channel] = {}
         self._data[channel]['blueprint'] = newprint
+
+    def addFlags(
+        self, channel: Union[str, int], flags: Sequence[Union[str, int]]
+    ) -> None:
+        """
+        Adds flags for the specified channel.
+        List of 4 flags, each of which should be 0 or "" for 'No change', 1 or "H" for 'High',
+        2 or "L" for 'Low', 3 or "T" for 'Toggle', 4 or "P" for 'Pulse'.
+        """
+        if not isinstance(flags, Sequence):
+            raise ValueError(
+                "Flags should be given as a sequence (e.g. a list or a tuple)."
+            )
+
+        if len(flags) != 4:
+            raise ValueError("There should be 4 flags in the list.")
+
+        for cnt, i in enumerate(flags):
+            if i not in [0, 1, 2, 3, 4, "", "H", "L", "T", "P"]:
+                raise ValueError(
+                    'Invalid flag at index {cnt}. Allowed flags are 0 or "" (No change), '
+                    '1 or "H" (High), 2 or "L" (Low), 3 or "T" (Toggle), '
+                    '4 or "P" (Pulse).'
+                )
+
+        # replace flag aliases with integers
+        flag_aliases = {
+            "": 0,
+            "H": 1,
+            "L": 2,
+            "T": 3,
+            "P": 4,
+            0: 0,
+            1: 1,
+            2: 2,
+            3: 3,
+            4: 4,
+        }
+        flags_int = [flag_aliases[x] for x in flags]
+
+        self._data[channel]["flags"] = flags_int
 
     def addArray(self, channel: Union[int, str], waveform: np.ndarray,
                  SR: int, **kwargs) -> None:
@@ -185,6 +229,8 @@ class Element:
                 SR = bp.SR
                 forged_bp = _subelementBuilder(bp, SR, durs)
                 outdict[channel] = forged_bp
+                if "flags" in signal.keys():
+                    outdict[channel]["flags"] = signal["flags"]
                 if not includetime:
                     outdict[channel].pop('time')
                     outdict[channel].pop('newdurations')
@@ -262,6 +308,9 @@ class Element:
                 desc[str(key)] = val['blueprint'].description
             elif 'array' in val.keys():
                 desc[str(key)] = 'array'
+
+            if "flags" in val.keys():
+                desc[str(key)]["flags"] = val["flags"]
 
         return desc
 
