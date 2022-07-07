@@ -26,8 +26,8 @@ entrypoints~=0.4
 executing~=0.8.3
 fastjsonschema~=2.15.3
 filelock~=3.7.1
-fonttools~=4.33.3
-hypothesis==6.48.3
+fonttools~=4.34.0
+hypothesis==6.49.1
 identify~=2.5.1
 idna~=3.3
 imagesize~=1.4.1
