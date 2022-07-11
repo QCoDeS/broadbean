@@ -7,7 +7,8 @@
 [ ![Build Status Github](https://github.com/QCoDeS/broadbean/workflows/Run%20mypy%20and%20pytest/badge.svg) ](https://github.com/QCoDeS/broadbean/actions?query=workflow%3A%22Run+mypy+and+pytest%22)
 
 A library for making pulses that can be leveraged with QCoDeS (in
-particular its Tektronix AWG 5014 driver), but also works as standalone.
+particular with Tektronix 5000/7000 series AWG drivers),
+but also works as standalone.
 
 Usage examples can be found in broadbean's documentation [here](https://qcodes.github.io/broadbean/examples/index.html).
 
