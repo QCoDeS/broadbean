@@ -9,6 +9,7 @@ from typing import Dict, List, Union
 import numpy as np
 
 from broadbean.blueprint import BluePrint, _subelement_builder
+from broadbean.deprecate import deprecate
 
 from .broadbean import PulseAtoms
 
@@ -41,8 +42,7 @@ class Element:
         self._data = {}
         self._meta = {}
 
-    def addBluePrint(self, channel: Union[str, int],
-                     blueprint: BluePrint) -> None:
+    def add_blue_print(self, channel: Union[str, int], blueprint: BluePrint) -> None:
         """
         Add a blueprint to the element on the specified channel.
         Overwrites whatever was there before.
@@ -61,7 +61,7 @@ class Element:
         self._data[channel] = {}
         self._data[channel]['blueprint'] = newprint
 
-    def addFlags(
+    def add_flags(
         self, channel: Union[str, int], flags: Sequence[Union[str, int]]
     ) -> None:
         """
@@ -102,8 +102,9 @@ class Element:
 
         self._data[channel]["flags"] = flags_int
 
-    def addArray(self, channel: Union[int, str], waveform: np.ndarray,
-                 SR: int, **kwargs) -> None:
+    def add_array(
+        self, channel: Union[int, str], waveform: np.ndarray, SR: int, **kwargs
+    ) -> None:
         """
         Add an array of voltage value to the element on the specified channel.
         Overwrites whatever was there before. Markers can be specified via
@@ -129,7 +130,7 @@ class Element:
         self._data[channel]['array']['wfm'] = waveform
         self._data[channel]['SR'] = SR
 
-    def validateDurations(self):
+    def validate_durations(self) -> None:
         """
         Check that all channels have the same specified duration, number of
         points and sample rate.
@@ -197,8 +198,7 @@ class Element:
         self._meta['SR'] = SRs[0]
         self._meta['duration'] = durations[0]
 
-    def getArrays(self,
-                  includetime: bool=False) -> Dict[int, Dict[str, np.ndarray]]:
+    def get_arrays(self, includetime: bool = False) -> Dict[int, Dict[str, np.ndarray]]:
         """
         Return arrays of the element. Heavily used by the Sequence.
 
@@ -239,13 +239,13 @@ class Element:
         return outdict
 
     @property
-    def SR(self):
+    def sample_rate(self):
         """
         Returns the sample rate, if well-defined. Else raises
         an error about what went wrong.
         """
         # Will either raise an error or set self._data['SR']
-        self.validateDurations()
+        self.validate_durations()
 
         return self._meta['SR']
 
@@ -255,7 +255,7 @@ class Element:
         Returns the number of points of each channel if that number is
         well-defined. Else an error is raised.
         """
-        self.validateDurations()
+        self.validate_durations()
 
         # pick out what is on the channels
         channels = self._data.values()
@@ -278,18 +278,18 @@ class Element:
             raise KeyError('Empty Element, nothing assigned')
 
     @property
-    def duration(self):
+    def duration(self) -> Dict:
         """
         Returns the duration in seconds of the element, if said duration is
         well-defined. Else raises an error.
         """
         # Will either raise an error or set self._data['SR']
-        self.validateDurations()
+        self.validate_durations()
 
         return self._meta['duration']
 
     @property
-    def channels(self):
+    def channels(self) -> List[int]:
         """
         The channels that has something on them
         """
@@ -297,7 +297,7 @@ class Element:
         return chans
 
     @property
-    def description(self):
+    def description(self) -> Dict:
         """
         Returns a dict describing the element.
         """
@@ -326,7 +326,7 @@ class Element:
             json.dump(self.description, fp, indent=4)
 
     @classmethod
-    def element_from_description(cls, element_dict):
+    def element_from_description(cls, element_dict: Dict) -> Element:
         """
         Returns a blueprint from a description given as a dict
 
@@ -338,7 +338,7 @@ class Element:
         elem = cls()
         for chan in channels_list:
             bp_sum = BluePrint.blueprint_from_description(element_dict[chan])
-            elem.addBluePrint(int(chan), bp_sum)
+            elem.add_blue_print(int(chan), bp_sum)
         return elem
 
     @classmethod
@@ -357,9 +357,14 @@ class Element:
             data_loaded = json.load(fp)
         return cls.element_from_description(data_loaded)
 
-    def changeArg(self, channel: Union[str, int],
-                  name: str, arg: Union[str, int], value: Union[int, float],
-                  replaceeverywhere: bool=False) -> None:
+    def change_blueprint_argurment(
+        self,
+        channel: Union[str, int],
+        name: str,
+        arg: Union[str, int],
+        value: Union[int, float],
+        replaceeverywhere: bool = False,
+    ) -> None:
         """
         Change the argument of a function of the blueprint on the specified
         channel.
@@ -391,9 +396,13 @@ class Element:
 
         bp.changeArg(name, arg, value, replaceeverywhere)
 
-    def changeDuration(self, channel: Union[str, int], name: str,
-                       newdur: Union[int, float],
-                       replaceeverywhere: bool=False) -> None:
+    def change_duration(
+        self,
+        channel: Union[str, int],
+        name: str,
+        newdur: Union[int, float],
+        replaceeverywhere: bool = False,
+    ) -> None:
         """
         Change the duration of a segment of the blueprint on the specified
         channel
@@ -419,7 +428,7 @@ class Element:
 
         bp.changeDuration(name, newdur, replaceeverywhere)
 
-    def _applyDelays(self, delays: List[float]) -> None:
+    def _apply_delays(self, delays: List[float]) -> None:
         """
         Apply delays to the channels of this element. This function is intended
         to be used via a Sequence object. Note that this function changes
@@ -491,3 +500,306 @@ class Element:
             return False
         else:
             return True
+
+    # depredacted methods
+    @deprecate(reason="Does not adhear to PEP8", alternative="add_blue_print")
+    def addBluePrint(self, channel: Union[str, int], blueprint: BluePrint) -> None:
+        """
+        Add a blueprint to the element on the specified channel.
+        Overwrites whatever was there before.
+        """
+        if not isinstance(blueprint, BluePrint):
+            raise ValueError(
+                "Invalid blueprint given. Must be an instance"
+                " of the BluePrint class."
+            )
+
+        if [] in [
+            blueprint._funlist,
+            blueprint._argslist,
+            blueprint._namelist,
+            blueprint._durslist,
+        ]:
+            raise ValueError("Received empty BluePrint. Can not proceed.")
+
+        # important: make a copy of the blueprint
+        newprint = blueprint.copy()
+
+        self._data[channel] = {}
+        self._data[channel]["blueprint"] = newprint
+
+    @deprecate(reason="Does not adhear to PEP8", alternative="add_flags")
+    def addFlags(
+        self, channel: Union[str, int], flags: Sequence[Union[str, int]]
+    ) -> None:
+        """
+        Adds flags for the specified channel.
+        List of 4 flags, each of which should be 0 or "" for 'No change', 1 or "H" for 'High',
+        2 or "L" for 'Low', 3 or "T" for 'Toggle', 4 or "P" for 'Pulse'.
+        """
+        if not isinstance(flags, Sequence):
+            raise ValueError(
+                "Flags should be given as a sequence (e.g. a list or a tuple)."
+            )
+
+        if len(flags) != 4:
+            raise ValueError("There should be 4 flags in the list.")
+
+        for cnt, i in enumerate(flags):
+            if i not in [0, 1, 2, 3, 4, "", "H", "L", "T", "P"]:
+                raise ValueError(
+                    'Invalid flag at index {cnt}. Allowed flags are 0 or "" (No change), '
+                    '1 or "H" (High), 2 or "L" (Low), 3 or "T" (Toggle), '
+                    '4 or "P" (Pulse).'
+                )
+
+        # replace flag aliases with integers
+        flag_aliases = {
+            "": 0,
+            "H": 1,
+            "L": 2,
+            "T": 3,
+            "P": 4,
+            0: 0,
+            1: 1,
+            2: 2,
+            3: 3,
+            4: 4,
+        }
+        flags_int = [flag_aliases[x] for x in flags]
+
+        self._data[channel]["flags"] = flags_int
+
+    @deprecate(reason="Does not adhear to PEP8", alternative="add_array")
+    def addArray(
+        self, channel: Union[int, str], waveform: np.ndarray, SR: int, **kwargs
+    ) -> None:
+        """
+        Add an array of voltage value to the element on the specified channel.
+        Overwrites whatever was there before. Markers can be specified via
+        the kwargs, i.e. the kwargs must specify arrays of markers. The names
+        can be 'm1', 'm2', 'm3', etc.
+
+        Args:
+            channel: The channel number
+            waveform: The array of waveform values (V)
+            SR: The sample rate in Sa/s
+        """
+
+        N = len(waveform)
+        self._data[channel] = {}
+        self._data[channel]["array"] = {}
+
+        for name, array in kwargs.items():
+            if len(array) != N:
+                raise ValueError(
+                    "Length mismatch between waveform and "
+                    f"array {name}. Must be same length"
+                )
+            self._data[channel]["array"].update({name: array})
+
+        self._data[channel]["array"]["wfm"] = waveform
+        self._data[channel]["SR"] = SR
+
+    @deprecate(reason="Does not adhear to PEP8", alternative="validation_durations")
+    def validateDurations(self):
+        """
+        Check that all channels have the same specified duration, number of
+        points and sample rate.
+        """
+
+        # pick out the channel entries
+        channels = self._data.values()
+
+        if len(channels) == 0:
+            raise KeyError("Empty Element, nothing assigned")
+
+        # First the sample rate
+        SRs = []
+        for channel in channels:
+            if "blueprint" in channel.keys():
+                SRs.append(channel["blueprint"].SR)
+            elif "array" in channel.keys():
+                SR = channel["SR"]
+                SRs.append(SR)
+
+        if not SRs.count(SRs[0]) == len(SRs):
+            errmssglst = zip(list(self._data.keys()), SRs)
+            raise ElementDurationError(
+                "Different channels have different "
+                "SRs. (Channel, SR): "
+                "{}".format(list(errmssglst))
+            )
+
+        # Next the total time
+        durations = []
+        for channel in channels:
+            if "blueprint" in channel.keys():
+                durations.append(channel["blueprint"].duration)
+            elif "array" in channel.keys():
+                length = len(channel["array"]["wfm"]) / channel["SR"]
+                durations.append(length)
+
+        if None not in SRs:
+            atol = min(SRs)
+        else:
+            atol = 1e-9
+
+        if not np.allclose(durations, durations[0], atol=atol):
+            errmssglst = zip(list(self._data.keys()), durations)
+            raise ElementDurationError(
+                "Different channels have different "
+                "durations. (Channel, duration): "
+                "{}s".format(list(errmssglst))
+            )
+
+        # Finally the number of points
+        # (kind of redundant if sample rate and duration match?)
+        npts = []
+        for channel in channels:
+            if "blueprint" in channel.keys():
+                npts.append(channel["blueprint"].points)
+            elif "array" in channel.keys():
+                length = len(channel["array"]["wfm"])
+                npts.append(length)
+
+        if not npts.count(npts[0]) == len(npts):
+            errmssglst = zip(list(self._data.keys()), npts)
+            raise ElementDurationError(
+                "Different channels have different "
+                "npts. (Channel, npts): "
+                "{}".format(list(errmssglst))
+            )
+
+        # If these three tests pass, we equip the dictionary with convenient
+        # info used by Sequence
+        self._meta["SR"] = SRs[0]
+        self._meta["duration"] = durations[0]
+
+    @deprecate(reason="Does not adhear to PEP8", alternative="get_arrays")
+    def getArrays(self, includetime: bool = False) -> Dict[int, Dict[str, np.ndarray]]:
+        """
+        Return arrays of the element. Heavily used by the Sequence.
+
+        Args:
+            includetime: Whether to include time arrays. They will have the key
+                'time'. Time should be included when plotting, otherwise not.
+
+        Returns:
+            dict:
+              Dictionary with channel numbers (ints) as keys and forged
+              blueprints as values. A forged blueprint is a dict with
+              the mandatory key 'wfm' and optional keys 'm1', 'm2', 'm3' (etc)
+              and 'time'.
+
+        """
+
+        outdict = {}
+        for channel, signal in self._data.items():
+            if "array" in signal.keys():
+                outdict[channel] = signal["array"]
+                if includetime and "time" not in signal["array"].keys():
+                    N = len(signal["array"]["wfm"])
+                    dur = N / signal["SR"]
+                    outdict[channel]["array"]["time"] = np.linspace(0, dur, N)
+            elif "blueprint" in signal.keys():
+                bp = signal["blueprint"]
+                durs = bp.durations
+                SR = bp.SR
+                forged_bp = _subelement_builder(bp, SR, durs)
+                outdict[channel] = forged_bp
+                if "flags" in signal.keys():
+                    outdict[channel]["flags"] = signal["flags"]
+                if not includetime:
+                    outdict[channel].pop("time")
+                    outdict[channel].pop("newdurations")
+                # TODO: should the be a separate bool for newdurations?
+
+        return outdict
+
+    @property
+    @deprecate(reason="Does not adhear to PEP8", alternative="sample_rate")
+    def SR(self):
+        """
+        Returns the sample rate, if well-defined. Else raises
+        an error about what went wrong.
+        """
+        # Will either raise an error or set self._data['SR']
+        self.validateDurations()
+
+        return self._meta["SR"]
+
+    @deprecate(
+        reason="Does not adhear to PEP8", alternative="change_blueprint_argument"
+    )
+    def changeArg(
+        self,
+        channel: Union[str, int],
+        name: str,
+        arg: Union[str, int],
+        value: Union[int, float],
+        replaceeverywhere: bool = False,
+    ) -> None:
+        """
+        Change the argument of a function of the blueprint on the specified
+        channel.
+
+        Args:
+            channel: The channel where the blueprint sits.
+            name: The name of the segment in which to change an argument
+            arg: Either the position (int) or name (str) of
+                the argument to change
+            value: The new value of the argument
+            replaceeverywhere: If True, the same argument is overwritten
+                in ALL segments where the name matches. E.g. 'gaussian1' will
+                match 'gaussian', 'gaussian2', etc. If False, only the segment
+                with exact name match gets a replacement.
+
+        Raises:
+            ValueError: If the specified channel has no blueprint.
+            ValueError: If the argument can not be matched (either the argument
+                name does not match or the argument number is wrong).
+        """
+
+        if channel not in self.channels:
+            raise ValueError(f"Nothing assigned to channel {channel}")
+
+        if "blueprint" not in self._data[channel].keys():
+            raise ValueError(f"No blueprint on channel {channel}.")
+
+        bp = self._data[channel]["blueprint"]
+
+        bp.changeArg(name, arg, value, replaceeverywhere)
+
+    @deprecate(reason="Does not adhear to PEP8", alternative="change_duration")
+    def changeDuration(
+        self,
+        channel: Union[str, int],
+        name: str,
+        newdur: Union[int, float],
+        replaceeverywhere: bool = False,
+    ) -> None:
+        """
+        Change the duration of a segment of the blueprint on the specified
+        channel
+
+        Args:
+            channel: The channel holding the blueprint in question
+            name): The name of the segment to modify
+            newdur: The new duration.
+            replaceeverywhere: If True, all segments
+                matching the base
+                name given will have their duration changed. If False, only the
+                segment with an exact name match will have its duration
+                changed. Default: False.
+        """
+
+        if channel not in self.channels:
+            raise ValueError(f"Nothing assigned to channel {channel}")
+
+        if "blueprint" not in self._data[channel].keys():
+            raise ValueError(f"No blueprint on channel {channel}.")
+
+        bp = self._data[channel]["blueprint"]
+
+        bp.changeDuration(name, newdur, replaceeverywhere)
