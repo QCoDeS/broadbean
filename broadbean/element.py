@@ -8,7 +8,7 @@ from typing import Dict, List, Union
 
 import numpy as np
 
-from broadbean.blueprint import BluePrint, _subelementBuilder
+from broadbean.blueprint import BluePrint, _subelement_builder
 
 from .broadbean import PulseAtoms
 
@@ -227,7 +227,7 @@ class Element:
                 bp = signal['blueprint']
                 durs = bp.durations
                 SR = bp.SR
-                forged_bp = _subelementBuilder(bp, SR, durs)
+                forged_bp = _subelement_builder(bp, SR, durs)
                 outdict[channel] = forged_bp
                 if "flags" in signal.keys():
                     outdict[channel]["flags"] = signal["flags"]

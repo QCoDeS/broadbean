@@ -1,17 +1,17 @@
 # This test suite is meant to test everything related to forging, i.e. making
 # numpy arrays out of BluePrints
 
-from hypothesis import given
 import hypothesis.strategies as hst
-import pytest
+import matplotlib.pyplot as plt
 import numpy as np
+import pytest
+from hypothesis import given
 
 import broadbean as bb
-from broadbean.blueprint import _subelementBuilder, SegmentDurationError
+from broadbean.blueprint import SegmentDurationError, _subelement_builder
 from broadbean.ripasso import applyInverseRCFilter
 from broadbean.sequence import Sequence
 
-import matplotlib.pyplot as plt
 plt.ion()
 
 ramp = bb.PulseAtoms.ramp
@@ -85,9 +85,9 @@ def test_too_short_durations_rejected(SR, ratio):
 
     if round_tripped_ratio < 1.5:
         with pytest.raises(SegmentDurationError):
-            _subelementBuilder(bp, SR, [shortdur])
+            _subelement_builder(bp, SR, [shortdur])
     else:
-        _subelementBuilder(bp, SR, [shortdur])
+        _subelement_builder(bp, SR, [shortdur])
 
 
 def test_correct_periods():
@@ -102,7 +102,7 @@ def test_correct_periods():
         bp.insertSegment(0, sine, (freq, 1, 0, 0), dur=dur)
         bp.setSR(SR)
 
-        wfm = _subelementBuilder(bp, SR, [dur])['wfm']
+        wfm = _subelement_builder(bp, SR, [dur])["wfm"]
 
         assert _has_period(wfm, period)
 
@@ -121,7 +121,7 @@ def test_correct_marker_times():
     bp.setSegmentMarker('B', (-0.1, 0.25), 2)
     bp.setSegmentMarker('C', (0.1, 0.25), 1)
 
-    forged_bp = _subelementBuilder(bp, SR, [1, 1, 1])
+    forged_bp = _subelement_builder(bp, SR, [1, 1, 1])
 
     m1 = forged_bp['m1']
 
