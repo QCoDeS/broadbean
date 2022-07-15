@@ -6,9 +6,9 @@ from typing import Any, Callable, Iterator, List, Optional, cast
 import wrapt
 
 
-class BroadbeanDeprecationWarning(RuntimeWarning):
+class DeprecationWarning(RuntimeWarning):
     """
-    A DeprecationWarning used internally in Broadbeans. This
+    Improvced DeprecationWarning that
     fixes `DeprecationWarning` being suppressed by default.
     """
 
@@ -36,7 +36,7 @@ def issue_deprecation_warning(
     """
     warnings.warn(
         deprecation_message(what, reason, alternative),
-        BroadbeanDeprecationWarning,
+        DeprecationWarning,
         stacklevel=stacklevel,
     )
 
@@ -93,7 +93,7 @@ def deprecate(
 def _catch_deprecation_warnings() -> Iterator[List[warnings.WarningMessage]]:
     with warnings.catch_warnings(record=True) as ws:
         warnings.simplefilter("ignore")
-        warnings.filterwarnings("always", category=BroadbeanDeprecationWarning)
+        warnings.filterwarnings("always", category=DeprecationWarning)
         yield ws
 
 

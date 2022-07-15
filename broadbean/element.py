@@ -42,7 +42,7 @@ class Element:
         self._data = {}
         self._meta = {}
 
-    def add_blue_print(self, channel: Union[str, int], blueprint: BluePrint) -> None:
+    def add_blueprint(self, channel: Union[str, int], blueprint: BluePrint) -> None:
         """
         Add a blueprint to the element on the specified channel.
         Overwrites whatever was there before.
@@ -338,7 +338,7 @@ class Element:
         elem = cls()
         for chan in channels_list:
             bp_sum = BluePrint.blueprint_from_description(element_dict[chan])
-            elem.add_blue_print(int(chan), bp_sum)
+            elem.add_blueprint(int(chan), bp_sum)
         return elem
 
     @classmethod
@@ -502,7 +502,7 @@ class Element:
             return True
 
     # depredacted methods
-    @deprecate(reason="Does not adhear to PEP8", alternative="add_blue_print")
+    @deprecate(reason="Does not adhear to PEP8", alternative="add_blueprint")
     def addBluePrint(self, channel: Union[str, int], blueprint: BluePrint) -> None:
         """
         Add a blueprint to the element on the specified channel.

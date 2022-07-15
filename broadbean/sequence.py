@@ -99,7 +99,7 @@ class PulseSequence:
         else:
             return True
 
-    def __add__(self, other: Sequence) -> Sequence:
+    def __add__(self, other: PulseSequence) -> PulseSequence:
         """
         Add two sequences.
         Return a new sequence with is the right argument appended to the
@@ -117,7 +117,7 @@ class PulseSequence:
                                              'different AWG'
                                              'specifications.')
 
-        newseq = Sequence()
+        newseq = PulseSequence()
         N = len(self._data)
 
         newdata1 = {key: self.element(key).copy() for key in self._data.keys()}
@@ -148,11 +148,11 @@ class PulseSequence:
 
         return newseq
 
-    def copy(self) -> Sequence:
+    def copy(self) -> PulseSequence:
         """
         Returns a copy of the sequence.
         """
-        newseq = Sequence()
+        newseq = PulseSequence()
         newseq._data = deepcopy(self._data)
         newseq._meta = deepcopy(self._meta)
         newseq._awgspecs = deepcopy(self._awgspecs)
@@ -162,7 +162,7 @@ class PulseSequence:
 
     def set_sequence_settings(
         self, pos: int, wait: int, nreps: int, jump: int, goto: int
-    ):
+    ) -> None:
         """
         Set the sequence setting for the sequence element at pos.
 
@@ -397,7 +397,7 @@ class PulseSequence:
                                       'jump_input': 0, 'jump_target': 0,
                                       'goto': 0}
 
-    def add_subsequence(self, position: int, subsequence: Sequence) -> None:
+    def add_subsequence(self, position: int, subsequence: PulseSequence) -> None:
         """
         Add a subsequence to the sequence. Overwrites anything previously
         assigned to this position. The subsequence can not contain any
@@ -407,13 +407,13 @@ class PulseSequence:
             position: The sequence position (starting from 1)
             subsequence: The subsequence to add
         """
-        if not isinstance(subsequence, Sequence):
+        if not isinstance(subsequence, PulseSequence):
             raise ValueError('Subsequence must be a sequence object. '
                              'Received object of type '
                              '{}.'.format(type(subsequence)))
 
         for elem in subsequence._data.values():
-            if isinstance(elem, Sequence):
+            if isinstance(elem, PulseSequence):
                 raise ValueError('Subsequences can not contain subsequences.')
 
         if subsequence.sample_rate != self.sample_rate:
@@ -520,7 +520,7 @@ class PulseSequence:
             json.dump(self.description, fp, indent=4)
 
     @classmethod
-    def sequence_from_description(cls, seq_dict: dict) -> Sequence:
+    def sequence_from_description(cls, seq_dict: dict) -> PulseSequence:
         """
         Returns a sequence from a description given as a dict
 
@@ -571,7 +571,7 @@ class PulseSequence:
 
 
     @classmethod
-    def init_from_json(cls, path_to_file: str) -> Sequence:
+    def init_from_json(cls, path_to_file: str) -> PulseSequence:
         """
         Reads sequense from JSON file
 
@@ -744,7 +744,7 @@ class PulseSequence:
                     delays.append(0)
 
             for pos in range(1, seqlen+1):
-                if isinstance(data[pos], Sequence):
+                if isinstance(data[pos], PulseSequence):
                     subseq = data[pos]
                     for elem in subseq._data.values():
                         elem._applyDelays(delays)
@@ -869,18 +869,18 @@ class PulseSequence:
                             blueprint._argslist[segpos] = (oldwait+delay,)
                     # insert delay before the waveform
                     if delay > 0:
-                        blueprint.insertSegment(0, 'waituntil', (delay,),
-                                                'waituntil')
+                        blueprint.insert_segment(0, "waituntil", (delay,), "waituntil")
                     # add zeros at the end
-                    if maxdelay-delay > 0:
-                        blueprint.insertSegment(-1, PulseAtoms.ramp, (0, 0),
-                                                dur=maxdelay-delay)
+                    if maxdelay - delay > 0:
+                        blueprint.insert_segment(
+                            -1, PulseAtoms.ramp, (0, 0), dur=maxdelay - delay
+                        )
                     # TODO: is the next line even needed?
                     # If not, remove the code updating the flags below
                     # and the one remembering them above
-                    element.addBluePrint(chan, blueprint)
+                    element.add_blueprint(chan, blueprint)
                     if flags is not None:
-                        element.addFlags(chan, flags)
+                        element.add_flags(chan, flags)
 
                 else:
                     arrays = element[chan]['array']
@@ -892,7 +892,7 @@ class PulseSequence:
         # Now forge all the elements as specified
         elements = []  # the forged elements
         for pos in range(1, seqlen+1):
-            elements.append(data[pos].getArrays())
+            elements.append(data[pos].get_arrays())
 
         # Now that the numerical arrays exist, we can apply filter compensation
         for chan in channels:
