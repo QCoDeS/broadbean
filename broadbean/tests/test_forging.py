@@ -27,7 +27,7 @@ def sequence_maker():
     def make_seq(seqlen, channels, SR):
 
         seq = Sequence()
-        seq.setSR(SR)
+        seq.set_sample_rate(SR)
 
         for pos in range(1, seqlen+1):
 
@@ -35,13 +35,13 @@ def sequence_maker():
 
             for chan in channels:
                 bp = bb.BluePrint()
-                bp.insertSegment(-1, ramp, (0, 0), dur=20/SR)
-                bp.insertSegment(-1, ramp, (1, 1), dur=10/SR)
-                bp.insertSegment(-1, ramp, (0, 0), dur=5/SR)
-                bp.setSR(SR)
-                elem.addBluePrint(chan, bp)
+                bp.insert_segment(-1, ramp, (0, 0), dur=20 / SR)
+                bp.insert_segment(-1, ramp, (1, 1), dur=10 / SR)
+                bp.insert_segment(-1, ramp, (0, 0), dur=5 / SR)
+                bp.set_sample_rate(SR)
+                elem.add_blueprint(chan, bp)
 
-            seq.addElement(pos, elem)
+            seq.add_element(pos, elem)
 
         return seq
 
@@ -80,8 +80,8 @@ def test_too_short_durations_rejected(SR, ratio):
     round_tripped_ratio = shortdur*SR
 
     bp = bb.BluePrint()
-    bp.setSR(SR)
-    bp.insertSegment(0, ramp, (0, 1), dur=shortdur)
+    bp.set_sample_rate(SR)
+    bp.insert_segment(0, ramp, (0, 1), dur=shortdur)
 
     if round_tripped_ratio < 1.5:
         with pytest.raises(SegmentDurationError):
@@ -99,8 +99,8 @@ def test_correct_periods():
 
     for freq, period in zip(freqs, periods):
         bp = bb.BluePrint()
-        bp.insertSegment(0, sine, (freq, 1, 0, 0), dur=dur)
-        bp.setSR(SR)
+        bp.insert_segment(0, sine, (freq, 1, 0, 0), dur=dur)
+        bp.set_sample_rate(SR)
 
         wfm = _subelementBuilder(bp, SR, [dur])['wfm']
 
@@ -112,14 +112,14 @@ def test_correct_marker_times():
     SR = 100
 
     bp = bb.BluePrint()
-    bp.insertSegment(-1, ramp, (0, 0), dur=1, name='A')
-    bp.insertSegment(-1, ramp, (0, 0), dur=1, name='B')
-    bp.insertSegment(-1, ramp, (0, 0), dur=1, name='C')
-    bp.setSR(SR)
+    bp.insert_segment(-1, ramp, (0, 0), dur=1, name="A")
+    bp.insert_segment(-1, ramp, (0, 0), dur=1, name="B")
+    bp.insert_segment(-1, ramp, (0, 0), dur=1, name="C")
+    bp.set_sample_rate(SR)
 
-    bp.setSegmentMarker('A', (0, 0.5), 1)
-    bp.setSegmentMarker('B', (-0.1, 0.25), 2)
-    bp.setSegmentMarker('C', (0.1, 0.25), 1)
+    bp.set_segment_marker("A", (0, 0.5), 1)
+    bp.set_segment_marker("B", (-0.1, 0.25), 2)
+    bp.set_segment_marker("C", (0.1, 0.25), 1)
 
     forged_bp = _subelementBuilder(bp, SR, [1, 1, 1])
 

@@ -33,7 +33,7 @@ def makeLinearlyVaryingSequence(baseelement, channel, name, arg, start, stop,
 
     sequence = Sequence()
 
-    sequence.setSR(baseelement.SR)
+    sequence.set_sample_rate(baseelement.SR)
 
     iterator = np.linspace(start, stop, round(abs(stop-start)/step)+1)
 
@@ -43,7 +43,7 @@ def makeLinearlyVaryingSequence(baseelement, channel, name, arg, start, stop,
             element.changeDuration(channel, name, val)
         else:
             element.changeArg(channel, name, arg, val)
-        sequence.addElement(ind+1, element)
+        sequence.add_element(ind + 1, element)
 
     return sequence
 
@@ -87,10 +87,10 @@ def makeVaryingSequence(baseelement, channels, names, args, iters):
                          'value sequence (input argument: iters)')
 
     sequence = Sequence()
-    sequence.setSR(baseelement.SR)
+    sequence.set_sample_rate(baseelement.SR)
 
     for elnum in range(1, noofvals[0]+1):
-        sequence.addElement(elnum, baseelement.copy())
+        sequence.add_element(elnum, baseelement.copy())
 
     for (chan, name, arg, vals) in zip(channels, names, args, iters):
         for mpos, val in enumerate(vals):
@@ -103,7 +103,7 @@ def makeVaryingSequence(baseelement, channels, names, args, iters):
     log.info('Created varying sequence using makeVaryingSequence.'
              ' Now validating it...')
 
-    if not sequence.checkConsistency():
+    if not sequence.check_consistency():
         raise SequenceConsistencyError('Invalid sequence. See log for '
                                        'details.')
     else:

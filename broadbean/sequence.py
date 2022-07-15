@@ -1,20 +1,23 @@
 # this file defines the sequence object
 # along with a few helpers
+
+from __future__ import annotations
+
+import json
+import logging
 import warnings
 from copy import deepcopy
-from typing import Union, Dict, cast, List, Tuple
-import logging
+from typing import Dict, List, Tuple, Union, cast
 
 import numpy as np
-from schema import Schema, Or, Optional
-import json
+from schema import Optional, Or, Schema
 
-from broadbean.ripasso import applyInverseRCFilter
-from broadbean.element import Element  # TODO: change import to element.py
 from broadbean.blueprint import BluePrint
+from broadbean.element import Element  # TODO: change import to element.py
+from broadbean.ripasso import applyInverseRCFilter
+
 from .broadbean import _channelListSorter  # TODO: change import to helpers.py
 from .broadbean import PulseAtoms
-from .broadbean import _AWGOutput
 
 log = logging.getLogger(__name__)
 
@@ -82,7 +85,7 @@ class Sequence:
         # we make the name a property of the sequence
         self._name = ''
 
-    def __eq__(self, other):
+    def __eq__(self, other: Sequence) -> bool:
         if not isinstance(other, Sequence):
             return False
         elif not self._data == other._data:
@@ -96,7 +99,7 @@ class Sequence:
         else:
             return True
 
-    def __add__(self, other):
+    def __add__(self, other: Sequence) -> Sequence:
         """
         Add two sequences.
         Return a new sequence with is the right argument appended to the
@@ -104,9 +107,9 @@ class Sequence:
         """
 
         # Validation
-        if not self.checkConsistency():
+        if not self.check_consistency():
             raise SequenceConsistencyError('Left hand sequence inconsistent!')
-        if not other.checkConsistency():
+        if not other.check_consistency():
             raise SequenceConsistencyError('Right hand sequence inconsistent!')
 
         if not self._awgspecs == other._awgspecs:
@@ -145,7 +148,7 @@ class Sequence:
 
         return newseq
 
-    def copy(self):
+    def copy(self) -> Sequence:
         """
         Returns a copy of the sequence.
         """
@@ -157,7 +160,9 @@ class Sequence:
 
         return newseq
 
-    def setSequenceSettings(self, pos, wait, nreps, jump, goto):
+    def set_sequence_settings(
+        self, pos: int, wait: int, nreps: int, jump: int, goto: int
+    ):
         """
         Set the sequence setting for the sequence element at pos.
 
@@ -189,7 +194,7 @@ class Sequence:
                                  'jump_target': jump, 'goto': goto,
                                  'jump_input': 0}
 
-    def setSequencingTriggerWait(self, pos: int, wait: int) -> None:
+    def set_sequencing_trigger_wait(self, pos: int, wait: int) -> None:
         """
         Set the trigger wait for the sequence element at pos. For
         AWG 5014 out, this can be 0 or 1, For AWG 70000A output, this
@@ -201,7 +206,7 @@ class Sequence:
         """
         self._sequencing[pos]['twait'] = wait
 
-    def setSequencingNumberOfRepetitions(self, pos: int, nrep: int) -> None:
+    def set_sequencing_number_of_repetitions(self, pos: int, nrep: int) -> None:
         """
         Set the number of repetitions for the sequence element at pos.
 
@@ -211,7 +216,7 @@ class Sequence:
         """
         self._sequencing[pos]['nrep'] = nrep
 
-    def setSequencingEventInput(self, pos: int, jump_input: int) -> None:
+    def set_sequencing_event_input(self, pos: int, jump_input: int) -> None:
         """
         Set the event input for the sequence element at pos. This setting is
         ignored by the AWG 5014.
@@ -223,7 +228,7 @@ class Sequence:
         """
         self._sequencing[pos]['jump_input'] = jump_input
 
-    def setSequencingEventJumpTarget(self, pos: int, jump_target: int) -> None:
+    def set_sequencing_event_jump_target(self, pos: int, jump_target: int) -> None:
         """
         Set the event jump target for the sequence element at pos.
 
@@ -233,7 +238,7 @@ class Sequence:
         """
         self._sequencing[pos]['jump_target'] = jump_target
 
-    def setSequencingGoto(self, pos: int, goto: int) -> None:
+    def set_sequencing_goto(self, pos: int, goto: int) -> None:
         """
         Set the goto target (which element to play after the current one ends)
         for the sequence element at pos.
@@ -244,13 +249,15 @@ class Sequence:
         """
         self._sequencing[pos]['goto'] = goto
 
-    def setSR(self, SR):
+    def set_sample_rate(self, sample_rate: float) -> None:
         """
         Set the sample rate for the sequence
         """
-        self._awgspecs['SR'] = SR
+        self._awgspecs["SR"] = sample_rate
 
-    def setChannelVoltageRange(self, channel, ampl, offset):
+    def set_channel_voltage_range(
+        self, channel: int, ampl: float, offset: float
+    ) -> None:
         """
         Assign the physical voltages of the channel. This is used when making
         output for .awg files. The corresponding parameters in the QCoDeS
@@ -272,8 +279,7 @@ class Sequence:
         keystr = f"channel{channel}_offset"
         self._awgspecs[keystr] = offset
 
-    def setChannelAmplitude(self, channel: Union[int, str],
-                            ampl: float) -> None:
+    def set_channel_amplitude(self, channel: Union[int, str], ampl: float) -> None:
         """
         Assign the physical voltage amplitude of the channel. This is used
         when making output for real instruments.
@@ -285,8 +291,7 @@ class Sequence:
         keystr = f"channel{channel}_amplitude"
         self._awgspecs[keystr] = ampl
 
-    def setChannelOffset(self, channel: Union[int, str],
-                         offset: float) -> None:
+    def set_channel_offset(self, channel: Union[int, str], offset: float) -> None:
         """
         Assign the physical voltage offset of the channel. This is used
         by some backends when making output for real instruments
@@ -298,8 +303,7 @@ class Sequence:
         keystr = f"channel{channel}_offset"
         self._awgspecs[keystr] = offset
 
-    def setChannelDelay(self, channel: Union[int, str],
-                        delay: float) -> None:
+    def set_channel_delay(self, channel: Union[int, str], delay: float) -> None:
         """
         Assign a delay to a channel. This is used when making output for .awg
         files. Use the delay to compensate for cable length differences etc.
@@ -317,10 +321,14 @@ class Sequence:
 
         self._awgspecs[f"channel{channel}_delay"] = delay
 
-    def setChannelFilterCompensation(self, channel: Union[str, int],
-                                     kind: str, order: int=1,
-                                     f_cut: float=None,
-                                     tau: float=None) -> None:
+    def set_channel_filter_compensation(
+        self,
+        channel: Union[str, int],
+        kind: str,
+        order: int = 1,
+        f_cut: float = None,
+        tau: float = None,
+    ) -> None:
         """
         Specify a filter to compensate for.
 
@@ -363,7 +371,7 @@ class Sequence:
             "tau": tau,
         }
 
-    def addElement(self, position: int, element: Element) -> None:
+    def add_element(self, position: int, element: Element) -> None:
         """
         Add an element to the sequence. Overwrites previous values.
 
@@ -376,7 +384,7 @@ class Sequence:
         """
 
         # Validation
-        element.validateDurations()
+        element.validate_durations()
 
         # make a new copy of the element
         newelement = element.copy()
@@ -389,7 +397,7 @@ class Sequence:
                                       'jump_input': 0, 'jump_target': 0,
                                       'goto': 0}
 
-    def addSubSequence(self, position: int, subsequence: 'Sequence') -> None:
+    def add_subsequence(self, position: int, subsequence: Sequence) -> None:
         """
         Add a subsequence to the sequence. Overwrites anything previously
         assigned to this position. The subsequence can not contain any
@@ -408,9 +416,11 @@ class Sequence:
             if isinstance(elem, Sequence):
                 raise ValueError('Subsequences can not contain subsequences.')
 
-        if subsequence.SR != self.SR:
-            raise ValueError('Subsequence SR does not match (main) sequence SR'
-                             '. ({} and {}).'.format(subsequence.SR, self.SR))
+        if subsequence.sample_rate != self.sample_rate:
+            raise ValueError(
+                "Subsequence SR does not match (main) sequence SR"
+                ". ({} and {}).".format(subsequence.sample_rate, self.sample_rate)
+            )
 
         self._data[position] = subsequence.copy()
 
@@ -418,7 +428,7 @@ class Sequence:
                                       'jump_input': 0, 'jump_target': 0,
                                       'goto': 0}
 
-    def checkConsistency(self, verbose=False):
+    def check_consistency(self, verbose: bool = False) -> Optional[bool]:
         """
         Checks wether the sequence can be built, i.e. wether all elements
         have waveforms on the same channels and of the same length.
@@ -476,7 +486,7 @@ class Sequence:
         return True
 
     @property
-    def description(self):
+    def description(self) -> Dict:
         """
         Return a dictionary fully describing the Sequence.
         """
@@ -510,7 +520,7 @@ class Sequence:
             json.dump(self.description, fp, indent=4)
 
     @classmethod
-    def sequence_from_description(cls, seq_dict: dict) -> 'Sequence':
+    def sequence_from_description(cls, seq_dict: dict) -> Sequence:
         """
         Returns a sequence from a description given as a dict
 
@@ -529,31 +539,39 @@ class Sequence:
             elem = Element()
             for chan in channels_list:
                 bp_sum = BluePrint.blueprint_from_description(seq_dict[ele]['channels'][chan])
-                bp_sum.setSR(SR)
-                elem.addBluePrint(int(chan), bp_sum)
+                bp_sum.set_sample_rate(SR)
+                elem.add_blueprint(int(chan), bp_sum)
                 if "flags" in seq_dict[ele]["channels"][chan]:
                     flags = seq_dict[ele]["channels"][chan]["flags"]
-                    elem.addFlags(int(chan), flags)
+                    elem.add_flags(int(chan), flags)
                 ChannelAmplitude = awgspecs[f"channel{chan}_amplitude"]
-                new_instance.setChannelAmplitude(
+                new_instance.set_channel_amplitude(
                     int(chan), ChannelAmplitude
                 )  # Call signature: channel, amplitude (peak-to-peak)
                 ChannelOffset = awgspecs[f"channel{chan}_offset"]
-                new_instance.setChannelOffset(int(chan), ChannelOffset)
+                new_instance.set_channel_offset(int(chan), ChannelOffset)
 
-            new_instance.addElement(int(ele), elem)
-            sequencedict = seq_dict[ele]['sequencing']
-            new_instance.setSequencingTriggerWait(int(ele), sequencedict['Wait trigger'])
-            new_instance.setSequencingNumberOfRepetitions(int(ele), sequencedict['Repeat'])
-            new_instance.setSequencingEventInput(int(ele), sequencedict['jump_input'])
-            new_instance.setSequencingEventJumpTarget(int(ele), sequencedict['jump_target'])
-            new_instance.setSequencingGoto(int(ele), sequencedict['Go to'])
-        new_instance.setSR(SR)
+            new_instance.add_element(int(ele), elem)
+            sequencedict = seq_dict[ele]["sequencing"]
+            new_instance.set_sequencing_trigger_wait(
+                int(ele), sequencedict["Wait trigger"]
+            )
+            new_instance.set_sequencing_number_of_repetitions(
+                int(ele), sequencedict["Repeat"]
+            )
+            new_instance.set_sequencing_event_input(
+                int(ele), sequencedict["jump_input"]
+            )
+            new_instance.set_sequencing_event_jump_target(
+                int(ele), sequencedict["jump_target"]
+            )
+            new_instance.set_sequencing_goto(int(ele), sequencedict["Go to"])
+        new_instance.set_sample_rate(SR)
         return new_instance
 
 
     @classmethod
-    def init_from_json(cls, path_to_file: str) -> 'Sequence':
+    def init_from_json(cls, path_to_file: str) -> Sequence:
         """
         Reads sequense from JSON file
 
@@ -572,24 +590,24 @@ class Sequence:
         return new_instance
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self._name
 
     @name.setter
-    def name(self, newname):
+    def name(self, newname: str):
         if not isinstance(newname, str):
             raise ValueError('The sequence name must be a string')
         self._name = newname
 
     @property
-    def length_sequenceelements(self):
+    def length_sequenceelements(self) -> int:
         """
         Returns the current number of specified sequence elements
         """
         return len(self._data)
 
     @property
-    def SR(self):
+    def sample_rate(self) -> float:
         """
         Returns the sample rate, if defined. Else returns -1.
         """
@@ -601,18 +619,18 @@ class Sequence:
         return SR
 
     @property
-    def channels(self):
+    def channels(self) -> Optional[List]:
         """
         Returns a list of the specified channels of the sequence
         """
-        if self.checkConsistency():
+        if self.check_consistency():
             return self.element(1).channels
         else:
             raise SequenceConsistencyError('Sequence not consistent. Can not'
                                            ' figure out the channels.')
 
     @property
-    def points(self):
+    def points(self) -> int:
         """
         Returns the number of points of the sequence, disregarding
         sequencing info (like repetitions). Useful for asserting upload
@@ -623,7 +641,7 @@ class Sequence:
             total += elem.points
         return total
 
-    def element(self, pos):
+    def element(self, pos: int) -> Element:
         """
         Returns the element at the given position. Changes made to the return
         value of this methods will apply to the sequence. If this is undesired,
@@ -644,7 +662,7 @@ class Sequence:
         return elem
 
     @staticmethod
-    def _plotSummary(seq: Dict[int, Dict]) -> Dict[int, Dict[str, np.ndarray]]:
+    def _plot_summary(seq: Dict[int, Dict]) -> Dict[int, Dict[str, np.ndarray]]:
         """
         Return a plotting summary of a subsequence.
 
@@ -701,7 +719,7 @@ class Sequence:
             A nested dictionary holding the forged sequence.
         """
         # Validation
-        if not self.checkConsistency():
+        if not self.check_consistency():
             raise ValueError('Can not generate output. Something is '
                              'inconsistent. Please run '
                              'checkConsistency(verbose=True) for more details')
@@ -770,23 +788,23 @@ class Sequence:
                             f_cut = self._awgspecs[keystr]['f_cut']
                             tau = self._awgspecs[keystr]['tau']
                             if f_cut is None:
-                                f_cut = 1/tau
-                            prefilter = data[channame]['wfm']
-                            postfilter = applyInverseRCFilter(prefilter,
-                                                              self.SR,
-                                                              kind,
-                                                              f_cut, order,
-                                                              DCgain=1)
-                            (output[pos1]
-                                   ['content']
-                                   [pos2]
-                                   ['data']
-                                   [channame]
-                                   ['wfm']) = postfilter
+                                f_cut = 1 / tau
+                            prefilter = data[channame]["wfm"]
+                            postfilter = applyInverseRCFilter(
+                                prefilter,
+                                self.sample_rate,
+                                kind,
+                                f_cut,
+                                order,
+                                DCgain=1,
+                            )
+                            (
+                                output[pos1]["content"][pos2]["data"][channame]["wfm"]
+                            ) = postfilter
 
         return output
 
-    def _prepareForOutputting(self) -> List[Dict[int, np.ndarray]]:
+    def _prepare_for_outputting(self) -> List[Dict[int, np.ndarray]]:
         """
         The preparser for numerical output. Applies delay and ripasso
         corrections.
@@ -799,7 +817,7 @@ class Sequence:
                 function must rescale to the specific format it adheres to.
         """
         # Validation
-        if not self.checkConsistency():
+        if not self.check_consistency():
             raise ValueError('Can not generate output. Something is '
                              'inconsistent. Please run '
                              'checkConsistency(verbose=True) for more details')
@@ -867,10 +885,9 @@ class Sequence:
                 else:
                     arrays = element[chan]['array']
                     for name, arr in arrays.items():
-                        pre_wait = np.zeros(int(delay/self.SR))
-                        post_wait = np.zeros(int((maxdelay-delay)/self.SR))
-                        arrays[name] = np.concatenate((pre_wait, arr,
-                                                       post_wait))
+                        pre_wait = np.zeros(int(delay / self.sample_rate))
+                        post_wait = np.zeros(int((maxdelay - delay) / self.sample_rate))
+                        arrays[name] = np.concatenate((pre_wait, arr, post_wait))
 
         # Now forge all the elements as specified
         elements = []  # the forged elements
@@ -888,19 +905,26 @@ class Sequence:
                 if f_cut is None:
                     f_cut = 1/tau
                 for pos in range(seqlen):
-                    prefilter = elements[pos][chan]['wfm']
-                    postfilter = applyInverseRCFilter(prefilter,
-                                                      self.SR,
-                                                      kind, f_cut, order,
-                                                      DCgain=1)
-                    elements[pos][chan]['wfm'] = postfilter
+                    prefilter = elements[pos][chan]["wfm"]
+                    postfilter = applyInverseRCFilter(
+                        prefilter, self.sample_rate, kind, f_cut, order, DCgain=1
+                    )
+                    elements[pos][chan]["wfm"] = postfilter
 
         return elements
 
-    def outputForSEQXFile(self) -> Tuple[List[int], List[int], List[int],
-                                         List[int], List[int],
-                                         List[List[np.ndarray]],
-                                         List[float], str]:
+    def output_for_seqx_file(
+        self,
+    ) -> Tuple[
+        List[int],
+        List[int],
+        List[int],
+        List[int],
+        List[int],
+        List[List[np.ndarray]],
+        List[float],
+        str,
+    ]:
         """
         Generate a tuple matching the call signature of the QCoDeS
         AWG70000A driver's `makeSEQXFile` function. If channel delays
@@ -918,7 +942,7 @@ class Sequence:
         """
 
         # most of the footwork is done by the following function
-        elements = self._prepareForOutputting()
+        elements = self._prepare_for_outputting()
         # _prepareForOutputting asserts that channel amplitudes and
         # full sequencing is specified
         seqlen = len(elements)
@@ -1036,7 +1060,7 @@ class Sequence:
         return (trig_waits, nreps, jump_states, jump_tos, gotos,
                 waveforms, amplitudes, self.name)
 
-    def outputForSEQXFileWithFlags(
+    def output_for_seqx_file_with_flags(
         self,
     ) -> Tuple[
         List[int],
@@ -1059,7 +1083,7 @@ class Sequence:
                 go_to, wfms, amplitudes, seqname, flags)
         """
 
-        elements = self._prepareForOutputting()
+        elements = self._prepare_for_outputting()
         seqlen = len(elements)
         channels = self.element(1).channels
 
@@ -1075,9 +1099,9 @@ class Sequence:
                 flags_pos.append(flags)
             all_flags.append(flags_pos)
 
-        return self.outputForSEQXFile() + (all_flags,)
+        return self.output_for_seqx_file() + (all_flags,)
 
-    def outputForAWGFile(self):
+    def output_for_awg_file(self):
         """
         Returns a sliceable object with items matching the call
         signature of the 'make_*_awg_file' functions of the QCoDeS
@@ -1092,7 +1116,7 @@ class Sequence:
 
         """
 
-        elements = self._prepareForOutputting()
+        elements = self._prepare_for_outputting()
         seqlen = len(elements)
         # all elements have ident. chans since _prepareForOutputting
         # did not raise an exception
@@ -1191,3 +1215,87 @@ class Sequence:
                              jump_tos), self.channels)
 
         return output
+
+
+class _AWGOutput:
+    """
+    Class used inside Sequence.outputForAWGFile
+
+    Allows for easy-access slicing to return several valid tuples
+    for the QCoDeS Tektronix AWG 5014 driver from the same sequence.
+
+    Example:
+    A sequence, myseq, specifies channels 1, 2, 3, 4.
+
+    out = myseq.outputForAWGFile()
+
+    out[:] <--- tuple with all channels
+    out[1:3] <--- tuple with channels 1, 2
+    out[2] <--- tuple with channel 2
+    """
+
+    def __init__(self, rawpackage, channels):
+        """
+        Rawpackage is a tuple:
+        (wfms, m1s, m2s, nreps, trig_wait, goto, jump)
+
+        Channels is a list of what the channels were called in their
+        sequence object whence this instance is created
+        """
+
+        self.channels = channels
+
+        self._channels = {}
+        for ii in range(len(rawpackage[0])):
+            self._channels[ii] = {
+                "wfms": rawpackage[0][ii],
+                "m1s": rawpackage[1][ii],
+                "m2s": rawpackage[2][ii],
+            }
+        self.nreps = rawpackage[3]
+        self.trig_wait = rawpackage[4]
+        self.goto = rawpackage[5]
+        self.jump = rawpackage[6]
+
+    def __getitem__(self, key):
+
+        if isinstance(key, int):
+            if key in self._channels.keys():
+                output = (
+                    [self._channels[key]["wfms"]],
+                    [self._channels[key]["m1s"]],
+                    [self._channels[key]["m2s"]],
+                    self.nreps,
+                    self.trig_wait,
+                    self.goto,
+                    self.jump,
+                )
+
+                return output
+            else:
+                raise KeyError(f"{key} is not a valid key.")
+
+        if isinstance(key, slice):
+            start = key.start
+            if start is None:
+                start = 0
+
+            stop = key.stop
+            if stop is None:
+                stop = len(self._channels.keys())
+
+            step = key.step
+            if step is None:
+                step = 1
+
+            indeces = range(start, stop, step)
+
+            wfms = [self._channels[ind]["wfms"] for ind in indeces]
+            m1s = [self._channels[ind]["m1s"] for ind in indeces]
+            m2s = [self._channels[ind]["m2s"] for ind in indeces]
+
+            output = (wfms, m1s, m2s, self.nreps, self.trig_wait, self.goto, self.jump)
+
+            return output
+
+        raise KeyError("Key must be int or slice!")

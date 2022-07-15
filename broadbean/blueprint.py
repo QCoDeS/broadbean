@@ -1,11 +1,13 @@
 # This file is for defining the blueprint object
 
-import warnings
-from inspect import signature
+from __future__ import annotations
+
 import functools as ft
-from typing import List, Dict
 import json
 import re
+import warnings
+from inspect import signature
+from typing import Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -16,7 +18,7 @@ class SegmentDurationError(Exception):
     pass
 
 
-class BluePrint():
+class BluePrint:
     """
     The class of a waveform to become.
     """
@@ -112,7 +114,7 @@ class BluePrint():
         self._SR = SR
 
     @staticmethod
-    def _basename(string):
+    def _basename(string: str) -> Optional[str]:
         """
         Remove trailing numbers from a string.
         """
@@ -138,7 +140,7 @@ class BluePrint():
         # return ''.join(lst)
 
     @staticmethod
-    def _make_names_unique(lst):
+    def _make_names_unique(lst: List[str]) -> Optional[List[str]]:
         """
         Make all strings in the input list unique
         by appending numbers to reoccuring strings
@@ -167,14 +169,14 @@ class BluePrint():
         return lst
 
     @property
-    def length_segments(self):
+    def length_segments(self) -> int:
         """
         Returns the number of segments in the blueprint
         """
         return len(self._namelist)
 
     @property
-    def duration(self):
+    def duration(self) -> Optional[float]:
         """
         The total duration of the BluePrint. If necessary, all the arrays
         are built.
@@ -185,7 +187,7 @@ class BluePrint():
         if (not(waits) and not(ensavgs)):
             return sum(self._durslist)
         elif (waits and not(ensavgs)):
-            waitdurations = self._makeWaitDurations()
+            waitdurations = self._make_wait_durations()
             return sum(waitdurations)
         elif ensavgs:
             # TODO: call the forger
@@ -193,14 +195,14 @@ class BluePrint():
                                       ' exist yet. Cannot proceed')
 
     @property
-    def points(self):
+    def points(self) -> Optional[int]:
         """
         The total number of points in the BluePrint. If necessary,
         all the arrays are built.
         """
         waits = 'waituntil' in self._funlist
         ensavgs = 'ensureaverage_fixed_level' in self._funlist
-        SR = self.SR
+        SR = self.sample_rate
 
         if SR is None:
             raise ValueError('No sample rate specified, can not '
@@ -209,7 +211,7 @@ class BluePrint():
         if (not(waits) and not(ensavgs)):
             return int(np.round(sum(self._durslist)*SR))
         elif (waits and not(ensavgs)):
-            waitdurations = self._makeWaitDurations()
+            waitdurations = self._make_wait_durations()
             return int(np.round(sum(waitdurations)*SR))
         elif ensavgs:
             # TODO: call the forger
@@ -224,7 +226,7 @@ class BluePrint():
         return self._durslist
 
     @property
-    def SR(self):
+    def sample_rate(self):
         """
         Sample rate of the blueprint
         """
@@ -298,11 +300,16 @@ class BluePrint():
             if seg_dict['function'] == 'waituntil':
                 arguments = blue_dict[seg]['arguments'].values()
                 arguments = (list(arguments)[0][0],)
-                bp_seg.insertSegment(i, 'waituntil', arguments)
+                bp_seg.insert_segment(i, "waituntil", arguments)
             else:
-                arguments = tuple(blue_dict[seg]['arguments'].values())
-                bp_seg.insertSegment(i, knowfunctions[seg_dict['function']],
-                                     arguments, name=re.sub(r'\d', "", seg_dict['name']), dur=seg_dict['durations'])
+                arguments = tuple(blue_dict[seg]["arguments"].values())
+                bp_seg.insert_segment(
+                    i,
+                    knowfunctions[seg_dict["function"]],
+                    arguments,
+                    name=re.sub(r"\d", "", seg_dict["name"]),
+                    dur=seg_dict["durations"],
+                )
             bp_sum = bp_sum + bp_seg
         bp_sum.marker1 = blue_dict['marker1_abs']
         bp_sum.marker2 = blue_dict['marker2_abs']
@@ -313,7 +320,7 @@ class BluePrint():
         return bp_sum
 
     @classmethod
-    def init_from_json(cls, path_to_file: str) -> 'BluePrint':
+    def init_from_json(cls, path_to_file: str) -> BluePrint:
         """
         Reads blueprint from JSON file
 
@@ -328,7 +335,7 @@ class BluePrint():
             data_loaded = json.load(fp)
         return cls.blueprint_from_description(data_loaded)
 
-    def _makeWaitDurations(self):
+    def _make_wait_durations(self):
         """
         Translate waituntills into durations and return that list.
         """
@@ -365,7 +372,7 @@ class BluePrint():
 
         return durations
 
-    def showPrint(self):
+    def show_print(self):
         """
         Pretty-print the contents of the BluePrint. Not finished.
         """
@@ -394,7 +401,13 @@ class BluePrint():
             print('Segment {}: "{}", {}, {}, {}'.format(*list_p))
         print('-'*10)
 
-    def changeArg(self, name, arg, value, replaceeverywhere=False):
+    def change_arguments(
+        self,
+        name: str,
+        arg: str | int,
+        value: int | float,
+        replaceeverywhere: bool = False,
+    ):
         """
         Change an argument of one or more of the functions in the blueprint.
 
@@ -468,7 +481,9 @@ class BluePrint():
             larg[arg] = value
             self._argslist[position] = tuple(larg)
 
-    def changeDuration(self, name, dur, replaceeverywhere=False):
+    def change_duration(
+        self, name: str, duration: float | int, replaceeverywhere=False
+    ):
         """
         Change the duration of one or more segments in the blueprint
 
@@ -490,9 +505,11 @@ class BluePrint():
                 1/SR.
         """
 
-        if (not(isinstance(dur, float)) and not(isinstance(dur, int))):
-            raise ValueError('New duration must be an int or a float. '
-                             'Received {}'.format(type(dur)))
+        if not (isinstance(duration, float)) and not (isinstance(duration, int)):
+            raise ValueError(
+                "New duration must be an int or a float. "
+                "Received {}".format(type(duration))
+            )
 
         if replaceeverywhere:
             basename = BluePrint._basename
@@ -510,27 +527,28 @@ class BluePrint():
         for name in replacelist:
             position = self._namelist.index(name)
 
-            if dur <= 0:
+            if duration <= 0:
                 raise ValueError('Duration must be strictly greater '
                                  'than zero.')
 
-            if self.SR is not None:
-                if dur*self.SR < 1:
-                    raise ValueError('Duration too short! Must be at'
-                                     ' least 1/sample rate.')
+            if self.sample_rate is not None:
+                if duration * self.sample_rate < 1:
+                    raise ValueError(
+                        "Duration too short! Must be at" " least 1/sample rate."
+                    )
 
-            self._durslist[position] = dur
+            self._durslist[position] = duration
 
-    def setSR(self, SR):
+    def set_sample_rate(self, sample_rate: float | int) -> None:
         """
         Set the associated sample rate
 
         Args:
-            SR (Union[int, float]): The sample rate in Sa/s.
+            sample_rate (Union[int, float]): The sample rate in Sa/s.
         """
-        self._SR = SR
+        self._SR = sample_rate
 
-    def setSegmentMarker(self, name, specs, markerID):
+    def set_segment_marker(self, name: str, specs: Tuple, markerID: int) -> None:
         """
         Bind a marker to a specific segment.
 
@@ -550,7 +568,7 @@ class BluePrint():
         # TODO: Do we need more than one bound marker per segment?
         markerselect[markerID][position] = specs
 
-    def removeSegmentMarker(self, name: str, markerID: int) -> None:
+    def remove_segment_marker(self, name: str, markerID: int) -> None:
         """
         Remove all bound markers from a specific segment
 
@@ -590,8 +608,14 @@ class BluePrint():
                          self._SR,
                          self._durslist)
 
-    def insertSegment(self, pos, func, args=(), dur=None, name=None,
-                      durs=None):
+    def insert_segment(
+        self,
+        pos: int,
+        func: Callable,
+        args: Optional[Tuple] = (),
+        dur: Optional[float | int] = None,
+        name: Optional[str] = None,
+    ) -> None:
         """
         Insert a segment into the bluePrint.
 
@@ -622,13 +646,6 @@ class BluePrint():
             raise ValueError('Can not have more than one "ensureaverage"'
                              ' segment in a blueprint.')
 
-        if durs is not None:
-            warnings.warn('Deprecation warning: please specify "dur" rather '
-                          'than "durs" when inserting a segment')
-            if dur is None:
-                dur = durs
-            else:
-                raise ValueError('You can not specify "durs" AND "dur"!')
         # Take care of 'waituntil'
 
         # allow users to input single values
@@ -665,7 +682,7 @@ class BluePrint():
             self._segmark2.insert(pos, (0, 0))
             self._durslist.insert(pos, dur)
 
-    def removeSegment(self, name):
+    def remove_segment(self, name: str) -> None:
         """
         Remove the specified segment from the blueprint.
 
@@ -686,7 +703,7 @@ class BluePrint():
 
         self._namelist = self._make_names_unique(self._namelist)
 
-    def __add__(self, other):
+    def __add__(self, other: BluePrint) -> BluePrint:
         """
         Add two BluePrints. The second argument is appended to the first
         and a new BluePrint is returned.
@@ -727,12 +744,12 @@ class BluePrint():
         new_bp._segmark2 = sm2.copy()
         new_bp._durslist = dl.copy()
 
-        if self.SR is not None:
-            new_bp.setSR(self.SR)
+        if self.sample_rate is not None:
+            new_bp.set_sample_rate(self.sample_rate)
 
         return new_bp
 
-    def __eq__(self, other):
+    def __eq__(self, other: BluePrint) -> bool:
         """
         Compare two blueprints. They are the same iff all
         lists are identical.

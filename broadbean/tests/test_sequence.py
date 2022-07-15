@@ -22,42 +22,42 @@ def protosequence1():
     SR = 1e9
 
     th = bb.BluePrint()
-    th.insertSegment(0, ramp, args=(0, 0), name='ramp', dur=10e-6)
-    th.insertSegment(1, ramp, args=(1, 1), name='ramp', dur=5e-6)
-    th.insertSegment(2, ramp, args=(0, 0), name='ramp', dur=10e-6)
-    th.setSR(SR)
+    th.insert_segment(0, ramp, args=(0, 0), name="ramp", dur=10e-6)
+    th.insert_segment(1, ramp, args=(1, 1), name="ramp", dur=5e-6)
+    th.insert_segment(2, ramp, args=(0, 0), name="ramp", dur=10e-6)
+    th.set_sample_rate(SR)
 
     wiggle1 = bb.BluePrint()
-    wiggle1.insertSegment(0, sine, args=(4e6, 0.5, 0), dur=25e-6)
-    wiggle1.setSR(SR)
+    wiggle1.insert_segment(0, sine, args=(4e6, 0.5, 0), dur=25e-6)
+    wiggle1.set_sample_rate(SR)
 
     wiggle2 = bb.BluePrint()
-    wiggle2.insertSegment(0, sine, args=(8e6, 0.5, 0), dur=25e-6)
-    wiggle2.setSR(SR)
+    wiggle2.insert_segment(0, sine, args=(8e6, 0.5, 0), dur=25e-6)
+    wiggle2.set_sample_rate(SR)
 
     elem1 = bb.Element()
-    elem1.addBluePrint(1, th)
-    elem1.addBluePrint(2, wiggle1)
+    elem1.add_blueprint(1, th)
+    elem1.add_blueprint(2, wiggle1)
 
     elem2 = bb.Element()
-    elem2.addBluePrint(1, th)
-    elem2.addBluePrint(2, wiggle2)
+    elem2.add_blueprint(1, th)
+    elem2.add_blueprint(2, wiggle2)
 
     seq = Sequence()
-    seq.addElement(1, elem1)
-    seq.addElement(2, elem2)
-    seq.setSR(SR)
+    seq.add_element(1, elem1)
+    seq.add_element(2, elem2)
+    seq.set_sample_rate(SR)
 
-    seq.setChannelAmplitude(1, 2)
-    seq.setChannelOffset(1, 0)
-    seq.setChannelAmplitude(2, 2)
-    seq.setChannelOffset(2, 0)
-    seq.setSequencingTriggerWait(1, 1)
-    seq.setSequencingEventJumpTarget(1, 1)
-    seq.setSequencingGoto(1, 1)
-    seq.setSequencingTriggerWait(2, 1)
-    seq.setSequencingEventJumpTarget(2, 1)
-    seq.setSequencingGoto(2, 1)
+    seq.set_channel_amplitude(1, 2)
+    seq.set_channel_offset(1, 0)
+    seq.set_channel_amplitude(2, 2)
+    seq.set_channel_offset(2, 0)
+    seq.set_sequencing_trigger_wait(1, 1)
+    seq.set_sequencing_event_jump_target(1, 1)
+    seq.set_sequencing_goto(1, 1)
+    seq.set_sequencing_trigger_wait(2, 1)
+    seq.set_sequencing_event_jump_target(2, 1)
+    seq.set_sequencing_goto(2, 1)
 
     return seq
 
@@ -68,39 +68,39 @@ def protosequence2():
     SR = 1e9
 
     saw = bb.BluePrint()
-    saw.insertSegment(0, ramp, args=(0, 100e-3), dur=11e-6)
-    saw.insertSegment(1, 'waituntil', args=(25e-6))
-    saw.setSR(SR)
+    saw.insert_segment(0, ramp, args=(0, 100e-3), dur=11e-6)
+    saw.insert_segment(1, "waituntil", args=(25e-6))
+    saw.set_sample_rate(SR)
 
     lineandwiggle = bb.BluePrint()
-    lineandwiggle.insertSegment(0, 'waituntil', args=(11e-6))
-    lineandwiggle.insertSegment(1, sine, args=(10e6, 50e-6, 10e-6), dur=14e-6)
-    lineandwiggle.setSR(SR)
+    lineandwiggle.insert_segment(0, "waituntil", args=(11e-6))
+    lineandwiggle.insert_segment(1, sine, args=(10e6, 50e-6, 10e-6), dur=14e-6)
+    lineandwiggle.set_sample_rate(SR)
 
     elem1 = bb.Element()
-    elem1.addBluePrint(1, saw)
-    elem1.addBluePrint(2, lineandwiggle)
+    elem1.add_blueprint(1, saw)
+    elem1.add_blueprint(2, lineandwiggle)
 
     elem2 = bb.Element()
-    elem2.addBluePrint(2, saw)
-    elem2.addBluePrint(1, lineandwiggle)
+    elem2.add_blueprint(2, saw)
+    elem2.add_blueprint(1, lineandwiggle)
 
     seq = Sequence()
-    seq.setSR(SR)
-    seq.addElement(1, elem1)
-    seq.addElement(2, elem2)
+    seq.set_sample_rate(SR)
+    seq.add_element(1, elem1)
+    seq.add_element(2, elem2)
 
-    seq.setChannelAmplitude(1, 1.5)
-    seq.setChannelOffset(1, 0)
-    seq.setChannelAmplitude(2, 1)
-    seq.setChannelOffset(2, 0)
-    seq.setSequencingTriggerWait(1, 0)
-    seq.setSequencingTriggerWait(2, 1)
-    seq.setSequencingNumberOfRepetitions(1, 2)
-    seq.setSequencingEventJumpTarget(1, 0)
-    seq.setSequencingEventJumpTarget(2, 0)
-    seq.setSequencingGoto(1, 2)
-    seq.setSequencingGoto(2, 1)
+    seq.set_channel_amplitude(1, 1.5)
+    seq.set_channel_offset(1, 0)
+    seq.set_channel_amplitude(2, 1)
+    seq.set_channel_offset(2, 0)
+    seq.set_sequencing_trigger_wait(1, 0)
+    seq.set_sequencing_trigger_wait(2, 1)
+    seq.set_sequencing_number_of_repetitions(1, 2)
+    seq.set_sequencing_event_jump_target(1, 0)
+    seq.set_sequencing_event_jump_target(2, 0)
+    seq.set_sequencing_goto(1, 2)
+    seq.set_sequencing_goto(2, 1)
 
     return seq
 
@@ -111,36 +111,36 @@ def badseq_missing_pos():
     SR = 1e9
 
     saw = bb.BluePrint()
-    saw.insertSegment(0, ramp, args=(0, 100e-3), dur=11e-6)
-    saw.insertSegment(1, 'waituntil', args=(25e-6))
-    saw.setSR(SR)
+    saw.insert_segment(0, ramp, args=(0, 100e-3), dur=11e-6)
+    saw.insert_segment(1, "waituntil", args=(25e-6))
+    saw.set_sample_rate(SR)
 
     lineandwiggle = bb.BluePrint()
-    lineandwiggle.insertSegment(0, 'waituntil', args=(11e-6))
-    lineandwiggle.insertSegment(1, sine, args=(10e6, 50e-6, 10e-6), dur=14e-6)
-    lineandwiggle.setSR(SR)
+    lineandwiggle.insert_segment(0, "waituntil", args=(11e-6))
+    lineandwiggle.insert_segment(1, sine, args=(10e6, 50e-6, 10e-6), dur=14e-6)
+    lineandwiggle.set_sample_rate(SR)
 
     elem1 = bb.Element()
-    elem1.addBluePrint(1, saw)
-    elem1.addBluePrint(2, lineandwiggle)
+    elem1.add_blueprint(1, saw)
+    elem1.add_blueprint(2, lineandwiggle)
 
     elem2 = bb.Element()
-    elem2.addBluePrint(2, saw)
-    elem2.addBluePrint(1, lineandwiggle)
+    elem2.add_blueprint(2, saw)
+    elem2.add_blueprint(1, lineandwiggle)
 
     seq = Sequence()
-    seq.setSR(SR)
-    seq.addElement(1, elem1)
-    seq.addElement(3, elem2)  # <--- A gap in the sequence
+    seq.set_sample_rate(SR)
+    seq.add_element(1, elem1)
+    seq.add_element(3, elem2)  # <--- A gap in the sequence
 
-    seq.setChannelAmplitude(1, 1.5)
-    seq.setChannelOffset(1, 0)
-    seq.setChannelAmplitude(2, 1)
-    seq.setChannelOffset(2, 0)
-    seq.setSequencingTriggerWait(3, 1)
-    seq.setSequencingNumberOfRepetitions(1, 2)
-    seq.setSequencingGoto(1, 2)
-    seq.setSequencingGoto(3, 1)
+    seq.set_channel_amplitude(1, 1.5)
+    seq.set_channel_offset(1, 0)
+    seq.set_channel_amplitude(2, 1)
+    seq.set_channel_offset(2, 0)
+    seq.set_sequencing_trigger_wait(3, 1)
+    seq.set_sequencing_number_of_repetitions(1, 2)
+    seq.set_sequencing_goto(1, 2)
+    seq.set_sequencing_goto(3, 1)
     # seq.setSequenceSettings(1, 0, 2, 0, 2)
     # seq.setSequenceSettings(2, 1, 1, 0, 1)
 
@@ -153,13 +153,13 @@ def squarepulse_baseelem():
     SR = 1e6
 
     basebp = bb.BluePrint()
-    basebp.insertSegment(0, ramp, (0, 0), dur=0.5e-4)
-    basebp.insertSegment(1, ramp, (1, 1), dur=1e-4, name='varyme')
-    basebp.insertSegment(2, 'waituntil', 5e-4)
-    basebp.setSR(SR)
+    basebp.insert_segment(0, ramp, (0, 0), dur=0.5e-4)
+    basebp.insert_segment(1, ramp, (1, 1), dur=1e-4, name="varyme")
+    basebp.insert_segment(2, "waituntil", 5e-4)
+    basebp.set_sample_rate(SR)
 
     baseelem = bb.Element()
-    baseelem.addBluePrint(1, basebp)
+    baseelem.add_blueprint(1, basebp)
 
     return baseelem
 
@@ -290,24 +290,24 @@ def test_add_subsequence_raises(protosequence1, squarepulse_baseelem):
         protosequence1.addSubSequence(1, squarepulse_baseelem)
 
     seq = Sequence()
-    seq.addElement(1, squarepulse_baseelem)
-    seq.setSR(squarepulse_baseelem.SR)
+    seq.add_element(1, squarepulse_baseelem)
+    seq.set_sample_rate(squarepulse_baseelem.SR)
 
     mainseq = Sequence()
-    mainseq.setSR(seq.SR/2)
+    mainseq.set_sample_rate(seq.sample_rate / 2)
 
     # raise if the subsequence sample rate does not match the main seq. SR
     with pytest.raises(ValueError):
-        mainseq.addSubSequence(1, seq)
+        mainseq.add_subsequence(1, seq)
 
-    mainseq.setSR(seq.SR)
-    mainseq.addSubSequence(1, seq)
+    mainseq.set_sample_rate(seq.sample_rate)
+    mainseq.add_subsequence(1, seq)
 
     doublemainseq = Sequence()
-    doublemainseq.setSR(seq.SR)
+    doublemainseq.set_sample_rate(seq.sample_rate)
 
     with pytest.raises(ValueError):
-        doublemainseq.addSubSequence(1, mainseq)
+        doublemainseq.add_subsequence(1, mainseq)
 
 ##################################################
 # AWG settings

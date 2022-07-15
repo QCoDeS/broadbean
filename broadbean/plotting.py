@@ -51,15 +51,15 @@ def _plot_object_validator(obj_to_plot: BBObject) -> None:
     Validate the object
     """
     if isinstance(obj_to_plot, Sequence):
-        proceed = obj_to_plot.checkConsistency(verbose=True)
+        proceed = obj_to_plot.check_consistency(verbose=True)
         if not proceed:
             raise SequenceConsistencyError
 
     elif isinstance(obj_to_plot, Element):
-        obj_to_plot.validateDurations()
+        obj_to_plot.validate_durations()
 
     elif isinstance(obj_to_plot, BluePrint):
-        assert obj_to_plot.SR is not None
+        assert obj_to_plot.sample_rate is not None
 
 
 def _plot_object_forger(obj_to_plot: BBObject,
@@ -71,15 +71,15 @@ def _plot_object_forger(obj_to_plot: BBObject,
 
     if isinstance(obj_to_plot, BluePrint):
         elem = Element()
-        elem.addBluePrint(1, obj_to_plot)
+        elem.add_blueprint(1, obj_to_plot)
         seq = Sequence()
-        seq.addElement(1, elem)
-        seq.setSR(obj_to_plot.SR)
+        seq.add_element(1, elem)
+        seq.set_sample_rate(obj_to_plot.sample_rate)
 
     elif isinstance(obj_to_plot, Element):
         seq = Sequence()
-        seq.addElement(1, obj_to_plot)
-        seq.setSR(obj_to_plot._meta['SR'])
+        seq.add_element(1, obj_to_plot)
+        seq.set_sample_rate(obj_to_plot._meta["SR"])
 
     elif isinstance(obj_to_plot, Sequence):
         seq = obj_to_plot

@@ -41,8 +41,7 @@ class Element:
         self._data = {}
         self._meta = {}
 
-    def addBluePrint(self, channel: Union[str, int],
-                     blueprint: BluePrint) -> None:
+    def add_blueprint(self, channel: Union[str, int], blueprint: BluePrint) -> None:
         """
         Add a blueprint to the element on the specified channel.
         Overwrites whatever was there before.
@@ -61,7 +60,7 @@ class Element:
         self._data[channel] = {}
         self._data[channel]['blueprint'] = newprint
 
-    def addFlags(
+    def add_flags(
         self, channel: Union[str, int], flags: Sequence[Union[str, int]]
     ) -> None:
         """
@@ -102,8 +101,9 @@ class Element:
 
         self._data[channel]["flags"] = flags_int
 
-    def addArray(self, channel: Union[int, str], waveform: np.ndarray,
-                 SR: int, **kwargs) -> None:
+    def add_array(
+        self, channel: Union[int, str], waveform: np.ndarray, SR: int, **kwargs
+    ) -> None:
         """
         Add an array of voltage value to the element on the specified channel.
         Overwrites whatever was there before. Markers can be specified via
@@ -129,7 +129,7 @@ class Element:
         self._data[channel]['array']['wfm'] = waveform
         self._data[channel]['SR'] = SR
 
-    def validateDurations(self):
+    def validate_durations(self):
         """
         Check that all channels have the same specified duration, number of
         points and sample rate.
@@ -197,8 +197,7 @@ class Element:
         self._meta['SR'] = SRs[0]
         self._meta['duration'] = durations[0]
 
-    def getArrays(self,
-                  includetime: bool=False) -> Dict[int, Dict[str, np.ndarray]]:
+    def get_arrays(self, includetime: bool = False) -> Dict[int, Dict[str, np.ndarray]]:
         """
         Return arrays of the element. Heavily used by the Sequence.
 
@@ -239,13 +238,13 @@ class Element:
         return outdict
 
     @property
-    def SR(self):
+    def sample_rate(self) -> float:
         """
         Returns the sample rate, if well-defined. Else raises
         an error about what went wrong.
         """
         # Will either raise an error or set self._data['SR']
-        self.validateDurations()
+        self.validate_durations()
 
         return self._meta['SR']
 
@@ -255,7 +254,7 @@ class Element:
         Returns the number of points of each channel if that number is
         well-defined. Else an error is raised.
         """
-        self.validateDurations()
+        self.validate_durations()
 
         # pick out what is on the channels
         channels = self._data.values()
@@ -278,18 +277,18 @@ class Element:
             raise KeyError('Empty Element, nothing assigned')
 
     @property
-    def duration(self):
+    def duration(self) -> float:
         """
         Returns the duration in seconds of the element, if said duration is
         well-defined. Else raises an error.
         """
         # Will either raise an error or set self._data['SR']
-        self.validateDurations()
+        self.validate_durations()
 
         return self._meta['duration']
 
     @property
-    def channels(self):
+    def channels(self) -> List[str]:
         """
         The channels that has something on them
         """
@@ -297,7 +296,7 @@ class Element:
         return chans
 
     @property
-    def description(self):
+    def description(self) -> Dict:
         """
         Returns a dict describing the element.
         """
@@ -326,7 +325,7 @@ class Element:
             json.dump(self.description, fp, indent=4)
 
     @classmethod
-    def element_from_description(cls, element_dict):
+    def element_from_description(cls, element_dict: Dict) -> Element:
         """
         Returns a blueprint from a description given as a dict
 
@@ -338,7 +337,7 @@ class Element:
         elem = cls()
         for chan in channels_list:
             bp_sum = BluePrint.blueprint_from_description(element_dict[chan])
-            elem.addBluePrint(int(chan), bp_sum)
+            elem.add_blueprint(int(chan), bp_sum)
         return elem
 
     @classmethod
@@ -357,9 +356,14 @@ class Element:
             data_loaded = json.load(fp)
         return cls.element_from_description(data_loaded)
 
-    def changeArg(self, channel: Union[str, int],
-                  name: str, arg: Union[str, int], value: Union[int, float],
-                  replaceeverywhere: bool=False) -> None:
+    def change_arguments(
+        self,
+        channel: Union[str, int],
+        name: str,
+        arg: Union[str, int],
+        value: Union[int, float],
+        replaceeverywhere: bool = False,
+    ) -> None:
         """
         Change the argument of a function of the blueprint on the specified
         channel.
@@ -391,9 +395,13 @@ class Element:
 
         bp.changeArg(name, arg, value, replaceeverywhere)
 
-    def changeDuration(self, channel: Union[str, int], name: str,
-                       newdur: Union[int, float],
-                       replaceeverywhere: bool=False) -> None:
+    def change_duration(
+        self,
+        channel: Union[str, int],
+        name: str,
+        newdur: Union[int, float],
+        replaceeverywhere: bool = False,
+    ) -> None:
         """
         Change the duration of a segment of the blueprint on the specified
         channel
@@ -419,7 +427,7 @@ class Element:
 
         bp.changeDuration(name, newdur, replaceeverywhere)
 
-    def _applyDelays(self, delays: List[float]) -> None:
+    def _apply_delays(self, delays: List[float]) -> None:
         """
         Apply delays to the channels of this element. This function is intended
         to be used via a Sequence object. Note that this function changes
@@ -443,7 +451,7 @@ class Element:
         # zeros segment at the end.
         # If already-forged arrays are found, simply append and prepend zeros
 
-        SR = self.SR
+        SR = self.sample_rate
         maxdelay = max(delays)
 
         for chanind, chan in enumerate(self.channels):
@@ -473,7 +481,7 @@ class Element:
                     post_wait = np.zeros(int((maxdelay-delay)*SR))
                     arrays[name] = np.concatenate((pre_wait, arr, post_wait))
 
-    def copy(self):
+    def copy(self) -> Element:
         """
         Return a copy of the element
         """
@@ -482,7 +490,7 @@ class Element:
         new._meta = deepcopy(self._meta)
         return new
 
-    def __eq__(self, other):
+    def __eq__(self, other: Element) -> bool:
         if not isinstance(other, Element):
             return False
         elif not self._data == other._data:
