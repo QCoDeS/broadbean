@@ -175,13 +175,13 @@ def test_applyDelays(mixed_element):
     assert len(arrays_before[1]['wfm']) == 5000
 
     with pytest.raises(ValueError):
-        mixed_element._applyDelays([-0.1, 3, 4])
+        mixed_element._apply_delays([-0.1, 3, 4])
 
     with pytest.raises(ValueError):
-        mixed_element._applyDelays([0, 1])
+        mixed_element._apply_delays([0, 1])
 
     element = mixed_element.copy()
-    element._applyDelays(delays)
+    element._apply_delays(delays)
 
     arrays_after = element.getArrays()
     assert len(arrays_after[1]['wfm']) == 5200

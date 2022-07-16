@@ -9,7 +9,7 @@ from inspect import signature
 from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
-from deprecate import deprecate
+from broadbean.deprecate import deprecate
 
 from .broadbean import PulseAtoms
 

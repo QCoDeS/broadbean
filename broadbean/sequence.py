@@ -11,8 +11,8 @@ from typing import Dict, List, Tuple, Union, cast
 import numpy as np
 from schema import Optional, Or, Schema
 
-from broadbean import deprecate
 from broadbean.blueprint import BluePrint
+from broadbean.deprecate import deprecate
 from broadbean.element import Element  # TODO: change import to element.py
 from broadbean.ripasso import applyInverseRCFilter
 
@@ -1949,9 +1949,9 @@ class Sequence:
                 if isinstance(data[pos], Sequence):
                     subseq = data[pos]
                     for elem in subseq._data.values():
-                        elem._applyDelays(delays)
+                        elem._apply_delays(delays)
                 elif isinstance(data[pos], Element):
-                    data[pos]._applyDelays(delays)
+                    data[pos]._apply_delays(delays)
 
         # forge arrays and form the output dict
         for pos in range(1, seqlen + 1):
