@@ -20,7 +20,7 @@ ____
 Improved:
 _________
 
-- Fix for invalid identity comparisons in blueprint subomdule. (#102)
+- Fix for invalid identity comparisons in blueprint submodule. (#102)
 
 
 Behind The Scenes:
