@@ -822,7 +822,7 @@ class BluePrint():
         self.change_duration(name, dur, replaceeverywhere)
 
     @deprecate(reason="Does not adhear to PEP8", alternative="set_sample_rate")
-    def set_sample_rate(self, SR):
+    def setSR(self, SR):
         self.set_sample_rate(SR)
 
     @deprecate(reason="Does not adhear to PEP8", alternative="set_segment_marker")
@@ -834,7 +834,7 @@ class BluePrint():
         self.remove_segment_marker(name, markerID)
 
     @deprecate(reason="Does not adhear to PEP8", alternative="insert_segment")
-    def insert_segment(self, pos, func, args=(), dur=None, name=None, durs=None):
+    def insertSegment(self, pos, func, args=(), dur=None, name=None, durs=None):
         self.insert_segment(pos, func, args, dur, name, durs)
 
     @deprecate(reason="Does not adhear to PEP8", alternative="remove_segment")
