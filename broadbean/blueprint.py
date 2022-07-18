@@ -4,11 +4,11 @@ from __future__ import annotations
 import functools as ft
 import json
 import re
-import warnings
 from inspect import signature
-from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Callable, Dict, List, NoReturn, Optional, Sequence, Tuple, Union
 
 import numpy as np
+
 from broadbean.deprecate import deprecate
 
 from .broadbean import PulseAtoms
@@ -119,7 +119,7 @@ class BluePrint():
         self._SR = SR
 
     @staticmethod
-    def _basename(string: str) -> Optional[str]:
+    def _basename(string: str) -> str | NoReturn:
         """
         Remove trailing numbers from a string.
         """
@@ -179,7 +179,7 @@ class BluePrint():
         return len(self._namelist)
 
     @property
-    def duration(self) -> Optional[int]:
+    def duration(self) -> int | NoReturn:
         """
         The total duration of the BluePrint. If necessary, all the arrays
         are built.
@@ -198,7 +198,7 @@ class BluePrint():
                                       ' exist yet. Cannot proceed')
 
     @property
-    def points(self) -> Optional[int]:
+    def points(self) -> int | NoReturn:
         """
         The total number of points in the BluePrint. If necessary,
         all the arrays are built.
@@ -222,26 +222,19 @@ class BluePrint():
                                       ' exist yet. Cannot proceed')
 
     @property
-    def durations(self) -> Optional[List[int | float]]:
+    def durations(self) -> Optional[List[float]]:
         """
         The list of durations
         """
         return self._durslist
 
-    @property
-    @deprecate(reason="Outdated method call.", alternative="sample_rate")
-    def SR(self):
-        """
-        Sample rate of the blueprint
-        """
-        return self._SR
 
     @property
     def sample_rate(self):
         """
         Sample rate of the blueprint
         """
-        return self._sample_rate
+        return self._SR
 
     @property
     def description(self) -> Dict:
@@ -379,35 +372,6 @@ class BluePrint():
 
         return durations
 
-    @deprecate(reason="Does not adhear to PEP8", alternative="show_print")
-    def showPrint(self):
-        """
-        Pretty-print the contents of the BluePrint. Not finished.
-        """
-        # TODO: tidy up this method and make it use the description property
-
-        if self._durslist is None:
-            dl = [None]*len(self._namelist)
-        else:
-            dl = self._durslist
-
-        datalists = [self._namelist, self._funlist, self._argslist,
-                     dl]
-
-        lzip = zip(*datalists)
-
-        print('Legend: Name, function, arguments, timesteps, durations')
-
-        for ind, (name, fun, args, dur) in enumerate(lzip):
-            ind_p = ind+1
-            if fun == 'waituntil':
-                fun_p = fun
-            else:
-                fun_p = fun.__str__().split(' ')[1]
-
-            list_p = [ind_p, name, fun_p, args, dur]
-            print('Segment {}: "{}", {}, {}, {}'.format(*list_p))
-        print('-'*10)
 
     def show_print(self):
         """
@@ -437,88 +401,12 @@ class BluePrint():
             print('Segment {}: "{}", {}, {}, {}'.format(*list_p))
         print("-" * 10)
 
-    @deprecate(
-        reason="Does not adhear to PEP8", alternative="change_blueprint_argument"
-    )
-    def changeArg(self, name, arg, value, replaceeverywhere=False):
-        """
-        Change an argument of one or more of the functions in the blueprint.
-
-        Args:
-            name (str): The name of the segment in which to change an argument
-            arg (Union[int, str]): Either the position (int) or name (str) of
-                the argument to change
-            value (Union[int, float]): The new value of the argument
-            replaceeverywhere (bool): If True, the same argument is overwritten
-                in ALL segments where the name matches. E.g. 'gaussian1' will
-                match 'gaussian', 'gaussian2', etc. If False, only the segment
-                with exact name match gets a replacement.
-
-        Raises:
-            ValueError: If the argument can not be matched (either the argument
-                name does not match or the argument number is wrong).
-            ValueError: If the name can not be matched.
-
-        """
-        # TODO: is there any reason to use tuples internally?
-
-        if replaceeverywhere:
-            basename = BluePrint._basename
-            name = basename(name)
-            nmlst = self._namelist
-            replacelist = [nm for nm in nmlst if basename(nm) == name]
-        else:
-            replacelist = [name]
-
-        # Validation
-        if name not in self._namelist:
-            raise ValueError('No segment of that name in blueprint.'
-                             ' Contains segments: {}'.format(self._namelist))
-
-        for name in replacelist:
-
-            position = self._namelist.index(name)
-            function = self._funlist[position]
-            sig = signature(function)
-
-            # Validation
-            if isinstance(arg, str):
-                if arg not in sig.parameters:
-                    raise ValueError('No such argument of function '
-                                     '{}.'.format(function.__name__) +
-                                     'Has arguments '
-                                     '{}.'.format(sig.parameters.keys()))
-            # Each function has two 'secret' arguments, SR and dur
-            user_params = len(sig.parameters)-2
-            if isinstance(arg, int) and (arg not in range(user_params)):
-                raise ValueError(
-                    f"No argument {arg} "
-                    + f"of function {function.__name__}."
-                    + f" Has {user_params} "
-                    + "arguments."
-                )
-
-            # allow the user to input single values instead of (val,)
-            no_of_args = len(self._argslist[position])
-            if not isinstance(value, tuple) and no_of_args == 1:
-                value = (value,)
-
-            if isinstance(arg, str):
-                for ii, param in enumerate(sig.parameters):
-                    if arg == param:
-                        arg = ii
-                        break
-
-            # Mutating the immutable...
-            larg = list(self._argslist[position])
-            larg[arg] = value
-            self._argslist[position] = tuple(larg)
 
     def change_blueprint_argument(
         self,
         name: str,
         arg: int | str,
-        value: int | float,
+        value: float,
         replaceeverywhere: bool = False,
     ) -> None:
         """
@@ -597,62 +485,8 @@ class BluePrint():
             larg[arg] = value
             self._argslist[position] = tuple(larg)
 
-    @deprecate(reason="Does not adhear to PEP8", alternative="change_duration")
-    def changeDuration(self, name, dur, replaceeverywhere=False):
-        """
-        Change the duration of one or more segments in the blueprint
-
-        Args:
-            name (str): The name of the segment in which to change duration
-            dur (Union[float, int]): The new duration.
-            replaceeverywhere (Optional[bool]): If True, the duration(s)
-                is(are) overwritten in ALL segments where the name matches.
-                E.g. 'gaussian1' will match 'gaussian', 'gaussian2',
-                etc. If False, only the segment with exact name match
-                gets a replacement.
-
-        Raises:
-            ValueError: If durations are not specified for the blueprint
-            ValueError: If too many or too few durations are given.
-            ValueError: If no segment matches the name.
-            ValueError: If dur is not positive
-            ValueError: If SR is given for the blueprint and dur is less than
-                1/SR.
-        """
-
-        if (not(isinstance(dur, float)) and not(isinstance(dur, int))):
-            raise ValueError('New duration must be an int or a float. '
-                             'Received {}'.format(type(dur)))
-
-        if replaceeverywhere:
-            basename = BluePrint._basename
-            name = basename(name)
-            nmlst = self._namelist
-            replacelist = [nm for nm in nmlst if basename(nm) == name]
-        else:
-            replacelist = [name]
-
-        # Validation
-        if name not in self._namelist:
-            raise ValueError('No segment of that name in blueprint.'
-                             ' Contains segments: {}'.format(self._namelist))
-
-        for name in replacelist:
-            position = self._namelist.index(name)
-
-            if dur <= 0:
-                raise ValueError('Duration must be strictly greater '
-                                 'than zero.')
-
-            if self.SR is not None:
-                if dur*self.SR < 1:
-                    raise ValueError('Duration too short! Must be at'
-                                     ' least 1/sample rate.')
-
-            self._durslist[position] = dur
-
     def change_duration(
-        self, name: str, dur: int | float, replaceeverywhere: bool = False
+        self, name: str, dur: float, replaceeverywhere: bool = False
     ) -> None:
         """
         Change the duration of one or more segments in the blueprint
@@ -710,16 +544,6 @@ class BluePrint():
 
             self._durslist[position] = dur
 
-    @deprecate(reason="Does not adhear to PEP8", alternative="set_sample_rate")
-    def setSR(self, SR):
-        """
-        Set the associated sample rate
-
-        Args:
-            SR (Union[int, float]): The sample rate in Sa/s.
-        """
-        self._SR = SR
-
     def set_sample_rate(self, SR: int | float) -> None:
         """
         Set the associated sample rate
@@ -728,27 +552,6 @@ class BluePrint():
             SR (Union[int, float]): The sample rate in Sa/s.
         """
         self._SR = SR
-
-    @deprecate(reason="Does not adhear to PEP8", alternative="set_segment_marker")
-    def setSegmentMarker(self, name, specs, markerID):
-        """
-        Bind a marker to a specific segment.
-
-        Args:
-            name (str): Name of the segment
-            specs (tuple): Marker specification tuple, (delay, duration),
-                where the delay is relative to the segment start
-            markerID (int): Which marker channel to output on. Must be 1 or 2.
-        """
-        if markerID not in [1, 2]:
-            raise ValueError('MarkerID must be either 1 or 2.'
-                             ' Received {}.'.format(markerID))
-
-        markerselect = {1: self._segmark1, 2: self._segmark2}
-        position = self._namelist.index(name)
-
-        # TODO: Do we need more than one bound marker per segment?
-        markerselect[markerID][position] = specs
 
     def set_segment_marker(
         self, name: str, marker_specs: Marker, marker_id: int
@@ -772,30 +575,6 @@ class BluePrint():
 
         # TODO: Do we need more than one bound marker per segment?
         markerselect[marker_id][position] = marker_specs
-
-    @deprecate(reason="Does not adhear to PEP8", alternative="remove_segment_marker")
-    def removeSegmentMarker(self, name: str, markerID: int) -> None:
-        """
-        Remove all bound markers from a specific segment
-
-        Args:
-            name (str): Name of the segment
-            markerID (int): Which marker channel to remove from (1 or 2).
-            number (int): The number of the marker, in case several markers are
-                bound to one element. Default: 1 (the first marker).
-        """
-        if markerID not in [1, 2]:
-            raise ValueError('MarkerID must be either 1 or 2.'
-                             ' Received {}.'.format(markerID))
-
-        markerselect = {1: self._segmark1, 2: self._segmark2}
-        try:
-            position = self._namelist.index(name)
-        except ValueError:
-            raise KeyError('No segment named {} in this BluePrint.'
-                           ''.format(name))
-        markerselect[markerID][position] = (0, 0)
-
 
     def remove_segment_marker(self, name: str, marker_id: int) -> None:
         """
@@ -836,82 +615,6 @@ class BluePrint():
                          self._segmark2.copy(),
                          self._SR,
                          self._durslist)
-
-    @deprecate(reason="Does not adhear to PEP8", alternative="insert_segment")
-    def insertSegment(self, pos, func, args=(), dur=None, name=None,
-                      durs=None):
-        """
-        Insert a segment into the bluePrint.
-
-        Args:
-            pos (int): The position at which to add the segment. Counts like
-                a python list; 0 is first, -1 is last. Values below -1 are
-                not allowed, though.
-            func (function): Function describing the segment. Must have its
-               duration as the last argument (unless its a special function).
-            args (Optional[Tuple[Any]]): Tuple of arguments BESIDES duration.
-                Default: ()
-            dur (Optional[Union[int, float]]): The duration of the
-                segment. Must be given UNLESS the segment is
-                'waituntil' or 'ensureaverage_fixed_level'
-            name Optional[str]: Name of the segment. If none is given,
-                the segment will receive the name of its function,
-                possibly with a number appended.
-
-        Raises:
-            ValueError: If the position is negative
-            ValueError: If the name ends in a number
-        """
-
-        # Validation
-        has_ensureavg = ('ensureaverage_fixed_level' in self._funlist or
-                         'ensureaverage_fixed_dur' in self._funlist)
-        if func == 'ensureaverage_fixed_level' and has_ensureavg:
-            raise ValueError('Can not have more than one "ensureaverage"'
-                             ' segment in a blueprint.')
-
-        if durs is not None:
-            warnings.warn('Deprecation warning: please specify "dur" rather '
-                          'than "durs" when inserting a segment')
-            if dur is None:
-                dur = durs
-            else:
-                raise ValueError('You can not specify "durs" AND "dur"!')
-        # Take care of 'waituntil'
-
-        # allow users to input single values
-        if not isinstance(args, tuple):
-            args = (args,)
-
-        if pos < -1:
-            raise ValueError('Position must be strictly larger than -1')
-
-        if name is None or name == '':
-            if func == 'waituntil':
-                name = 'waituntil'
-            else:
-                name = func.__name__
-        elif isinstance(name, str):
-            if len(name) > 0:
-                if name[-1].isdigit():
-                    raise ValueError('Segment name must not end in a number')
-
-        if pos == -1:
-            self._namelist.append(name)
-            self._namelist = self._make_names_unique(self._namelist)
-            self._funlist.append(func)
-            self._argslist.append(args)
-            self._segmark1.append((0, 0))
-            self._segmark2.append((0, 0))
-            self._durslist.append(dur)
-        else:
-            self._namelist.insert(pos, name)
-            self._namelist = self._make_names_unique(self._namelist)
-            self._funlist.insert(pos, func)
-            self._argslist.insert(pos, args)
-            self._segmark1.insert(pos, (0, 0))
-            self._segmark2.insert(pos, (0, 0))
-            self._durslist.insert(pos, dur)
 
     def insert_segment(
         self,
@@ -989,28 +692,6 @@ class BluePrint():
             self._segmark1.insert(pos, (0, 0))
             self._segmark2.insert(pos, (0, 0))
             self._durslist.insert(pos, dur)
-
-    @deprecate(reason="Does not adhear to PEP8", alternative="remove_segment")
-    def removeSegment(self, name):
-        """
-        Remove the specified segment from the blueprint.
-
-        Args:
-            name (str): The name of the segment to remove.
-        """
-        try:
-            position = self._namelist.index(name)
-        except ValueError:
-            raise KeyError(f"No segment called {name} in blueprint.")
-
-        del self._funlist[position]
-        del self._argslist[position]
-        del self._namelist[position]
-        del self._segmark1[position]
-        del self._segmark2[position]
-        del self._durslist[position]
-
-        self._namelist = self._make_names_unique(self._namelist)
 
     def remove_segment(self, name: str) -> None:
         """
@@ -1115,6 +796,45 @@ class BluePrint():
         if not self._segmark2 == other._segmark2:
             return False
         return True
+
+    @property
+    @deprecate(reason="Does not adhear to PEP8", alternative="sample_rate")
+    def SR(self):
+        self.sample_rate()
+
+    @deprecate(reason="Does not adhear to PEP8", alternative="show_print")
+    def showPrint(self):
+        self.show_print()
+
+    @deprecate(
+        reason="Does not adhear to PEP8", alternative="change_blueprint_argument"
+    )
+    def changeArg(self, name, arg, value, replaceeverywhere=False):
+        self.change_blueprint_argument(name, arg, value, replaceeverywhere)
+
+    @deprecate(reason="Does not adhear to PEP8", alternative="change_duration")
+    def changeDuration(self, name, dur, replaceeverywhere=False):
+        self.change_duration(name, dur, replaceeverywhere)
+
+    @deprecate(reason="Does not adhear to PEP8", alternative="set_sample_rate")
+    def setSR(self, SR):
+        self.set_sample_rate(SR)
+
+    @deprecate(reason="Does not adhear to PEP8", alternative="set_segment_marker")
+    def setSegmentMarker(self, name, specs, markerID):
+        self.set_segment_marker(name, specs, markerID)
+
+    @deprecate(reason="Does not adhear to PEP8", alternative="remove_segment_marker")
+    def removeSegmentMarker(self, name: str, markerID: int) -> None:
+        self.remove_segment_marker(name, markerID)
+
+    @deprecate(reason="Does not adhear to PEP8", alternative="insert_segment")
+    def insertSegment(self, pos, func, args=(), dur=None, name=None, durs=None):
+        self.insert_segment(pos, func, args, dur, name, durs)
+
+    @deprecate(reason="Does not adhear to PEP8", alternative="remove_segment")
+    def removeSegment(self, name):
+        self.remove_segment(name)
 
 
 def _subelement_builder(
