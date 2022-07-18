@@ -46,6 +46,7 @@ def deprecate(
 ) -> Callable[..., Any]:
     """
     A utility function to decorate deprecated functions and classes.
+
     Args:
         reason: The reason of deprecation.
         alternative: The alternative function or class to put in use instead of
