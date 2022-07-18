@@ -29,10 +29,10 @@ def blueprint_tophat():
     similar to a tophat
     """
     th = bb.BluePrint()
-    th.insertSegment(0, ramp, args=(0, 0), name='ramp', dur=1)
-    th.insertSegment(1, ramp, args=(1, 1), name='ramp', dur=0.5)
-    th.insertSegment(2, ramp, args=(0, 0), name='ramp', dur=1)
-    th.setSR(tophat_SR)
+    th.insert_segment(0, ramp, args=(0, 0), name="ramp", dur=1)
+    th.insert_segment(1, ramp, args=(1, 1), name="ramp", dur=0.5)
+    th.insert_segment(2, ramp, args=(0, 0), name="ramp", dur=1)
+    th.set_sample_rate(tophat_SR)
 
     return th
 
@@ -43,13 +43,13 @@ def blueprint_nasty():
     Return a nasty blueprint trying to hit some corner cases
     """
     ns = bb.BluePrint()
-    ns.insertSegment(0, 'waituntil', args=(1,))
-    ns.insertSegment(1, ramp, (-1/3, 1/3), dur=0.1)
-    ns.insertSegment(2, 'waituntil', args=(1+2/3,))
-    ns.setSR(tophat_SR)
+    ns.insert_segment(0, "waituntil", args=(1,))
+    ns.insert_segment(1, ramp, (-1 / 3, 1 / 3), dur=0.1)
+    ns.insert_segment(2, "waituntil", args=(1 + 2 / 3,))
+    ns.set_sample_rate(tophat_SR)
 
-    ns.setSegmentMarker('ramp', (-0.1, 0.1), 1)
-    ns.setSegmentMarker('waituntil2', (0, 2/3), 2)
+    ns.set_segment_marker("ramp", (-0.1, 0.1), 1)
+    ns.set_segment_marker("waituntil2", (0, 2 / 3), 2)
 
     ns.marker1 = [(0, 0.1)]
     ns.marker2 = [(1, 0.1)]
@@ -179,19 +179,19 @@ def test_tophat_copy(blueprint_tophat, attribute, val):
                           ('ramp2', 0.1, [1, 0.1, 1]),
                           ('ramp3', 0.1, [1, 0.5, 0.1])])
 def test_tophat_changeduration(blueprint_tophat, name, newdur, durslist):
-    blueprint_tophat.changeDuration(name, newdur)
+    blueprint_tophat.change_duration(name, newdur)
     assert blueprint_tophat._durslist == durslist
 
 
 def test_tophat_changeduration_everywhere(blueprint_tophat):
-    blueprint_tophat.changeDuration('ramp', 0.2, replaceeverywhere=True)
-    assert blueprint_tophat._durslist == [0.2]*3
+    blueprint_tophat.change_duration("ramp", 0.2, replaceeverywhere=True)
+    assert blueprint_tophat._durslist == [0.2] * 3
 
 
 @pytest.mark.parametrize('newdur', [-1, 0.0, 1/(tophat_SR+1), None])
 def test_tophat_changeduration_valueerror(blueprint_tophat, newdur):
     with pytest.raises(ValueError):
-        blueprint_tophat.changeDuration('ramp', newdur)
+        blueprint_tophat.change_duration("ramp", newdur)
 
 
 @pytest.mark.parametrize('name, arg, newval, argslist',
@@ -201,18 +201,25 @@ def test_tophat_changeduration_valueerror(blueprint_tophat, newdur):
                           ('ramp', 1, -1, [(0, -1), (1, 1), (0, 0)]),
                           ('ramp2', 'stop', -1, [(0, 0), (1, -1), (0, 0)])])
 def test_tophat_changeargument(blueprint_tophat, name, arg, newval, argslist):
-    blueprint_tophat.changeArg(name, arg, newval)
+    blueprint_tophat.change_blueprint_argument(name, arg, newval)
     assert blueprint_tophat._argslist == argslist
 
 
-@pytest.mark.parametrize('name, arg, newval, argslist',
-                         [('ramp', 'start', -1, [(-1, 0), (-1, 1), (-1, 0)]),
-                          ('ramp', 'stop', -1, [(0, -1), (1, -1), (0, -1)]),
-                          ('ramp', 0, -1, [(-1, 0), (-1, 1), (-1, 0)]),
-                          ('ramp', 1, -1, [(0, -1), (1, -1), (0, -1)])])
-def test_tophat_changeargument_replaceeverywhere(blueprint_tophat, name,
-                                                 arg, newval, argslist):
-    blueprint_tophat.changeArg(name, arg, newval, replaceeverywhere=True)
+@pytest.mark.parametrize(
+    "name, arg, newval, argslist",
+    [
+        ("ramp", "start", -1, [(-1, 0), (-1, 1), (-1, 0)]),
+        ("ramp", "stop", -1, [(0, -1), (1, -1), (0, -1)]),
+        ("ramp", 0, -1, [(-1, 0), (-1, 1), (-1, 0)]),
+        ("ramp", 1, -1, [(0, -1), (1, -1), (0, -1)]),
+    ],
+)
+def test_tophat_changeargument_replaceeverywhere(
+    blueprint_tophat, name, arg, newval, argslist
+):
+    blueprint_tophat.change_blueprint_argument(
+        name, arg, newval, replaceeverywhere=True
+    )
     assert blueprint_tophat._argslist == argslist
 
 
@@ -223,7 +230,7 @@ def test_tophat_changeargument_replaceeverywhere(blueprint_tophat, name,
                                        ('ramp4', 1)])
 def test_tophat_changeargument_valueerror(blueprint_tophat, name, arg):
     with pytest.raises(ValueError):
-        blueprint_tophat.changeArg(name, arg, 0)
+        blueprint_tophat.change_blueprint_argument(name, arg, 0)
 
 
 @pytest.mark.parametrize('pos, func, funlist',
@@ -232,7 +239,7 @@ def test_tophat_changeargument_valueerror(blueprint_tophat, name, arg):
                           (2, sine, [ramp, ramp, sine, ramp]),
                           (3, sine, [ramp, ramp, ramp, sine])])
 def test_tophat_insert_funlist(blueprint_tophat, pos, func, funlist):
-    blueprint_tophat.insertSegment(pos, func, args=(1, 0), dur=1)
+    blueprint_tophat.insert_segment(pos, func, args=(1, 0), dur=1)
     assert blueprint_tophat._funlist == funlist
 
 
@@ -244,7 +251,7 @@ newargs = (5, 5)
                           (-1, [(0, 0), (1, 1), (0, 0), newargs]),
                           (2, [(0, 0), (1, 1), newargs, (0, 0)])])
 def test_tophat_insert_argslist(blueprint_tophat, pos, argslist):
-    blueprint_tophat.insertSegment(pos, ramp, newargs, dur=1)
+    blueprint_tophat.insert_segment(pos, ramp, newargs, dur=1)
     assert blueprint_tophat._argslist == argslist
 
 
@@ -253,35 +260,35 @@ def test_tophat_insert_argslist(blueprint_tophat, pos, argslist):
                           (-1, 'myramp', ['ramp', 'ramp2', 'ramp3', 'myramp']),
                           (2, 'ramp', ['ramp', 'ramp2', 'ramp3', 'ramp4'])])
 def test_tophat_insert_namelist(blueprint_tophat, pos, name, namelist):
-    blueprint_tophat.insertSegment(pos, ramp, newargs, name=name, dur=0.5)
+    blueprint_tophat.insert_segment(pos, ramp, newargs, name=name, dur=0.5)
     assert blueprint_tophat._namelist == namelist
 
 
 @pytest.mark.parametrize('name', ['ramp', 'ramp2', 'ramp3', 'ramp4'])
 def test_tophat_remove_namelist(blueprint_tophat, name):
     if name in blueprint_tophat._namelist:
-        blueprint_tophat.removeSegment(name)
+        blueprint_tophat.remove_segment(name)
         assert blueprint_tophat._namelist == ['ramp', 'ramp2']
     else:
         with pytest.raises(KeyError):
-            blueprint_tophat.removeSegment(name)
+            blueprint_tophat.remove_segment(name)
 
 
 def test_tophat_remove_segmentmarker(blueprint_tophat):
 
     with pytest.raises(ValueError):
-        blueprint_tophat.removeSegmentMarker('ramp', 3)
+        blueprint_tophat.remove_segment_marker("ramp", 3)
     with pytest.raises(ValueError):
-        blueprint_tophat.removeSegmentMarker('no such name', 3)
+        blueprint_tophat.remove_segment_marker("no such name", 3)
 
     # Adding and removing should be equivalent to NOOP
     bpc = blueprint_tophat.copy()
-    blueprint_tophat.setSegmentMarker('ramp', (0, 0.1), 1)
-    blueprint_tophat.removeSegmentMarker('ramp', 1)
+    blueprint_tophat.set_segment_marker("ramp", (0, 0.1), 1)
+    blueprint_tophat.remove_segment_marker("ramp", 1)
     assert bpc == blueprint_tophat
 
     with pytest.raises(KeyError):
-        bpc.removeSegmentMarker('no such name', 1)
+        bpc.remove_segment_marker("no such name", 1)
 
 
 ##################################################
@@ -294,7 +301,7 @@ def test_not_equal(blueprint_tophat):
     with pytest.raises(ValueError):
         bpc == '1'
 
-    bpc.insertSegment(0, ramp, (0, 0), dur=1/3)
+    bpc.insert_segment(0, ramp, (0, 0), dur=1 / 3)
 
     assert (bpc == blueprint_tophat) is False
 
@@ -305,7 +312,7 @@ def test_not_equal(blueprint_tophat):
     assert (bpc == blueprint_tophat) is False
 
     bpc = blueprint_tophat.copy()
-    bpc.setSegmentMarker('ramp', (0, 0.1), 1)
+    bpc.set_segment_marker("ramp", (0, 0.1), 1)
 
     assert (bpc == blueprint_tophat) is False
 
@@ -315,7 +322,7 @@ def test_not_equal(blueprint_tophat):
     assert (bpc == blueprint_tophat) is False
 
     bpc = blueprint_tophat.copy()
-    blueprint_tophat.setSegmentMarker('ramp', (0, 0.1), 2)
+    blueprint_tophat.set_segment_marker("ramp", (0, 0.1), 2)
 
     assert (bpc == blueprint_tophat) is False
 

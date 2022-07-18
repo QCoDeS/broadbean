@@ -241,7 +241,7 @@ def test_points(SR, N):
 
 def test_write_read_element(blueprint_tophat, tmp_path):
     elem = Element()
-    elem.addBluePrint(1, blueprint_tophat)
+    elem.add_blueprint(1, blueprint_tophat)
     d = tmp_path / "Element"
     d.mkdir()
     elem.write_to_json(os.path.join(d, "ele.json"))

@@ -597,7 +597,7 @@ class BluePrint():
             larg[arg] = value
             self._argslist[position] = tuple(larg)
 
-    @deprecate(reason="Does not adhear to PEP8", alternative="change_segment_duration")
+    @deprecate(reason="Does not adhear to PEP8", alternative="change_duration")
     def changeDuration(self, name, dur, replaceeverywhere=False):
         """
         Change the duration of one or more segments in the blueprint
@@ -651,7 +651,7 @@ class BluePrint():
 
             self._durslist[position] = dur
 
-    def change_segment_duration(
+    def change_duration(
         self, name: str, dur: int | float, replaceeverywhere: bool = False
     ) -> None:
         """
