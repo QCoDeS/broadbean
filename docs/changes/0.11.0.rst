@@ -7,8 +7,9 @@ The July 2022 release of broadbean with many great improvments for modernizing b
 Breaking Changes:
 _________________
 
-- Methods marked for deletion in version `0.10.0` have now been removed
-(`BluePrint.plot`, `broadbean.bluePrintPlotter`, `Element.plotElement`, `Sequence.plotSequence` and `Sequence.plotAWGOutput`). (#107)
+- Methods and functions  marked for deletion in version `0.10.0` have now been removed. Specifically
+`BluePrint.plot`, `broadbean.bluePrintPlotter`, `Element.plotElement`, `Sequence.plotSequence`
+and `Sequence.plotAWGOutput`. (#107)
 
 
 New:
