@@ -1,18 +1,38 @@
-Changelog for broadbean 0.10.0
+Changelog for broadbean 0.11.0
 ==============================
 
-The January 2021 release of broadbean.
+The July 2022 release of broadbean with many great improvments for modernizing broadbeans infrastructure.
 
 
 Breaking Changes:
 _________________
 
-There are no breaking changes in this release of broadbean
+- Methods marked for deletion in version `0.10.0` have now been removed
+(`BluePrint.plot`, `broadbean.bluePrintPlotter`, `Element.plotElement`, `Sequence.plotSequence` and `Sequence.plotAWGOutput`). (#107)
 
 
 New:
 ____
 
-- Support for reading and writing broadbean Sequences, elements and bluprints to and from a json file
-- made broadbean compatiple with numpy version 1.18
-- Include LICENSE in package
+- New `Sequance` method outputForSEQXFileWithFlags for setting flags for every element forming a sequence.
+This is useful for auxiliary outputs on a Tektronix AWG70000. (#101)
+
+Improved:
+_________
+
+- Fix for invalid identity comparisons in blueprint subomdule. (#102)
+
+
+Behind The Scenes:
+__________________
+
+- Updated `README.md` that includes updated link to `broadbean` documentation. (#158)
+- Replace Conda test job with regular pip job on windows. (#139)
+- Enable dependabot for `broadbean`. (#111)
+- Enable precommit hook. (#110)
+- Documentation infrastructure improvements. (#110)
+- Modernize setup and build infrastructure (convert to pep516/517, build wheels and sdist using build,
+automatic upload to pypi, move config to pyproject.toml and setup.cfg and pinning dependencies with
+requirements.txt). (#109)
+- Move tests into package to include them into distribution. (#108)
+- Use GitHub actions, test on python 3.7-3.10, remove python 3.6 support, remove Travis and AppVeyor. (#103)
