@@ -23,10 +23,10 @@ def blueprint_tophat():
     similar to a tophat
     """
     th = bb.BluePrint()
-    th.insertSegment(0, ramp, args=(0, 0), name='ramp', dur=1)
-    th.insertSegment(1, ramp, args=(1, 1), name='ramp', dur=0.5)
-    th.insertSegment(2, ramp, args=(0, 0), name='ramp', dur=1)
-    th.setSR(tophat_SR)
+    th.insert_segment(0, ramp, args=(0, 0), name="ramp", dur=1)
+    th.insert_segment(1, ramp, args=(1, 1), name="ramp", dur=0.5)
+    th.insert_segment(2, ramp, args=(0, 0), name="ramp", dur=1)
+    th.set_sample_rate(tophat_SR)
 
     return th
 
@@ -39,13 +39,13 @@ def mixed_element(blueprint_tophat):
 
     noise = np.random.randn(blueprint_tophat.points)
     wiggle = bb.BluePrint()
-    wiggle.insertSegment(0, sine, args=(1, 10, 0, 0), dur=2.5)
-    wiggle.setSR(blueprint_tophat.SR)
+    wiggle.insert_segment(0, sine, args=(1, 10, 0, 0), dur=2.5)
+    wiggle.set_sample_rate(blueprint_tophat.SR)
 
     elem = Element()
-    elem.addBluePrint(1, blueprint_tophat)
-    elem.addArray(2, noise, blueprint_tophat.SR)
-    elem.addBluePrint(3, wiggle)
+    elem.add_blueprint(1, blueprint_tophat)
+    elem.add_array(2, noise, blueprint_tophat.SR)
+    elem.add_blueprint(3, wiggle)
 
     return elem
 
@@ -56,30 +56,30 @@ def mixed_element(blueprint_tophat):
 
 def test_bare_init(blueprint_tophat):
     elem = Element()
-    elem.addBluePrint(1, blueprint_tophat)
+    elem.add_blueprint(1, blueprint_tophat)
     assert list(elem._data.keys()) == [1]
 
 
 def test_equality_true(blueprint_tophat):
     elem1 = Element()
     elem2 = Element()
-    elem1.addBluePrint(1, blueprint_tophat)
-    elem2.addBluePrint(1, blueprint_tophat)
+    elem1.add_blueprint(1, blueprint_tophat)
+    elem2.add_blueprint(1, blueprint_tophat)
     assert elem1 == elem2
 
 
 def test_equality_false(blueprint_tophat):
     elem1 = Element()
     elem2 = Element()
-    elem1.addBluePrint(1, blueprint_tophat)
-    elem2.addBluePrint(1, blueprint_tophat)
-    elem1.changeArg(1, 'ramp', 'start', 2)
+    elem1.add_blueprint(1, blueprint_tophat)
+    elem2.add_blueprint(1, blueprint_tophat)
+    elem1.change_blueprint_argurment(1, "ramp", "start", 2)
     assert elem1 != elem2
 
 
 def test_copy(blueprint_tophat):
     elem1 = Element()
-    elem1.addBluePrint(1, blueprint_tophat)
+    elem1.add_blueprint(1, blueprint_tophat)
     elem2 = elem1.copy()
     assert elem1 == elem2
 
@@ -98,24 +98,24 @@ def test_addArray():
     m2 = np.ones(N)
 
     elem = Element()
-    elem.addArray(1, wfm, SR, m1=m1, m2=m2)
-    elem.addArray('2', wfm, SR, m1=m1)
-    elem.addArray('readout_channel', wfm, SR, m2=m2)
+    elem.add_array(1, wfm, SR, m1=m1, m2=m2)
+    elem.add_array("2", wfm, SR, m1=m1)
+    elem.add_array("readout_channel", wfm, SR, m2=m2)
 
-    elem.validateDurations()
+    elem.validate_durations()
 
     M = 2400
     wfm2 = np.linspace(0, M/SR, M)
-    elem.addArray(3, wfm2, SR)
+    elem.add_array(3, wfm2, SR)
 
     with pytest.raises(ElementDurationError):
-        elem.validateDurations()
+        elem.validate_durations()
 
     with pytest.raises(ValueError):
-        elem.addArray(1, wfm, SR, m1=m1[:-1])
+        elem.add_array(1, wfm, SR, m1=m1[:-1])
 
     with pytest.raises(ValueError):
-        elem.addArray(2, wfm, SR, m2=m2[3:])
+        elem.add_array(2, wfm, SR, m2=m2[3:])
 
 
 @settings(max_examples=25, suppress_health_check=(HealthCheck.function_scoped_fixture,))
@@ -132,46 +132,46 @@ def test_invalid_durations(SR1, SR2, N, M):
     elem = Element()
     bp = bb.BluePrint()
 
-    bp.insertSegment(0, ramp, (0, 0), dur=N/SR2)
-    bp.setSR(SR2)
+    bp.insert_segment(0, ramp, (0, 0), dur=N / SR2)
+    bp.set_sample_rate(SR2)
 
     wfm = np.linspace(-1, 1, N)
-    elem.addArray(1, wfm, SR1)
-    elem.addBluePrint(2, bp)
+    elem.add_array(1, wfm, SR1)
+    elem.add_blueprint(2, bp)
 
     if SR1 == SR2:
-        elem.validateDurations()
+        elem.validate_durations()
     else:
         with pytest.raises(ElementDurationError):
-            elem.validateDurations()
+            elem.validate_durations()
 
     # differing durations
     bp1 = bb.BluePrint()
-    bp1.insertSegment(0, ramp, (0, 1), dur=N/SR1)
-    bp1.setSR(SR1)
+    bp1.insert_segment(0, ramp, (0, 1), dur=N / SR1)
+    bp1.set_sample_rate(SR1)
 
     bp2 = bb.BluePrint()
-    bp2.insertSegment(0, ramp, (0, 2), dur=M/SR1)
-    bp2.setSR(SR1)
+    bp2.insert_segment(0, ramp, (0, 2), dur=M / SR1)
+    bp2.set_sample_rate(SR1)
 
     elem = Element()
-    elem.addBluePrint(1, bp1)
-    elem.addBluePrint(2, bp2)
+    elem.add_blueprint(1, bp1)
+    elem.add_blueprint(2, bp2)
 
     if N == M:
-        elem.validateDurations()
+        elem.validate_durations()
     else:
         with pytest.raises(ElementDurationError):
-            elem.validateDurations()
+            elem.validate_durations()
 
 
-def test_applyDelays(mixed_element):
+def test_apply_delays(mixed_element):
 
     delays = [1e-1, 0, 0]
 
     assert mixed_element.duration == 2.5
 
-    arrays_before = mixed_element.getArrays()
+    arrays_before = mixed_element.get_arrays()
     assert len(arrays_before[1]['wfm']) == 5000
 
     with pytest.raises(ValueError):
@@ -183,7 +183,7 @@ def test_applyDelays(mixed_element):
     element = mixed_element.copy()
     element._apply_delays(delays)
 
-    arrays_after = element.getArrays()
+    arrays_after = element.get_arrays()
     assert len(arrays_after[1]['wfm']) == 5200
 
     assert mixed_element.duration == 2.5
@@ -201,7 +201,7 @@ def test_applyDelays(mixed_element):
 def test_input_fail1(improper_bp):
     elem = Element()
     with pytest.raises(ValueError):
-        elem.addBluePrint(1, improper_bp)
+        elem.add_blueprint(1, improper_bp)
 
 ##################################################
 # Properties
@@ -217,24 +217,24 @@ def test_points(SR, N):
 
     bp = bb.BluePrint()
 
-    bp.insertSegment(0, ramp, (0, 0), dur=N/SR)
-    bp.setSR(SR)
+    bp.insert_segment(0, ramp, (0, 0), dur=N / SR)
+    bp.set_sample_rate(SR)
 
     wfm = np.linspace(-1, 1, N)
-    elem.addArray(1, wfm, SR)
-    elem.addBluePrint(2, bp)
+    elem.add_array(1, wfm, SR)
+    elem.add_blueprint(2, bp)
 
     assert elem.points == N
 
     elem = Element()
     bp = bb.BluePrint()
 
-    bp.insertSegment(0, ramp, (0, 0), dur=N/SR)
-    bp.setSR(SR)
+    bp.insert_segment(0, ramp, (0, 0), dur=N / SR)
+    bp.set_sample_rate(SR)
 
     wfm = np.linspace(-1, 1, N)
-    elem.addArray(2, wfm, SR)
-    elem.addBluePrint(1, bp)
+    elem.add_array(2, wfm, SR)
+    elem.add_blueprint(1, bp)
 
     assert elem.points == N
 
