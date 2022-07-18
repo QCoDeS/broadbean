@@ -24,7 +24,7 @@ distlib~=0.3.5
 docutils~=0.17.1
 entrypoints~=0.4
 executing~=0.8.3
-fastjsonschema~=2.15.3
+fastjsonschema~=2.16.1
 filelock~=3.7.1
 fonttools~=4.34.4
 hypothesis==6.52.1
