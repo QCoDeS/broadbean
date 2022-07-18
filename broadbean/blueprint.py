@@ -14,8 +14,8 @@ from broadbean.deprecate import deprecate
 from .broadbean import PulseAtoms
 
 # type aliases for broadbean
-Delay = Union[int, float]
-Duration = Union[int, float]
+Delay = float
+Duration = float
 Marker = Tuple[Delay, Duration]
 
 
