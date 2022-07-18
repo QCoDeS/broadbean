@@ -8,7 +8,7 @@ import wrapt
 
 class DeprecationWarning(RuntimeWarning):
     """
-    Improvced DeprecationWarning that
+    Improved DeprecationWarning that
     fixes `DeprecationWarning` being suppressed by default.
     """
 
