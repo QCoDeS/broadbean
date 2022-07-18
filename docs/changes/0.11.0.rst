@@ -14,7 +14,7 @@ _________________
 New:
 ____
 
-- New `Sequance` method outputForSEQXFileWithFlags for setting flags for every element forming a sequence.
+- New `Sequence` method `outputForSEQXFileWithFlags` for setting flags for every element forming a sequence.
   This is useful for auxiliary outputs on a Tektronix AWG70000. (#101)
 
 Improved:
