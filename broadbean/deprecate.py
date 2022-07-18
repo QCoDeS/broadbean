@@ -32,7 +32,7 @@ def issue_deprecation_warning(
     stacklevel: int = 2,
 ) -> None:
     """
-    Issue a `BroadbeanDeprecationWarning` with a consistently formatted message
+    Issue a `DeprecationWarning` with a consistently formatted message
     """
     warnings.warn(
         deprecation_message(what, reason, alternative),
