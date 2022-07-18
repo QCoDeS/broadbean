@@ -527,7 +527,7 @@ class Element:
     @property
     @deprecate(reason="Does not adhear to PEP8", alternative="sample_rate")
     def SR(self):
-        self.sample_rate()
+        self.sample_rate
 
     @deprecate(
         reason="Does not adhear to PEP8", alternative="change_blueprint_argument"
