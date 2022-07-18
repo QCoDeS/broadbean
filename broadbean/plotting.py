@@ -1,15 +1,15 @@
 # A little helper module for plotting of broadbean objects
 
-from typing import Tuple, Union, Dict, List
+from typing import Dict, List, Tuple, Union
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
-from broadbean import Sequence, BluePrint, Element
+from broadbean import BluePrint, Element, PulseSequence
 from broadbean.sequence import SequenceConsistencyError
 
 # The object we can/want to plot
-BBObject = Union[Sequence, BluePrint, Element]
+BBObject = Union[PulseSequence, BluePrint, Element]
 
 
 def getSIScalingAndPrefix(minmax: Tuple[float, float]) -> Tuple[float, str]:
@@ -50,7 +50,7 @@ def _plot_object_validator(obj_to_plot: BBObject) -> None:
     """
     Validate the object
     """
-    if isinstance(obj_to_plot, Sequence):
+    if isinstance(obj_to_plot, PulseSequence):
         proceed = obj_to_plot.checkConsistency(verbose=True)
         if not proceed:
             raise SequenceConsistencyError
@@ -71,17 +71,17 @@ def _plot_object_forger(obj_to_plot: BBObject,
 
     if isinstance(obj_to_plot, BluePrint):
         elem = Element()
-        elem.addBluePrint(1, obj_to_plot)
-        seq = Sequence()
+        elem.add_blueprint(1, obj_to_plot)
+        seq = PulseSequence()
         seq.addElement(1, elem)
         seq.setSR(obj_to_plot.SR)
 
     elif isinstance(obj_to_plot, Element):
-        seq = Sequence()
+        seq = PulseSequence()
         seq.addElement(1, obj_to_plot)
         seq.setSR(obj_to_plot._meta['SR'])
 
-    elif isinstance(obj_to_plot, Sequence):
+    elif isinstance(obj_to_plot, PulseSequence):
         seq = obj_to_plot
 
     forged_seq = seq.forge(includetime=True, **forger_kwargs)
@@ -309,7 +309,7 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
             fig.subplots_adjust(hspace=0, wspace=0)
 
             # display sequencer information
-            if chanind == 0 and isinstance(obj_to_plot, Sequence):
+            if chanind == 0 and isinstance(obj_to_plot, PulseSequence):
                 seq_info = seq[pos+1]['sequencing']
                 titlestring = ''
                 if seq_info['twait'] == 1:  # trigger wait

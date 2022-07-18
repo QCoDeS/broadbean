@@ -1,10 +1,11 @@
 # High-level tool for sequence building and manipulation
 #
 
-import numpy as np
 import logging
 
-from broadbean.sequence import (Sequence, SequenceConsistencyError)
+import numpy as np
+
+from broadbean.sequence import PulseSequence, SequenceConsistencyError
 
 log = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ def makeLinearlyVaryingSequence(baseelement, channel, name, arg, start, stop,
     # TODO: validation
     # TODO: Make more general varyer and refactor code
 
-    sequence = Sequence()
+    sequence = PulseSequence()
 
     sequence.setSR(baseelement.SR)
 
@@ -86,7 +87,7 @@ def makeVaryingSequence(baseelement, channels, names, args, iters):
         raise ValueError('Not the same number of values in each parameter '
                          'value sequence (input argument: iters)')
 
-    sequence = Sequence()
+    sequence = PulseSequence()
     sequence.setSR(baseelement.SR)
 
     for elnum in range(1, noofvals[0]+1):
@@ -147,7 +148,7 @@ def repeatAndVarySequence(seq, poss, channels, names, args, iters):
         raise ValueError('Not the same number of values in each parameter '
                          'value sequence (input argument: iters)')
 
-    newseq = Sequence()
+    newseq = PulseSequence()
     newseq._awgspecs = seq._awgspecs
 
     no_of_steps = noofvals[0]

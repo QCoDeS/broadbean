@@ -501,7 +501,7 @@ class Element:
 
     # depredacted methods
     @deprecate(reason="Does not adhear to PEP8", alternative="add_blueprint")
-    def addBluePrint(self, channel: Union[str, int], blueprint: BluePrint) -> None:
+    def add_blueprint(self, channel: Union[str, int], blueprint: BluePrint) -> None:
         self.add_blueprint(channel, blueprint)
 
     @deprecate(reason="Does not adhear to PEP8", alternative="add_flags")

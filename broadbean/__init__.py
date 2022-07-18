@@ -7,5 +7,5 @@ from .blueprint import BluePrint
 from .broadbean import PulseAtoms
 from .deprecate import deprecate
 from .element import Element
-from .sequence import Sequence
+from .sequence import PulseSequence
 from .tools import makeVaryingSequence, repeatAndVarySequence

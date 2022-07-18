@@ -305,11 +305,16 @@ class BluePrint():
             if seg_dict['function'] == 'waituntil':
                 arguments = blue_dict[seg]['arguments'].values()
                 arguments = (list(arguments)[0][0],)
-                bp_seg.insertSegment(i, 'waituntil', arguments)
+                bp_seg.insert_segment(i, "waituntil", arguments)
             else:
-                arguments = tuple(blue_dict[seg]['arguments'].values())
-                bp_seg.insertSegment(i, knowfunctions[seg_dict['function']],
-                                     arguments, name=re.sub(r'\d', "", seg_dict['name']), dur=seg_dict['durations'])
+                arguments = tuple(blue_dict[seg]["arguments"].values())
+                bp_seg.insert_segment(
+                    i,
+                    knowfunctions[seg_dict["function"]],
+                    arguments,
+                    name=re.sub(r"\d", "", seg_dict["name"]),
+                    dur=seg_dict["durations"],
+                )
             bp_sum = bp_sum + bp_seg
         bp_sum.marker1 = blue_dict['marker1_abs']
         bp_sum.marker2 = blue_dict['marker2_abs']
@@ -756,7 +761,7 @@ class BluePrint():
         new_bp._durslist = dl.copy()
 
         if self.SR is not None:
-            new_bp.setSR(self.SR)
+            new_bp.set_sample_rate(self.SR)
 
         return new_bp
 
@@ -817,7 +822,7 @@ class BluePrint():
         self.change_duration(name, dur, replaceeverywhere)
 
     @deprecate(reason="Does not adhear to PEP8", alternative="set_sample_rate")
-    def setSR(self, SR):
+    def set_sample_rate(self, SR):
         self.set_sample_rate(SR)
 
     @deprecate(reason="Does not adhear to PEP8", alternative="set_segment_marker")
@@ -829,7 +834,7 @@ class BluePrint():
         self.remove_segment_marker(name, markerID)
 
     @deprecate(reason="Does not adhear to PEP8", alternative="insert_segment")
-    def insertSegment(self, pos, func, args=(), dur=None, name=None, durs=None):
+    def insert_segment(self, pos, func, args=(), dur=None, name=None, durs=None):
         self.insert_segment(pos, func, args, dur, name, durs)
 
     @deprecate(reason="Does not adhear to PEP8", alternative="remove_segment")
