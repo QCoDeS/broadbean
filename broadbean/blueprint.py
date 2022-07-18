@@ -335,7 +335,7 @@ class BluePrint():
             data_loaded = json.load(fp)
         return cls.blueprint_from_description(data_loaded)
 
-    def _make_wait_durations(self) -> Sequence[int]:
+    def _make_wait_durations(self) -> List[int]:
         """
         Translate waituntills into durations and return that list.
         """
