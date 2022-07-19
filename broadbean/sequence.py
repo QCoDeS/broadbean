@@ -15,7 +15,7 @@ from broadbean.deprecate import deprecate
 from broadbean.element import Element  # TODO: change import to element.py
 from broadbean.ripasso import applyInverseRCFilter
 
-from .broadbean import _channelListSorter  # TODO: change import to helpers.py
+from .broadbean import _channel_list_sorter  # TODO: change import to helpers.py
 from .broadbean import PulseAtoms, _AWGOutput
 
 log = logging.getLogger(__name__)
@@ -398,7 +398,7 @@ class PulseSequence:
         # Then check that elements use the same channels
         specchans = []
         for elem in self._data.values():
-            chans = _channelListSorter(elem.channels)
+            chans = _channel_list_sorter(elem.channels)
             specchans.append(chans)
         if specchans == []:  # case of empty Sequence
             chans = None

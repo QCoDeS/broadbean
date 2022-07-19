@@ -6,13 +6,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from broadbean import BluePrint, Element, PulseSequence
+from broadbean.deprecate import deprecate
 from broadbean.sequence import SequenceConsistencyError
 
 # The object we can/want to plot
 BBObject = Union[PulseSequence, BluePrint, Element]
 
 
-def getSIScalingAndPrefix(minmax: Tuple[float, float]) -> Tuple[float, str]:
+def get_si_scaling_and_prefix(minmax: Tuple[float, float]) -> Tuple[float, str]:
     """
     Return the scaling exponent and unit prefix. E.g. (-2e-3, 1e-6) will
     return (1e3, 'm')
@@ -51,15 +52,15 @@ def _plot_object_validator(obj_to_plot: BBObject) -> None:
     Validate the object
     """
     if isinstance(obj_to_plot, PulseSequence):
-        proceed = obj_to_plot.checkConsistency(verbose=True)
+        proceed = obj_to_plot.check_consistency(verbose=True)
         if not proceed:
             raise SequenceConsistencyError
 
     elif isinstance(obj_to_plot, Element):
-        obj_to_plot.validateDurations()
+        obj_to_plot.validate_durations()
 
     elif isinstance(obj_to_plot, BluePrint):
-        assert obj_to_plot.SR is not None
+        assert obj_to_plot.sample_rate is not None
 
 
 def _plot_object_forger(obj_to_plot: BBObject,
@@ -73,13 +74,13 @@ def _plot_object_forger(obj_to_plot: BBObject,
         elem = Element()
         elem.add_blueprint(1, obj_to_plot)
         seq = PulseSequence()
-        seq.addElement(1, elem)
-        seq.setSR(obj_to_plot.SR)
+        seq.add_element(1, elem)
+        seq.set_sample_rate(obj_to_plot.SR)
 
     elif isinstance(obj_to_plot, Element):
         seq = PulseSequence()
-        seq.addElement(1, obj_to_plot)
-        seq.setSR(obj_to_plot._meta['SR'])
+        seq.add_element(1, obj_to_plot)
+        seq.set_sample_rate(obj_to_plot._meta["SR"])
 
     elif isinstance(obj_to_plot, PulseSequence):
         seq = obj_to_plot
@@ -184,7 +185,7 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
 
         minmax: Tuple[float, float] = chanminmax[chanind]
 
-        (voltagescaling, voltageprefix) = getSIScalingAndPrefix(minmax)
+        (voltagescaling, voltageprefix) = get_si_scaling_and_prefix(minmax)
         voltageunit = voltageprefix + 'V'
 
         for pos in range(seqlen):
@@ -327,3 +328,8 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
                     titlestring += '\u21b1{}'.format(seq_info['goto'])
 
                 ax.set_title(titlestring)
+
+
+@deprecate(reason="Does not adhear to PEP8", alternative="get_si_scaling_and_prefix")
+def getSIScalingAndPrefix(minmax: Tuple[float, float]) -> Tuple[float, str]:
+    get_si_scaling_and_prefix(minmax)

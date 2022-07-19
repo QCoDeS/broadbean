@@ -93,7 +93,7 @@ def marked_for_deletion(replaced_by: Union[str, None]=None) -> Callable:
     return decorator
 
 
-def _channelListSorter(channels: List[Union[str, int]]) -> List[Union[str, int]]:
+def _channel_list_sorter(channels: List[Union[str, int]]) -> List[Union[str, int]]:
     """
     Sort a list of channel names. Channel names can be ints or strings. Sorts
     ints as being before strings.
