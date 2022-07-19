@@ -5,7 +5,7 @@ import functools as ft
 import json
 import re
 from inspect import signature
-from typing import Callable, Dict, List, NoReturn, Optional, Sequence, Tuple, Union
+from typing import Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -23,24 +23,33 @@ class SegmentDurationError(Exception):
     pass
 
 
-class BluePrint():
+class BluePrint:
     """
     The class of a waveform to become.
     """
 
-    def __init__(self, funlist=None, argslist=None, namelist=None,
-                 marker1=None, marker2=None, segmentmarker1=None,
-                 segmentmarker2=None, SR=None, durslist=None):
+    def __init__(
+        self,
+        funlist: Optional[List] = None,
+        argslist: Optional[List] = None,
+        namelist: Optional[List] = None,
+        marker1: Optional[List] = None,
+        marker2: Optional[List] = None,
+        segmentmarker1: Optional[List] = None,
+        segmentmarker2: Optional[List] = None,
+        SR: Optional[List] = None,
+        durslist: Optional[List] = None,
+    ):
         """
         Create a BluePrint instance
 
         Args:
-            funlist (list): List of functions
-            argslist (list): List of tuples of arguments
-            namelist (list): List of names for the functions
-            marker1 (list): List of marker1 specification tuples
-            marker2 (list): List of marker2 specifiation tuples
-            durslist (list): List of durations
+            funlist: List of functions
+            argslist: List of tuples of arguments
+            namelist: List of names for the functions
+            marker1: List of marker1 specification tuples
+            marker2: List of marker2 specifiation tuples
+            durslist: List of durations
 
         Returns:
             BluePrint
@@ -119,7 +128,7 @@ class BluePrint():
         self._SR = SR
 
     @staticmethod
-    def _basename(string: str) -> str | NoReturn:
+    def _basename(string: str) -> str:
         """
         Remove trailing numbers from a string.
         """
@@ -149,7 +158,7 @@ class BluePrint():
         by appending numbers to reoccuring strings
 
         Args:
-            lst (list): List of strings. Intended for the _namelist
+            lst: List of strings. Intended for the _namelist
 
         """
 
@@ -179,7 +188,7 @@ class BluePrint():
         return len(self._namelist)
 
     @property
-    def duration(self) -> int | NoReturn:
+    def duration(self) -> int:
         """
         The total duration of the BluePrint. If necessary, all the arrays
         are built.
@@ -198,7 +207,7 @@ class BluePrint():
                                       ' exist yet. Cannot proceed')
 
     @property
-    def points(self) -> int | NoReturn:
+    def points(self) -> int:
         """
         The total number of points in the BluePrint. If necessary,
         all the arrays are built.
@@ -230,7 +239,7 @@ class BluePrint():
 
 
     @property
-    def sample_rate(self):
+    def sample_rate(self) -> float:
         """
         Sample rate of the blueprint
         """
@@ -418,11 +427,11 @@ class BluePrint():
         Change an argument of one or more of the functions in the blueprint.
 
         Args:
-            name (str): The name of the segment in which to change an argument
-            arg (Union[int, str]): Either the position (int) or name (str) of
+            name: The name of the segment in which to change an argument
+            arg: Either the position (int) or name (str) of
                 the argument to change
-            value (Union[int, float]): The new value of the argument
-            replaceeverywhere (bool): If True, the same argument is overwritten
+            value: The new value of the argument
+            replaceeverywhere: If True, the same argument is overwritten
                 in ALL segments where the name matches. E.g. 'gaussian1' will
                 match 'gaussian', 'gaussian2', etc. If False, only the segment
                 with exact name match gets a replacement.
@@ -565,10 +574,10 @@ class BluePrint():
         Bind a marker to a specific segment.
 
         Args:
-            name (str): Name of the segment
-            specs (tuple): Marker specification tuple, (delay, duration),
+            name: Name of the segment
+            specs: Marker specification tuple, (delay, duration),
                 where the delay is relative to the segment start
-            markerID (int): Which marker channel to output on. Must be 1 or 2.
+            markerID: Which marker channel to output on. Must be 1 or 2.
         """
         if marker_id not in [1, 2]:
             raise ValueError(
@@ -586,9 +595,9 @@ class BluePrint():
         Remove all bound markers from a specific segment
 
         Args:
-            name (str): Name of the segment
-            markerID (int): Which marker channel to remove from (1 or 2).
-            number (int): The number of the marker, in case several markers are
+            name: Name of the segment
+            markerID: Which marker channel to remove from (1 or 2).
+            number: The number of the marker, in case several markers are
                 bound to one element. Default: 1 (the first marker).
         """
         if marker_id not in [1, 2]:
@@ -626,24 +635,24 @@ class BluePrint():
         pos: int,
         func: Callable,
         args: Optional[Tuple] = (),
-        dur: Optional[int | float] = None,
+        dur: Optional[float] = None,
         name: Optional[str] = None,
     ) -> None:
         """
         Insert a segment into the bluePrint.
 
         Args:
-            pos (int): The position at which to add the segment. Counts like
+            pos: The position at which to add the segment. Counts like
                 a python list; 0 is first, -1 is last. Values below -1 are
                 not allowed, though.
-            func (function): Function describing the segment. Must have its
+            func: Function describing the segment. Must have its
                duration as the last argument (unless its a special function).
-            args (Optional[Tuple[Any]]): Tuple of arguments BESIDES duration.
+            args: Tuple of arguments BESIDES duration.
                 Default: ()
-            dur (Optional[Union[int, float]]): The duration of the
+            dur: The duration of the
                 segment. Must be given UNLESS the segment is
                 'waituntil' or 'ensureaverage_fixed_level'
-            name Optional[str]: Name of the segment. If none is given,
+            name: Name of the segment. If none is given,
                 the segment will receive the name of its function,
                 possibly with a number appended.
 
@@ -703,7 +712,7 @@ class BluePrint():
         Remove the specified segment from the blueprint.
 
         Args:
-            name (str): The name of the segment to remove.
+            name: The name of the segment to remove.
         """
         try:
             position = self._namelist.index(name)
@@ -725,7 +734,7 @@ class BluePrint():
         and a new BluePrint is returned.
 
         Args:
-            other (BluePrint): A BluePrint instance
+            other: A BluePrint instance
 
         Returns:
             BluePrint: A new blueprint.
@@ -771,7 +780,7 @@ class BluePrint():
         lists are identical.
 
         Args:
-            other (BluePrint): A BluePrint instance
+            other: A BluePrint instance
 
         Returns:
             bool: whether the two blueprints are identical
@@ -805,7 +814,7 @@ class BluePrint():
     @property
     @deprecate(reason="Does not adhear to PEP8", alternative="sample_rate")
     def SR(self):
-        self.sample_rate
+        return self.sample_rate
 
     @deprecate(reason="Does not adhear to PEP8", alternative="show_print")
     def showPrint(self):

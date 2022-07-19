@@ -355,7 +355,7 @@ class Element:
             data_loaded = json.load(fp)
         return cls.element_from_description(data_loaded)
 
-    def change_blueprint_argurment(
+    def change_blueprint_argument(
         self,
         channel: Union[str, int],
         name: str,
@@ -501,7 +501,7 @@ class Element:
 
     # depredacted methods
     @deprecate(reason="Does not adhear to PEP8", alternative="add_blueprint")
-    def add_blueprint(self, channel: Union[str, int], blueprint: BluePrint) -> None:
+    def addBlueprint(self, channel: Union[str, int], blueprint: BluePrint) -> None:
         self.add_blueprint(channel, blueprint)
 
     @deprecate(reason="Does not adhear to PEP8", alternative="add_flags")
@@ -518,7 +518,7 @@ class Element:
 
     @deprecate(reason="Does not adhear to PEP8", alternative="validation_durations")
     def validateDurations(self):
-        self.validation_durations()
+        self.validate_durations()
 
     @deprecate(reason="Does not adhear to PEP8", alternative="get_arrays")
     def getArrays(self, includetime: bool = False) -> Dict[int, Dict[str, np.ndarray]]:
@@ -527,7 +527,7 @@ class Element:
     @property
     @deprecate(reason="Does not adhear to PEP8", alternative="sample_rate")
     def SR(self):
-        self.sample_rate
+        return self.sample_rate
 
     @deprecate(
         reason="Does not adhear to PEP8", alternative="change_blueprint_argument"

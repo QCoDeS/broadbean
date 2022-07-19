@@ -199,7 +199,7 @@ def test_copy_negatively_02(protosequence1):
 
 def test_copy_negatively_03(protosequence1):
     new_seq = protosequence1.copy()
-    new_seq.element(1).change_blueprint_arguments(2, "sine", "freq", 1e6)
+    new_seq.element(1).change_blueprint_argument(2, "sine", "freq", 1e6)
     assert new_seq != protosequence1
 
 
@@ -295,20 +295,20 @@ def test_add_subsequence_raises(protosequence1, squarepulse_baseelem):
 
     seq = PulseSequence()
     seq.add_element(1, squarepulse_baseelem)
-    seq.set_sample_rate(squarepulse_baseelem.SR)
+    seq.set_sample_rate(squarepulse_baseelem.sample_rate)
 
     mainseq = PulseSequence()
-    mainseq.set_sample_rate(seq.SR / 2)
+    mainseq.set_sample_rate(seq.sample_rate / 2)
 
     # raise if the subsequence sample rate does not match the main seq. SR
     with pytest.raises(ValueError):
         mainseq.add_subsequence(1, seq)
 
-    mainseq.set_sample_rate(seq.SR)
+    mainseq.set_sample_rate(seq.sample_rate)
     mainseq.add_subsequence(1, seq)
 
     doublemainseq = PulseSequence()
-    doublemainseq.set_sample_rate(seq.SR)
+    doublemainseq.set_sample_rate(seq.sample_rate)
 
     with pytest.raises(ValueError):
         doublemainseq.add_subsequence(1, mainseq)
