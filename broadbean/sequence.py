@@ -690,9 +690,9 @@ class PulseSequence:
                 if isinstance(data[pos], PulseSequence):
                     subseq = data[pos]
                     for elem in subseq._data.values():
-                        elem._applyDelays(delays)
+                        elem._apply_delays(delays)
                 elif isinstance(data[pos], Element):
-                    data[pos]._applyDelays(delays)
+                    data[pos]._apply_delays(delays)
 
         # forge arrays and form the output dict
         for pos in range(1, seqlen+1):
@@ -706,7 +706,7 @@ class PulseSequence:
                     output[pos]['content'][pos2] = {'data': {},
                                                     'sequencing': {}}
                     elem = subseq.element(pos2)
-                    dictdata = elem.getArrays(includetime=includetime)
+                    dictdata = elem.get_arrays(includetime=includetime)
                     output[pos]['content'][pos2]['data'] = dictdata
                     seqing = subseq._sequencing[pos2]
                     output[pos]['content'][pos2]['sequencing'] = seqing
@@ -714,7 +714,7 @@ class PulseSequence:
             elif isinstance(data[pos], Element):
                 elem = data[pos]
                 output[pos]['type'] = 'element'
-                dictdata = elem.getArrays(includetime=includetime)
+                dictdata = elem.get_arrays(includetime=includetime)
                 output[pos]['content'] = {1: {'data': dictdata}}
 
         # apply filter corrections to forged arrays
@@ -753,7 +753,7 @@ class PulseSequence:
         corrections.
 
         Returns:
-            A list of outputs of the Element's getArrays functions, i.e.
+            A list of outputs of the Element's get_arrays functions, i.e.
                 a list of dictionaries with key position (int) and value
                 an np.ndarray of array([wfm, m1, m2, time]), where the
                 wfm values are still in V. The particular backend output

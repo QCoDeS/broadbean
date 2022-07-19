@@ -8,4 +8,4 @@ from .broadbean import PulseAtoms
 from .deprecate import deprecate
 from .element import Element
 from .sequence import PulseSequence
-from .tools import makeVaryingSequence, repeatAndVarySequence
+from .tools import make_varying_sequence, repeat_and_vary_sequence

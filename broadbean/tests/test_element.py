@@ -73,7 +73,7 @@ def test_equality_false(blueprint_tophat):
     elem2 = Element()
     elem1.add_blueprint(1, blueprint_tophat)
     elem2.add_blueprint(1, blueprint_tophat)
-    elem1.change_blueprint_argurment(1, "ramp", "start", 2)
+    elem1.change_blueprint_argument(1, "ramp", "start", 2)
     assert elem1 != elem2
 
 

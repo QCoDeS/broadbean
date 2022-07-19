@@ -15,7 +15,7 @@ from broadbean.sequence import (
     SequenceCompatibilityError,
     SequenceConsistencyError,
 )
-from broadbean.tools import makeVaryingSequence, repeatAndVarySequence
+from broadbean.tools import make_varying_sequence, repeat_and_vary_sequence
 
 ramp = bb.PulseAtoms.ramp
 sine = bb.PulseAtoms.sine
@@ -332,8 +332,7 @@ def test_set_sample_rate(protosequence1):
 def test_makeVaryingSequence_fail(squarepulse_baseelem, channels, names,
                                   args, iters):
     with pytest.raises(ValueError):
-        makeVaryingSequence(squarepulse_baseelem, channels,
-                            names, args, iters)
+        make_varying_sequence(squarepulse_baseelem, channels, names, args, iters)
 
 
 @pytest.mark.parametrize('seqpos, argslist', [(1, [(0, 0), 2*(1,), (5e-4,)]),
@@ -341,12 +340,11 @@ def test_makeVaryingSequence_fail(squarepulse_baseelem, channels, names,
                                               (3, [(0, 0), 2*(1.3,), (5e-4,)])])
 def test_makeVaryingSequence(squarepulse_baseelem, seqpos, argslist):
     channels = [1, 1]
-    names = ['varyme', 'varyme']
-    args = ['start', 'stop']
-    iters = 2*[[1, 1.2, 1.3]]
-    sequence = makeVaryingSequence(squarepulse_baseelem, channels,
-                                   names, args, iters)
-    assert sequence._data[seqpos]._data[1]['blueprint']._argslist == argslist
+    names = ["varyme", "varyme"]
+    args = ["start", "stop"]
+    iters = 2 * [[1, 1.2, 1.3]]
+    sequence = make_varying_sequence(squarepulse_baseelem, channels, names, args, iters)
+    assert sequence._data[seqpos]._data[1]["blueprint"]._argslist == argslist
 
 
 def test_repeatAndVarySequence_length(protosequence1):
@@ -356,8 +354,9 @@ def test_repeatAndVarySequence_length(protosequence1):
     args = ['start']
     iters = [[1, 1.1, 1.2]]
 
-    newseq = repeatAndVarySequence(protosequence1, poss, channels, names,
-                                   args, iters)
+    newseq = repeat_and_vary_sequence(
+        protosequence1, poss, channels, names, args, iters
+    )
 
     expected_l = len(iters[0])*protosequence1.length_sequenceelements
 
@@ -371,8 +370,9 @@ def test_repeatAndVarySequence_awgspecs(protosequence1):
     args = ['stop']
     iters = [[1, 0.9, 0.8]]
 
-    newseq = repeatAndVarySequence(protosequence1, poss, channels, names,
-                                   args, iters)
+    newseq = repeat_and_vary_sequence(
+        protosequence1, poss, channels, names, args, iters
+    )
 
     assert newseq._awgspecs == protosequence1._awgspecs
 
@@ -385,8 +385,7 @@ def test_repeatAndVarySequence_fail_inputlength1(protosequence1):
     iters = [(1, 0.2, 0.3)]
 
     with pytest.raises(ValueError):
-        repeatAndVarySequence(protosequence1, poss,
-                              channels, names, args, iters)
+        repeat_and_vary_sequence(protosequence1, poss, channels, names, args, iters)
 
 
 def test_repeatAndVarySequence_fail_inputlength2(protosequence1):
@@ -397,8 +396,7 @@ def test_repeatAndVarySequence_fail_inputlength2(protosequence1):
     iters = [(1, 0.2, 0.3), (1, 0.2)]
 
     with pytest.raises(ValueError):
-        repeatAndVarySequence(protosequence1, poss,
-                              channels, names, args, iters)
+        repeat_and_vary_sequence(protosequence1, poss, channels, names, args, iters)
 
 
 def test_repeatAndVarySequence_fail_consistency(protosequence1,
@@ -415,8 +413,7 @@ def test_repeatAndVarySequence_fail_consistency(protosequence1,
     iters = [(1, 0.2, 0.3)]
 
     with pytest.raises(SequenceConsistencyError):
-        repeatAndVarySequence(protosequence1, poss,
-                              channels, names, args, iters)
+        repeat_and_vary_sequence(protosequence1, poss, channels, names, args, iters)
 
 
 @pytest.mark.parametrize('pos', [2, 4, 6])
@@ -427,8 +424,9 @@ def test_repeatAndVarySequence_same_elements(protosequence1, pos):
     args = ['start']
     iters = [(1, 0.2, 0.3)]
 
-    newseq = repeatAndVarySequence(protosequence1, poss, channels,
-                                   names, args, iters)
+    newseq = repeat_and_vary_sequence(
+        protosequence1, poss, channels, names, args, iters
+    )
     assert newseq.element(pos) == protosequence1.element(2)
 
 

@@ -466,12 +466,12 @@ class Element:
                         blueprint._argslist[segpos] = (oldwait+delay,)
                 # insert delay before the waveform
                 if delay > 0:
-                    blueprint.insertSegment(0, 'waituntil', (delay,),
-                                            'waituntil')
+                    blueprint.insert_segment(0, "waituntil", (delay,), "waituntil")
                 # add zeros at the end
-                if maxdelay-delay > 0:
-                    blueprint.insertSegment(-1, PulseAtoms.ramp, (0, 0),
-                                            dur=maxdelay-delay)
+                if maxdelay - delay > 0:
+                    blueprint.insert_segment(
+                        -1, PulseAtoms.ramp, (0, 0), dur=maxdelay - delay
+                    )
 
             else:
                 arrays = self._data[chan]['array']
