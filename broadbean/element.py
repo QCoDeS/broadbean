@@ -143,10 +143,10 @@ class Element:
         # First the sample rate
         SRs = []
         for channel in channels:
-            if 'blueprint' in channel.keys():
-                SRs.append(channel['blueprint'].SR)
-            elif 'array' in channel.keys():
-                SR = channel['SR']
+            if "blueprint" in channel.keys():
+                SRs.append(channel["blueprint"].sample_rate)
+            elif "array" in channel.keys():
+                SR = channel["SR"]
                 SRs.append(SR)
 
         if not SRs.count(SRs[0]) == len(SRs):
@@ -224,7 +224,7 @@ class Element:
             elif 'blueprint' in signal.keys():
                 bp = signal['blueprint']
                 durs = bp.durations
-                SR = bp.SR
+                SR = bp.sample_rate
                 forged_bp = _subelement_builder(bp, SR, durs)
                 outdict[channel] = forged_bp
                 if "flags" in signal.keys():
@@ -450,7 +450,7 @@ class Element:
         # zeros segment at the end.
         # If already-forged arrays are found, simply append and prepend zeros
 
-        SR = self.SR
+        SR = self.sample_rate
         maxdelay = max(delays)
 
         for chanind, chan in enumerate(self.channels):

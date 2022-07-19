@@ -214,7 +214,7 @@ class BluePrint:
         """
         waits = 'waituntil' in self._funlist
         ensavgs = 'ensureaverage_fixed_level' in self._funlist
-        SR = self.SR
+        SR = self.sample_rate
 
         if SR is None:
             raise ValueError('No sample rate specified, can not '
@@ -550,8 +550,8 @@ class BluePrint:
             if dur <= 0:
                 raise ValueError("Duration must be strictly greater " "than zero.")
 
-            if self.SR is not None:
-                if dur * self.SR < 1:
+            if self.sample_rate is not None:
+                if dur * self.sample_rate < 1:
                     raise ValueError(
                         "Duration too short! Must be at" " least 1/sample rate."
                     )
@@ -769,8 +769,8 @@ class BluePrint:
         new_bp._segmark2 = sm2.copy()
         new_bp._durslist = dl.copy()
 
-        if self.SR is not None:
-            new_bp.set_sample_rate(self.SR)
+        if self.sample_rate is not None:
+            new_bp.set_sample_rate(self.sample_rate)
 
         return new_bp
 

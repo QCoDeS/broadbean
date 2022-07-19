@@ -385,7 +385,7 @@ class PulseSequence:
 
         # First check that all sample rates agree
         # Since all elements are validated on input, the SR exists
-        SRs = [elem.SR for elem in self._data.values()]
+        SRs = [elem.sample_rate for elem in self._data.values()]
         if SRs == []:  # case of empty Sequence
             SRs = [None]
         if SRs.count(SRs[0]) != len(SRs):
