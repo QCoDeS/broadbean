@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 from copy import deepcopy
-from typing import Dict, List, NoReturn, Tuple, Union, cast
+from typing import Dict, List, Tuple, Union, cast
 
 import numpy as np
 from schema import Optional, Or, Schema
@@ -371,7 +371,7 @@ class PulseSequence:
                                       'jump_input': 0, 'jump_target': 0,
                                       'goto': 0}
 
-    def check_consistency(self, verbose: bool = False) -> bool | NoReturn:
+    def check_consistency(self, verbose: bool = False) -> bool:
         """
         Checks wether the sequence can be built, i.e. wether all elements
         have waveforms on the same channels and of the same length.
@@ -562,7 +562,7 @@ class PulseSequence:
         return SR
 
     @property
-    def channels(self) -> List[float] | NoReturn:
+    def channels(self) -> List[float]:
         """
         Returns a list of the specified channels of the sequence
         """
@@ -1044,7 +1044,7 @@ class PulseSequence:
 
         return self.output_for_seqx_file() + (all_flags,)
 
-    def output_for_awg_file(self):
+    def output_for_awg_file(self) -> _AWGOutput:
         """
         Returns a sliceable object with items matching the call
         signature of the 'make_*_awg_file' functions of the QCoDeS
