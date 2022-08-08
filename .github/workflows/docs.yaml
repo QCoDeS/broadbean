@@ -61,13 +61,13 @@ jobs:
       uses: actions/cache@v3.0.6
       with:
         path: ${{ steps.prepare-cache-pip.outputs.cache-dir }}
-        key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/setup.cfg') }}
+        key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/pyproject.toml') }}
         restore-keys: |
           ${{ runner.os }}-${{ matrix.python-version }}-pip-
 
-    - name: install requirements.txt
+    - name: install docs dependancies
       run: |
-        pip install -r requirements.txt
+        pip install -c requirements.txt .[docs]
     - name: install broadbean
       run: pip install .
     - name: Build docs on linux
