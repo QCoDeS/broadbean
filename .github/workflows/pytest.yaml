@@ -54,7 +54,7 @@ jobs:
       run: |
         pip install .
     - name: Run Mypy
-      run: mypy broadbean
+      run: mypy -p broadbean
     - name: Run tests
       run: |
         pytest --cov=broadbean --cov-report xml --hypothesis-profile ci broadbean
