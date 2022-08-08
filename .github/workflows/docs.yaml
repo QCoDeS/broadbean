@@ -67,7 +67,7 @@ jobs:
 
     - name: install broadbean & docs dependancies
       run: |
-        pip install -c requirements.txt .[docs,tests]
+        pip install -c requirements.txt .[docs,test]
     - name: Build docs on linux
       run: |
         cd docs
