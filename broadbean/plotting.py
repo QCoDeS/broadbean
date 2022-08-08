@@ -75,7 +75,7 @@ def _plot_object_forger(obj_to_plot: BBObject,
         elem.add_blueprint(1, obj_to_plot)
         seq = PulseSequence()
         seq.add_element(1, elem)
-        seq.set_sample_rate(obj_to_plot.SR)
+        seq.set_sample_rate(obj_to_plot.sample_rate)
 
     elif isinstance(obj_to_plot, Element):
         seq = PulseSequence()

@@ -818,13 +818,13 @@ class BluePrint:
 
     @deprecate(reason="Does not adhear to PEP8", alternative="show_print")
     def showPrint(self):
-        self.show_print()
+        self.show_print(self)
 
     @deprecate(
         reason="Does not adhear to PEP8", alternative="change_blueprint_argument"
     )
     def changeArg(self, name, arg, value, replaceeverywhere=False):
-        self.change_blueprint_argument(name, arg, value, replaceeverywhere)
+        self.change_blueprint_argument(self, name, arg, value, replaceeverywhere)
 
     @deprecate(reason="Does not adhear to PEP8", alternative="change_duration")
     def changeDuration(self, name, dur, replaceeverywhere=False):
@@ -844,7 +844,7 @@ class BluePrint:
 
     @deprecate(reason="Does not adhear to PEP8", alternative="insert_segment")
     def insertSegment(self, pos, func, args=(), dur=None, name=None, durs=None):
-        self.insert_segment(pos, func, args, dur, name, durs)
+        self.insert_segment(self, pos, func, args, dur, name, durs)
 
     @deprecate(reason="Does not adhear to PEP8", alternative="remove_segment")
     def removeSegment(self, name):
