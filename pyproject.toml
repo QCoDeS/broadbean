@@ -59,12 +59,18 @@ minversion = "6.0"
 addopts = "-ra -q"
 
 [tool.mypy]
-ignore_missing_imports = true
 show_error_codes = true
 enable_error_code = "ignore-without-code"
 warn_unused_ignores = true
 warn_unused_configs = true
 warn_redundant_casts = true
+
+[[tool.mypy.overrides]]
+module = [
+    "matplotlib.*",
+    "schema"
+]
+ignore_missing_imports = true
 
 [tool.versioningit]
 default-version = "0.0"
