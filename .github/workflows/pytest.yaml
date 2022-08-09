@@ -50,9 +50,6 @@ jobs:
     - name: install broadbean with test dependencies
       run: |
         pip install .[test] -c requirements.txt
-    - name: install broadbean
-      run: |
-        pip install .
     - name: Run Mypy
       run: mypy -p broadbean
     - name: Run tests
