@@ -52,6 +52,12 @@ test = [
     "jupyter>=1.0.0",
     "hypothesis>=5.49.0",
 ]
+docs = [
+    "sphinx",
+    "sphinx_rtd_theme",
+    "nbsphinx",
+    "sphinx-jsonschema",
+]
 
 
 [tool.pytest.ini_options]
