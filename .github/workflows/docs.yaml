@@ -65,7 +65,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-${{ matrix.python-version }}-pip-
 
-    - name: install broadbean & docs dependancies
+    - name: install broadbean & docs dependencies 
       run: |
         pip install -c requirements.txt .[docs,test]
     - name: Build docs on linux
