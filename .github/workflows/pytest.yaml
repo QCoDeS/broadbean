@@ -47,7 +47,7 @@ jobs:
         key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/pyproject.toml') }}
         restore-keys: |
           ${{ runner.os }}-${{ matrix.python-version }}-pip-
-    - name: installtest dependancies
+    - name: install broadbean with test dependencies 
       run: |
         pip install .[test] -c requirements.txt
     - name: install broadbean
