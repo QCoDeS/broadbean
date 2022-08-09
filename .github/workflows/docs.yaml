@@ -65,10 +65,10 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-${{ matrix.python-version }}-pip-
 
-    - name: install broadbean & docs dependencies 
+    - name: install broadbean & docs dependencies
       run: |
         pip install -c requirements.txt .[docs,test]
-        # currently we are building api docs of the whole package including tests so we need to be able to import the tests and therefore require test dependencies to build the docs. 
+        # currently we are building api docs of the whole package including tests so we need to be able to import the tests and therefore require test dependencies to build the docs.
     - name: Build docs on linux
       run: |
         cd docs
