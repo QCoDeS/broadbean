@@ -9,11 +9,7 @@ build-backend = 'setuptools.build_meta'
 [project]
 name = "broadbean"
 maintainers = [{name = "QCoDeS Core Developers", email = "qcodes-support@microsoft.com"}]
-description = """
-Package for easily generating and manipulating signal
-pulses. Developed for use with qubits in the quantum
-computing labs of Copenhagen, Delft, and Sydney, but
-should be generally useable."""
+description = "Package for easily generating and manipulating signal pulses."
 keywords = ["Pulsebuilding signal processing arbitrary waveforms"]
 classifiers = [
     "Development Status :: 4 - Beta",
