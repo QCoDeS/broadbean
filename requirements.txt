@@ -25,7 +25,7 @@ docutils~=0.17.1
 entrypoints~=0.4
 executing~=0.9.1
 fastjsonschema~=2.16.1
-filelock~=3.7.1
+filelock~=3.8.0
 fonttools~=4.34.4
 hypothesis==6.54.2
 identify~=2.5.3
