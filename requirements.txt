@@ -50,7 +50,7 @@ kiwisolver~=1.4.4
 MarkupSafe~=2.1.1
 matplotlib~=3.5.3
 matplotlib-inline~=0.1.6
-mistune~=0.8.4
+mistune~=2.0.4
 numpy~=1.21.5; python_version<'3.8'
 numpy~=1.23.2; python_version>='3.8'
 mypy~=0.971
