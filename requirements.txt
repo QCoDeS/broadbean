@@ -119,5 +119,5 @@ urllib3~=1.26.11
 virtualenv~=20.16.3
 wcwidth~=0.2.5
 webencodings~=0.5.1
-widgetsnbextension~=4.0.1
+widgetsnbextension~=4.0.2
 wincertstore~=0.2
