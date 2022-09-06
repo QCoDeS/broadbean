@@ -28,7 +28,7 @@ fastjsonschema~=2.16.1
 filelock~=3.8.0
 fonttools~=4.37.1
 hypothesis==6.54.5
-identify~=2.5.4
+identify~=2.5.5
 idna~=3.3
 imagesize~=1.4.1
 iniconfig~=1.1.1
