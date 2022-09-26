@@ -27,7 +27,7 @@ executing~=1.0.0
 fastjsonschema~=2.16.2
 filelock~=3.8.0
 fonttools~=4.37.3
-hypothesis==6.54.5
+hypothesis==6.54.6
 identify~=2.5.5
 idna~=3.3
 imagesize~=1.4.1
