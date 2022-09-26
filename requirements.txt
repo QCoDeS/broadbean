@@ -29,7 +29,7 @@ filelock~=3.8.0
 fonttools~=4.37.3
 hypothesis==6.54.6
 identify~=2.5.5
-idna~=3.3
+idna~=3.4
 imagesize~=1.4.1
 iniconfig~=1.1.1
 ipykernel~=6.16.0
