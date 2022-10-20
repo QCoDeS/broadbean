@@ -32,7 +32,7 @@ identify~=2.5.6
 idna~=3.4
 imagesize~=1.4.1
 iniconfig~=1.1.1
-ipykernel~=6.16.0
+ipykernel~=6.16.1
 ipython==8.5.0; python_version>='3.8'
 ipython==7.34.0; python_version<'3.8'
 ipython-genutils~=0.2.0
