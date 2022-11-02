@@ -60,6 +60,9 @@ jobs:
         cache-dependency-path: |
           pyproject.toml
           requirements.txt
+    - name: upgrade pip setuptools wheel
+      run: python -m pip install --upgrade pip setuptools wheel
+      shell: bash
     - name: install broadbean & docs dependencies
       run: |
         pip install -c requirements.txt .[docs,test]
