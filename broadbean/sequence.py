@@ -1,20 +1,21 @@
 # this file defines the sequence object
 # along with a few helpers
+import json
+import logging
+import typing
 import warnings
 from copy import deepcopy
-from typing import Union, Dict, cast, List, Tuple
-import logging
+from typing import Dict, List, Tuple, Union, cast
 
 import numpy as np
-from schema import Schema, Or, Optional
-import json
+from schema import Optional, Or, Schema
 
-from broadbean.ripasso import applyInverseRCFilter
-from broadbean.element import Element  # TODO: change import to element.py
 from broadbean.blueprint import BluePrint
+from broadbean.element import Element  # TODO: change import to element.py
+from broadbean.ripasso import applyInverseRCFilter
+
 from .broadbean import _channelListSorter  # TODO: change import to helpers.py
-from .broadbean import PulseAtoms
-from .broadbean import _AWGOutput
+from .broadbean import PulseAtoms, _AWGOutput
 
 log = logging.getLogger(__name__)
 
@@ -317,10 +318,14 @@ class Sequence:
 
         self._awgspecs[f"channel{channel}_delay"] = delay
 
-    def setChannelFilterCompensation(self, channel: Union[str, int],
-                                     kind: str, order: int=1,
-                                     f_cut: float=None,
-                                     tau: float=None) -> None:
+    def setChannelFilterCompensation(
+        self,
+        channel: Union[str, int],
+        kind: str,
+        order: int = 1,
+        f_cut: typing.Optional[float] = None,
+        tau: typing.Optional[float] = None,
+    ) -> None:
         """
         Specify a filter to compensate for.
 
