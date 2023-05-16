@@ -59,7 +59,7 @@ jobs:
       run: |
         pytest --cov=broadbean --cov-report xml --hypothesis-profile ci broadbean
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3.1.3
+      uses: codecov/codecov-action@v3.1.4
       with:
         file: ./coverage.xml
         env_vars: OS,PYTHON
