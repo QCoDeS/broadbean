@@ -5,7 +5,7 @@ import logging
 import typing
 import warnings
 from copy import deepcopy
-from typing import Dict, List, Tuple, Union, cast
+from typing import Union, cast
 
 import numpy as np
 from schema import Optional, Or, Schema
@@ -649,7 +649,7 @@ class Sequence:
         return elem
 
     @staticmethod
-    def _plotSummary(seq: Dict[int, Dict]) -> Dict[int, Dict[str, np.ndarray]]:
+    def _plotSummary(seq: dict[int, dict]) -> dict[int, dict[str, np.ndarray]]:
         """
         Return a plotting summary of a subsequence.
 
@@ -686,9 +686,12 @@ class Sequence:
 
         return output
 
-    def forge(self, apply_delays: bool=True,
-              apply_filters: bool=True,
-              includetime: bool=False) -> Dict[int, Dict]:
+    def forge(
+        self,
+        apply_delays: bool = True,
+        apply_filters: bool = True,
+        includetime: bool = False,
+    ) -> dict[int, dict]:
         """
         Forge the sequence, applying all specified transformations
         (delays and ripasso filter corrections). Copies the data, so
@@ -711,7 +714,7 @@ class Sequence:
                              'inconsistent. Please run '
                              'checkConsistency(verbose=True) for more details')
 
-        output: Dict[int, Dict] = {}
+        output: dict[int, dict] = {}
         channels = self.channels
         data = deepcopy(self._data)
         seqlen = len(data.keys())
@@ -791,7 +794,7 @@ class Sequence:
 
         return output
 
-    def _prepareForOutputting(self) -> List[Dict[int, np.ndarray]]:
+    def _prepareForOutputting(self) -> list[dict[int, np.ndarray]]:
         """
         The preparser for numerical output. Applies delay and ripasso
         corrections.
@@ -902,10 +905,18 @@ class Sequence:
 
         return elements
 
-    def outputForSEQXFile(self) -> Tuple[List[int], List[int], List[int],
-                                         List[int], List[int],
-                                         List[List[np.ndarray]],
-                                         List[float], str]:
+    def outputForSEQXFile(
+        self,
+    ) -> tuple[
+        list[int],
+        list[int],
+        list[int],
+        list[int],
+        list[int],
+        list[list[np.ndarray]],
+        list[float],
+        str,
+    ]:
         """
         Generate a tuple matching the call signature of the QCoDeS
         AWG70000A driver's `makeSEQXFile` function. If channel delays
@@ -982,8 +993,7 @@ class Sequence:
 
         # Finally cast the lists into the shapes required by the AWG driver
 
-        waveforms = cast(List[List[np.ndarray]],
-                         [[] for dummy in range(len(channels))])
+        waveforms = cast(list[list[np.ndarray]], [[] for dummy in range(len(channels))])
         nreps = []
         trig_waits = []
         gotos = []
@@ -1043,16 +1053,16 @@ class Sequence:
 
     def outputForSEQXFileWithFlags(
         self,
-    ) -> Tuple[
-        List[int],
-        List[int],
-        List[int],
-        List[int],
-        List[int],
-        List[List[np.ndarray]],
-        List[float],
+    ) -> tuple[
+        list[int],
+        list[int],
+        list[int],
+        list[int],
+        list[int],
+        list[list[np.ndarray]],
+        list[float],
         str,
-        List[List[List[int]]],
+        list[list[list[int]]],
     ]:
         """
         Generate a tuple matching the call signature of the QCoDeS

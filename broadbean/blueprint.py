@@ -3,7 +3,6 @@
 import warnings
 from inspect import signature
 import functools as ft
-from typing import List, Dict
 import json
 import re
 
@@ -770,8 +769,9 @@ class BluePrint():
         return True
 
 
-def _subelementBuilder(blueprint: BluePrint, SR: int,
-                       durs: List[float]) -> Dict[str, np.ndarray]:
+def _subelementBuilder(
+    blueprint: BluePrint, SR: int, durs: list[float]
+) -> dict[str, np.ndarray]:
     """
     The function building a blueprint, returning a numpy array.
 

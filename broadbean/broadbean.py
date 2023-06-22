@@ -1,12 +1,11 @@
+import functools as ft
 import logging
 import warnings
-from typing import List, Dict, Union, Callable
-from inspect import signature
 from copy import deepcopy
-import functools as ft
+from inspect import signature
+from typing import Callable, Union
 
 import numpy as np
-
 
 log = logging.getLogger(__name__)
 
@@ -93,14 +92,14 @@ def marked_for_deletion(replaced_by: Union[str, None]=None) -> Callable:
     return decorator
 
 
-def _channelListSorter(channels: List[Union[str, int]]) -> List[Union[str, int]]:
+def _channelListSorter(channels: list[Union[str, int]]) -> list[Union[str, int]]:
     """
     Sort a list of channel names. Channel names can be ints or strings. Sorts
     ints as being before strings.
     """
-    intlist: List[Union[str, int]] = []
+    intlist: list[Union[str, int]] = []
     intlist = [ch for ch in channels if isinstance(ch, int)]
-    strlist: List[Union[str, int]] = []
+    strlist: list[Union[str, int]] = []
     strlist = [ch for ch in channels if isinstance(ch, str)]
 
     sorted_list = sorted(intlist) + sorted(strlist)
