@@ -2,10 +2,10 @@
 
 from typing import Union
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
-from broadbean import Sequence, BluePrint, Element
+from broadbean import BluePrint, Element, Sequence
 from broadbean.sequence import SequenceConsistencyError
 
 # The object we can/want to plot

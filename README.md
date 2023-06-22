@@ -28,7 +28,7 @@ The name: The broad bean is one of my favourite pulses.
 
 ### Formal requirements
 
-The broadbean package only works with python 3.7+
+The broadbean package only works with python 3.9+
 
 ### Installation
 In general, refer to [broadbeans documentation](https://qcodes.github.io/broadbean/start/index.html#installation)

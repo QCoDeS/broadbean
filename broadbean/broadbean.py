@@ -1,12 +1,11 @@
+import functools as ft
 import logging
 import warnings
-from typing import Union, Callable
-from inspect import signature
 from copy import deepcopy
-import functools as ft
+from inspect import signature
+from typing import Callable, Union
 
 import numpy as np
-
 
 log = logging.getLogger(__name__)
 
