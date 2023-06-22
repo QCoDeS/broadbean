@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 from collections.abc import Sequence
 from copy import deepcopy
-from typing import Dict, List, Union
+from typing import Union
 
 import numpy as np
 
@@ -197,8 +197,7 @@ class Element:
         self._meta['SR'] = SRs[0]
         self._meta['duration'] = durations[0]
 
-    def getArrays(self,
-                  includetime: bool=False) -> Dict[int, Dict[str, np.ndarray]]:
+    def getArrays(self, includetime: bool = False) -> dict[int, dict[str, np.ndarray]]:
         """
         Return arrays of the element. Heavily used by the Sequence.
 
@@ -419,7 +418,7 @@ class Element:
 
         bp.changeDuration(name, newdur, replaceeverywhere)
 
-    def _applyDelays(self, delays: List[float]) -> None:
+    def _applyDelays(self, delays: list[float]) -> None:
         """
         Apply delays to the channels of this element. This function is intended
         to be used via a Sequence object. Note that this function changes
