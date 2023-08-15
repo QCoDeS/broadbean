@@ -1,6 +1,6 @@
 # pinned depedancies for CI
 alabaster~=0.7.12
-argon2-cffi~=21.3.0
+argon2-cffi~=23.1.0
 argon2-cffi-bindings~=21.2.0
 asttokens~=2.2.0
 atomicwrites~=1.4.1
