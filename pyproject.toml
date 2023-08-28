@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "setuptools >= 61.2",
+    "setuptools >= 68.1.2",
     "versioningit >= 2.0.1",
 ]
 build-backend = 'setuptools.build_meta'
@@ -71,6 +71,12 @@ module = [
     "schema"
 ]
 ignore_missing_imports = true
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+namespaces = false
 
 [tool.versioningit]
 default-version = "0.0"
