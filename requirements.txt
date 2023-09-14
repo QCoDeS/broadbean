@@ -86,7 +86,7 @@ pywin32==306; sys_platform == 'win32'
 pywinpty==2.0.11; sys_platform == 'win32'
 PyYAML~=6.0
 pyzmq~=25.1.0
-qcodes~=0.39.0
+qcodes~=0.40.0
 qtconsole~=5.4.0
 QtPy~=2.4.0
 requests~=2.31.0
