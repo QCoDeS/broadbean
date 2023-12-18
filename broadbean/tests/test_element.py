@@ -99,6 +99,11 @@ def test_addArray():
 
     elem = Element()
     elem.addArray(1, wfm, SR, m1=m1, m2=m2)
+    output = elem.getArrays(includetime=True)
+    assert np.all(output[1]['m1'] == m1)
+    assert np.all(output[1]['wfm'] == wfm)
+    assert np.all(output[1]['time'] == np.linspace(0, N/SR, N))
+
     elem.addArray('2', wfm, SR, m1=m1)
     elem.addArray('readout_channel', wfm, SR, m2=m2)
 
