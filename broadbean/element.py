@@ -216,14 +216,14 @@ class Element:
 
         outdict = {}
         for channel, signal in self._data.items():
-            if 'array' in signal.keys():
-                outdict[channel] = signal['array']
-                if includetime and 'time' not in signal['array'].keys():
-                    N = len(signal['array']['wfm'])
-                    dur = N/signal['SR']
-                    outdict[channel]['array']['time'] = np.linspace(0, dur, N)
-            elif 'blueprint' in signal.keys():
-                bp = signal['blueprint']
+            if "array" in signal.keys():
+                outdict[channel] = signal["array"]
+                if includetime and "time" not in signal["array"].keys():
+                    N = len(signal["array"]["wfm"])
+                    dur = N / signal["SR"]
+                    outdict[channel]["time"] = np.linspace(0, dur, N)
+            elif "blueprint" in signal.keys():
+                bp = signal["blueprint"]
                 durs = bp.durations
                 SR = bp.SR
                 forged_bp = _subelementBuilder(bp, SR, durs)
