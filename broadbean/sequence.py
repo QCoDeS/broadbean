@@ -873,7 +873,7 @@ class Sequence:
                         element.addFlags(chan, flags)
 
                 else:
-                    arrays = element._data[chan]['array']
+                    arrays = element._data[chan]["array"]
                     for name, arr in arrays.items():
                         pre_wait = np.zeros(int(delay/self.SR))
                         post_wait = np.zeros(int((maxdelay-delay)/self.SR))
