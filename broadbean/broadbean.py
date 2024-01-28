@@ -27,16 +27,29 @@ class PulseAtoms:
 
     @staticmethod
     def sine(freq, ampl, off, phase, SR, npts):
-        time = np.linspace(0, npts/SR, int(npts), endpoint=False)
-        freq *= 2*np.pi
-        return (ampl*np.sin(freq*time+phase)+off)
+        time = np.linspace(0, npts / SR, int(npts), endpoint=False)
+        freq *= 2 * np.pi
+        return ampl * np.sin(freq * time + phase) + off
 
     @staticmethod
     def ramp(start, stop, SR, npts):
-        dur = npts/SR
-        slope = (stop-start)/dur
+        dur = npts / SR
+        slope = (stop - start) / dur
         time = np.linspace(0, dur, int(npts), endpoint=False)
-        return (slope*time+start)
+        return slope * time + start
+
+    @staticmethod
+    def arb_func(func: Callable, kwargs, SR, npts):
+        """
+        This function is used to generate an arbitrary waveform from a function.
+        The function must be of the form f(time, **kwargs) where time is a numpy array and
+        kwargs is a dict that provides any additional parameters needed for the function.
+        Example:
+        func = lambda time, freq, ampl, off, phase: ampl*np.sin(freq*time+phase)+off
+        kwargs = {'freq': 1e6, 'ampl': 1, 'off': 0, 'phase': 0}
+        """
+        time = np.linspace(0, npts / SR, int(npts), endpoint=False)
+        return func(time, **kwargs)
 
     @staticmethod
     def waituntil(dummy, SR, npts):
@@ -50,7 +63,7 @@ class PulseAtoms:
 
         Is by default centred in the middle of the interval
         """
-        dur = npts/SR
+        dur = npts / SR
         time = np.linspace(0, dur, int(npts), endpoint=False)
         centre = dur / 2
         baregauss = np.exp(-((time - mu - centre) ** 2) / (2 * sigma**2))
@@ -65,7 +78,7 @@ class PulseAtoms:
 
         smooth cutoff by making offsetting the Gaussian so endpoint = 0 and normalizing the hight to 1
         """
-        dur = npts/SR
+        dur = npts / SR
         time = np.linspace(0, dur, int(npts), endpoint=False)
         centre = dur / 2
         baregauss = np.exp(-((time - mu - centre) ** 2) / (2 * sigma**2)) - np.exp(
@@ -75,20 +88,23 @@ class PulseAtoms:
         return ampl * baregauss / normalization + offset
 
 
-def marked_for_deletion(replaced_by: Union[str, None]=None) -> Callable:
+def marked_for_deletion(replaced_by: Union[str, None] = None) -> Callable:
     """
     A decorator for functions we want to kill. The function still
     gets called.
     """
+
     def decorator(func):
         @ft.wraps(func)
         def warner(*args, **kwargs):
-            warnstr = f'{func.__name__} is obsolete.'
+            warnstr = f"{func.__name__} is obsolete."
             if replaced_by:
-                warnstr += f' Please use {replaced_by} insted.'
+                warnstr += f" Please use {replaced_by} insted."
             warnings.warn(warnstr)
             return func(*args, **kwargs)
+
         return warner
+
     return decorator
 
 
@@ -137,22 +153,28 @@ class _AWGOutput:
 
         self._channels = {}
         for ii in range(len(rawpackage[0])):
-            self._channels[ii] = {'wfms': rawpackage[0][ii],
-                                  'm1s': rawpackage[1][ii],
-                                  'm2s': rawpackage[2][ii]}
+            self._channels[ii] = {
+                "wfms": rawpackage[0][ii],
+                "m1s": rawpackage[1][ii],
+                "m2s": rawpackage[2][ii],
+            }
         self.nreps = rawpackage[3]
         self.trig_wait = rawpackage[4]
         self.goto = rawpackage[5]
         self.jump = rawpackage[6]
 
     def __getitem__(self, key):
-
         if isinstance(key, int):
             if key in self._channels.keys():
-                output = ([self._channels[key]['wfms']],
-                          [self._channels[key]['m1s']],
-                          [self._channels[key]['m2s']],
-                          self.nreps, self.trig_wait, self.goto, self.jump)
+                output = (
+                    [self._channels[key]["wfms"]],
+                    [self._channels[key]["m1s"]],
+                    [self._channels[key]["m2s"]],
+                    self.nreps,
+                    self.trig_wait,
+                    self.goto,
+                    self.jump,
+                )
 
                 return output
             else:
@@ -173,13 +195,12 @@ class _AWGOutput:
 
             indeces = range(start, stop, step)
 
-            wfms = [self._channels[ind]['wfms'] for ind in indeces]
-            m1s = [self._channels[ind]['m1s'] for ind in indeces]
-            m2s = [self._channels[ind]['m2s'] for ind in indeces]
+            wfms = [self._channels[ind]["wfms"] for ind in indeces]
+            m1s = [self._channels[ind]["m1s"] for ind in indeces]
+            m2s = [self._channels[ind]["m2s"] for ind in indeces]
 
-            output = (wfms, m1s, m2s,
-                      self.nreps, self.trig_wait, self.goto, self.jump)
+            output = (wfms, m1s, m2s, self.nreps, self.trig_wait, self.goto, self.jump)
 
             return output
 
-        raise KeyError('Key must be int or slice!')
+        raise KeyError("Key must be int or slice!")
