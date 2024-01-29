@@ -5,14 +5,16 @@
 # The strategy is the same as for the BluePrint test suite: we cook up some
 # sequences and try to break them. If we can't, everything is prolly OK
 
-import pytest
 import os
+
 import numpy as np
+import pytest
+
 import broadbean as bb
 from broadbean.sequence import (
-    SequenceCompatibilityError,
-    SequenceConsistencyError,
     Sequence,
+    SequenceCompatibilityError,
+    SequenceConsistencyError,    
 )
 from broadbean.tools import makeVaryingSequence, repeatAndVarySequence
 
