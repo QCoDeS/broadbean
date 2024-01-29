@@ -44,9 +44,14 @@ class PulseAtoms:
         This function is used to generate an arbitrary waveform from a function.
         The function must be of the form f(time, **kwargs) where time is a numpy array and
         kwargs is a dict that provides any additional parameters needed for the function.
+
         Example:
-        func = lambda time, freq, ampl, off, phase: ampl*np.sin(freq*time+phase)+off
-        kwargs = {'freq': 1e6, 'ampl': 1, 'off': 0, 'phase': 0}
+
+        .. code-block:: python
+
+            func = lambda time, freq, ampl, off, phase: ampl*np.sin(freq*time+phase)+off
+            kwargs = {'freq': 1e6, 'ampl': 1, 'off': 0, 'phase': 0}
+
         """
         time = np.linspace(0, npts / SR, int(npts), endpoint=False)
         return func(time, **kwargs)
