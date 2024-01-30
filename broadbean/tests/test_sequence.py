@@ -14,7 +14,7 @@ import broadbean as bb
 from broadbean.sequence import (
     Sequence,
     SequenceCompatibilityError,
-    SequenceConsistencyError,    
+    SequenceConsistencyError,
 )
 from broadbean.tools import makeVaryingSequence, repeatAndVarySequence
 
