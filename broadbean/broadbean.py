@@ -42,7 +42,7 @@ class PulseAtoms:
     def arb_func(func: Callable, kwargs, SR, npts):
         """
         This function is used to generate an arbitrary waveform from a function.
-        The function must be of the form f(time, **kwargs) where time is a numpy array and
+        The function must be of the form f(time, \*\*kwargs) where time is a numpy array and
         kwargs is a dict that provides any additional parameters needed for the function.
 
         Example:
