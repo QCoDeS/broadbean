@@ -1,2 +1,2 @@
 include LICENSE
-include broadbean/py.typed
+include src/broadbean/py.typed
