@@ -73,12 +73,6 @@ module = [
 ]
 ignore_missing_imports = true
 
-[tool.setuptools]
-include-package-data = true
-
-[tool.setuptools.packages.find]
-namespaces = false
-
 [tool.versioningit]
 default-version = "0.0"
 
@@ -92,7 +86,7 @@ method = "git"
 match = ["v*"]
 
 [tool.versioningit.onbuild]
-source-file = "broadbean/_version.py"
+source-file = "src/broadbean/_version.py"
 build-file = "broadbean/_version.py"
 
 [tool.darker]

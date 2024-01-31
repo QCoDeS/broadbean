@@ -22,7 +22,7 @@ clean:
 
 # generate api docs for instruments automatically
 genapi:
-	sphinx-apidoc  -o  _auto  -d 10 ../broadbean
+	sphinx-apidoc  -o  _auto  -d 10 ../src/broadbean
 	mkdir -p api/generated/
 	cp _auto/broadbean.* api/generated/
 
