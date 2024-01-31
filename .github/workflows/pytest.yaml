@@ -54,10 +54,10 @@ jobs:
       run: |
         pip install .[test] -c requirements.txt
     - name: Run Mypy
-      run: mypy -p broadbean
+      run: mypy src
     - name: Run tests
       run: |
-        pytest --cov=broadbean --cov-report xml --hypothesis-profile ci broadbean
+        pytest --cov=broadbean --cov-report xml --hypothesis-profile ci tests
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3.1.5
       with:

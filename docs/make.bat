@@ -36,7 +36,7 @@ REM Also note that exclusion of "keysight" (lower-case name)
 REM is due to duplication of the folder in git that happened
 REM a long time ago (i.e. "Keysight", the upper-case, is used
 REM for storing drivers, not the lower-case one).
-sphinx-apidoc  -o  _auto  -d 10 ..\broadbean
+sphinx-apidoc  -o  _auto  -d 10 ..\src\broadbean
 mkdir api\generated\
 copy _auto\broadbean.* api\generated\
 
