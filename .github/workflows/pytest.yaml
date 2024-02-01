@@ -20,6 +20,7 @@ jobs:
   pytestmypy:
 
     runs-on: ${{ matrix.os }}
+    environment: testing-environment
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
@@ -63,3 +64,5 @@ jobs:
       with:
         file: ./coverage.xml
         env_vars: OS,PYTHON
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
