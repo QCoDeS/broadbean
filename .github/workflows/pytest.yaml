@@ -63,5 +63,4 @@ jobs:
       with:
         file: ./coverage.xml
         env_vars: OS,PYTHON
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        token: ${{ secrets.CODECOV_TOKEN }}
