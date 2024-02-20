@@ -154,7 +154,7 @@ class Element:
             errmssglst = zip(list(self._data.keys()), SRs)
             raise ElementDurationError('Different channels have different '
                                        'SRs. (Channel, SR): '
-                                       '{}'.format(list(errmssglst)))
+                                       f'{list(errmssglst)}')
 
         # Next the total time
         durations = []
@@ -174,7 +174,7 @@ class Element:
             errmssglst = zip(list(self._data.keys()), durations)
             raise ElementDurationError('Different channels have different '
                                        'durations. (Channel, duration): '
-                                       '{}s'.format(list(errmssglst)))
+                                       f'{list(errmssglst)}s')
 
         # Finally the number of points
         # (kind of redundant if sample rate and duration match?)
@@ -190,7 +190,7 @@ class Element:
             errmssglst = zip(list(self._data.keys()), npts)
             raise ElementDurationError('Different channels have different '
                                        'npts. (Channel, npts): '
-                                       '{}'.format(list(errmssglst)))
+                                       f'{list(errmssglst)}')
 
         # If these three tests pass, we equip the dictionary with convenient
         # info used by Sequence
@@ -265,7 +265,7 @@ class Element:
 
             if not ('array' in chan.keys() or 'blueprint' in chan.keys()):
                 raise ValueError('Neither BluePrint nor array assigned to '
-                                 'chan {}!'.format(chan))
+                                 f'chan {chan}!')
             if 'blueprint' in chan.keys():
                 return chan['blueprint'].points
             else:

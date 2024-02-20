@@ -15,7 +15,7 @@ class SegmentDurationError(Exception):
     pass
 
 
-class BluePrint():
+class BluePrint:
     """
     The class of a waveform to become.
     """
@@ -55,7 +55,7 @@ class BluePrint():
         if any(elem != lenlist[0] for elem in lenlist):
             raise ValueError(
                 "All input lists must be of same length. "
-                "Received lengths: {}".format(lenlist)
+                f"Received lengths: {lenlist}"
             )
         # Are the names valid names?
         for name in namelist:
@@ -120,7 +120,7 @@ class BluePrint():
 
         if not isinstance(string, str):
             raise ValueError('_basename received a non-string input!'
-                             ' Got the following: {}'.format(string))
+                             f' Got the following: {string}')
 
         if string == '':
             return string
@@ -151,7 +151,7 @@ class BluePrint():
 
         if not isinstance(lst, list):
             raise ValueError('_make_names_unique received a non-list input!'
-                             ' Got {}'.format(lst))
+                             f' Got {lst}')
 
         baselst = [BluePrint._basename(lstel) for lstel in lst]
         uns = np.unique(baselst)
@@ -428,7 +428,7 @@ class BluePrint():
         # Validation
         if name not in self._namelist:
             raise ValueError('No segment of that name in blueprint.'
-                             ' Contains segments: {}'.format(self._namelist))
+                             f' Contains segments: {self._namelist}')
 
         for name in replacelist:
 
@@ -440,9 +440,9 @@ class BluePrint():
             if isinstance(arg, str):
                 if arg not in sig.parameters:
                     raise ValueError('No such argument of function '
-                                     '{}.'.format(function.__name__) +
+                                     f'{function.__name__}.' +
                                      'Has arguments '
-                                     '{}.'.format(sig.parameters.keys()))
+                                     f'{sig.parameters.keys()}.')
             # Each function has two 'secret' arguments, SR and dur
             user_params = len(sig.parameters)-2
             if isinstance(arg, int) and (arg not in range(user_params)):
@@ -493,7 +493,7 @@ class BluePrint():
 
         if (not(isinstance(dur, float)) and not(isinstance(dur, int))):
             raise ValueError('New duration must be an int or a float. '
-                             'Received {}'.format(type(dur)))
+                             f'Received {type(dur)}')
 
         if replaceeverywhere:
             basename = BluePrint._basename
@@ -506,7 +506,7 @@ class BluePrint():
         # Validation
         if name not in self._namelist:
             raise ValueError('No segment of that name in blueprint.'
-                             ' Contains segments: {}'.format(self._namelist))
+                             f' Contains segments: {self._namelist}')
 
         for name in replacelist:
             position = self._namelist.index(name)
@@ -543,7 +543,7 @@ class BluePrint():
         """
         if markerID not in [1, 2]:
             raise ValueError('MarkerID must be either 1 or 2.'
-                             ' Received {}.'.format(markerID))
+                             f' Received {markerID}.')
 
         markerselect = {1: self._segmark1, 2: self._segmark2}
         position = self._namelist.index(name)
@@ -563,14 +563,14 @@ class BluePrint():
         """
         if markerID not in [1, 2]:
             raise ValueError('MarkerID must be either 1 or 2.'
-                             ' Received {}.'.format(markerID))
+                             f' Received {markerID}.')
 
         markerselect = {1: self._segmark1, 2: self._segmark2}
         try:
             position = self._namelist.index(name)
         except ValueError:
-            raise KeyError('No segment named {} in this BluePrint.'
-                           ''.format(name))
+            raise KeyError(f'No segment named {name} in this BluePrint.'
+                           '')
         markerselect[markerID][position] = (0, 0)
 
     def copy(self):
@@ -702,10 +702,10 @@ class BluePrint():
             ValueError: If the input is not a BluePrint instance
         """
         if not isinstance(other, BluePrint):
-            raise ValueError("""
+            raise ValueError(f"""
                              BluePrint can only be added to another Blueprint.
-                             Received an object of type {}
-                             """.format(type(other)))
+                             Received an object of type {type(other)}
+                             """)
 
         nl = [self._basename(name) for name in self._namelist]
         nl += [self._basename(name) for name in other._namelist]
@@ -748,11 +748,11 @@ class BluePrint():
             ValueError: If the input is not a BluePrint instance
         """
         if not isinstance(other, BluePrint):
-            raise ValueError("""
+            raise ValueError(f"""
                              Blueprint can only be compared to another
                              Blueprint.
-                             Received an object of type {}
-                             """.format(type(other)))
+                             Received an object of type {type(other)}
+                             """)
 
         if not self._namelist == other._namelist:
             return False
@@ -834,16 +834,12 @@ def _subelementBuilder(
         int_dur = round(dur*SR)
         if int_dur < 2:
             raise SegmentDurationError('Too short segment detected! '
-                                       'Segment "{}" at position {} '
-                                       'has a duration of {} which at '
-                                       'an SR of {:.3E} leads to just {} '
+                                       f'Segment "{namelist[ii]}" at position {ii} '
+                                       f'has a duration of {newdurations[ii]} which at '
+                                       f'an SR of {SR:.3E} leads to just {int_dur} '
                                        'point(s). There must be at least '
                                        '2 points in each segment.'
-                                       ''.format(namelist[ii],
-                                                 ii,
-                                                 newdurations[ii],
-                                                 SR,
-                                                 int_dur))
+                                       '')
         else:
             intdurations[ii] = int_dur
             newdurations[ii] = int_dur/SR

@@ -187,7 +187,7 @@ def applyCustomTransferFunction(signal, SR, tf_freqs, tf_amp, invert=False):
     signal_filtered = ifft(fft(signal)*(transferfun**power))
     imax = np.imag(signal_filtered).max()
     log.debug('Applying custom transfer function. Discarding imag parts '
-              'no larger than {}'.format(imax))
+              f'no larger than {imax}')
     signal_filtered = np.real(signal_filtered)
 
     return signal_filtered

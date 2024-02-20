@@ -77,8 +77,14 @@ ignore_missing_imports = true
 
 extend-include = ["*.ipynb"]
 
+[tool.ruff.lint]
+extend-select = ["UP"]
+
 [tool.ruff.lint.per-file-ignores]
 "*.ipynb" = ["E402"]
+
+[tool.ruff.lint.pyupgrade]
+keep-runtime-typing = true
 
 [tool.versioningit]
 default-version = "0.0"
