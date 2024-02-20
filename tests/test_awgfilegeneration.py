@@ -2,9 +2,9 @@
 # before we make broadbean depend on QCoDeS, we can't directly test
 # that a valid .awg file is actually generated
 
+import hypothesis.strategies as hst
 import pytest
 from hypothesis import HealthCheck, given, settings
-import hypothesis.strategies as hst
 
 import broadbean as bb
 from broadbean.sequence import Sequence, SequencingError

@@ -1,11 +1,11 @@
 # Test suite for everything subsequence related for broadbean
 # Sequences
 
-import pytest
 import numpy as np
+import pytest
 
 import broadbean as bb
-from broadbean.sequence import fs_schema, Sequence
+from broadbean.sequence import Sequence, fs_schema
 
 ramp = bb.PulseAtoms.ramp
 sine = bb.PulseAtoms.sine

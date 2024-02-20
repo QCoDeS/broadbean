@@ -6,6 +6,7 @@
 # with the desired data attributes (the desired state)
 
 import pytest
+
 import broadbean as bb
 
 ramp = bb.PulseAtoms.ramp

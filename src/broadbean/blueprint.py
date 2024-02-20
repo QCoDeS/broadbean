@@ -1,10 +1,10 @@
 # This file is for defining the blueprint object
 
-import warnings
-from inspect import signature
 import functools as ft
 import json
 import re
+import warnings
+from inspect import signature
 
 import numpy as np
 

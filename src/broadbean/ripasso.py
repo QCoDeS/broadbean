@@ -5,9 +5,10 @@
 # i.e. something that is re-passed. Also not quite an Amarone...
 #
 
-import numpy as np
-from numpy.fft import fft, ifft, fftfreq
 import logging
+
+import numpy as np
+from numpy.fft import fft, fftfreq, ifft
 
 log = logging.getLogger(__name__)
 

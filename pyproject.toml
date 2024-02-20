@@ -78,10 +78,13 @@ ignore_missing_imports = true
 extend-include = ["*.ipynb"]
 
 [tool.ruff.lint]
-extend-select = ["UP", "ISC"]
+extend-select = ["UP", "ISC", "I"]
 
 [tool.ruff.lint.per-file-ignores]
 "*.ipynb" = ["E402"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["broadbean"]
 
 [tool.ruff.lint.pyupgrade]
 keep-runtime-typing = true
@@ -103,7 +106,4 @@ source-file = "src/broadbean/_version.py"
 build-file = "broadbean/_version.py"
 
 [tool.darker]
-isort = true
-
-[tool.isort]
-profile = "black"
+isort = false

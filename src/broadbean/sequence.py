@@ -14,8 +14,11 @@ from broadbean.blueprint import BluePrint
 from broadbean.element import Element  # TODO: change import to element.py
 from broadbean.ripasso import applyInverseRCFilter
 
-from .broadbean import _channelListSorter  # TODO: change import to helpers.py
-from .broadbean import PulseAtoms, _AWGOutput
+from .broadbean import (
+    PulseAtoms,
+    _AWGOutput,
+    _channelListSorter,  # TODO: change import to helpers.py
+)
 
 log = logging.getLogger(__name__)
 
