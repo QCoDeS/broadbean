@@ -1,4 +1,4 @@
-# flake8: noqa  (ignore unused imports)
+# ruff: noqa: F401
 
 # Version 1.0
 from . import ripasso

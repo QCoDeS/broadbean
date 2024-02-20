@@ -6,7 +6,6 @@
 #
 
 import numpy as np
-import matplotlib.pyplot as plt
 from numpy.fft import fft, ifft, fftfreq
 import logging
 

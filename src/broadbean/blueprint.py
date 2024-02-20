@@ -52,9 +52,11 @@ class BluePrint():
         # Are the lists of matching lengths?
         lenlist = [len(funlist), len(argslist), len(namelist), len(durslist)]
 
-        if any(l != lenlist[0] for l in lenlist):
-            raise ValueError('All input lists must be of same length. '
-                             'Received lengths: {}'.format(lenlist))
+        if any(elem != lenlist[0] for elem in lenlist):
+            raise ValueError(
+                "All input lists must be of same length. "
+                "Received lengths: {}".format(lenlist)
+            )
         # Are the names valid names?
         for name in namelist:
             if not isinstance(name, str):
