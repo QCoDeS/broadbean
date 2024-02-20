@@ -1,17 +1,17 @@
 # This test suite is meant to test everything related to forging, i.e. making
 # numpy arrays out of BluePrints
 
-from hypothesis import given
 import hypothesis.strategies as hst
-import pytest
+import matplotlib.pyplot as plt
 import numpy as np
+import pytest
+from hypothesis import given
 
 import broadbean as bb
-from broadbean.blueprint import _subelementBuilder, SegmentDurationError
+from broadbean.blueprint import SegmentDurationError, _subelementBuilder
 from broadbean.ripasso import applyInverseRCFilter
 from broadbean.sequence import Sequence
 
-import matplotlib.pyplot as plt
 plt.ion()
 
 ramp = bb.PulseAtoms.ramp

@@ -5,10 +5,10 @@
 # i.e. something that is re-passed. Also not quite an Amarone...
 #
 
-import numpy as np
-import matplotlib.pyplot as plt
-from numpy.fft import fft, ifft, fftfreq
 import logging
+
+import numpy as np
+from numpy.fft import fft, fftfreq, ifft
 
 log = logging.getLogger(__name__)
 
@@ -187,8 +187,10 @@ def applyCustomTransferFunction(signal, SR, tf_freqs, tf_amp, invert=False):
 
     signal_filtered = ifft(fft(signal)*(transferfun**power))
     imax = np.imag(signal_filtered).max()
-    log.debug('Applying custom transfer function. Discarding imag parts '
-              'no larger than {}'.format(imax))
+    log.debug(
+        "Applying custom transfer function. Discarding imag parts "
+        f"no larger than {imax}"
+    )
     signal_filtered = np.real(signal_filtered)
 
     return signal_filtered

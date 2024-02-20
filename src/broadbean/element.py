@@ -152,9 +152,11 @@ class Element:
 
         if not SRs.count(SRs[0]) == len(SRs):
             errmssglst = zip(list(self._data.keys()), SRs)
-            raise ElementDurationError('Different channels have different '
-                                       'SRs. (Channel, SR): '
-                                       '{}'.format(list(errmssglst)))
+            raise ElementDurationError(
+                "Different channels have different "
+                "SRs. (Channel, SR): "
+                f"{list(errmssglst)}"
+            )
 
         # Next the total time
         durations = []
@@ -172,9 +174,11 @@ class Element:
 
         if not np.allclose(durations, durations[0], atol=atol):
             errmssglst = zip(list(self._data.keys()), durations)
-            raise ElementDurationError('Different channels have different '
-                                       'durations. (Channel, duration): '
-                                       '{}s'.format(list(errmssglst)))
+            raise ElementDurationError(
+                "Different channels have different "
+                "durations. (Channel, duration): "
+                f"{list(errmssglst)}s"
+            )
 
         # Finally the number of points
         # (kind of redundant if sample rate and duration match?)
@@ -188,9 +192,11 @@ class Element:
 
         if not npts.count(npts[0]) == len(npts):
             errmssglst = zip(list(self._data.keys()), npts)
-            raise ElementDurationError('Different channels have different '
-                                       'npts. (Channel, npts): '
-                                       '{}'.format(list(errmssglst)))
+            raise ElementDurationError(
+                "Different channels have different "
+                "npts. (Channel, npts): "
+                f"{list(errmssglst)}"
+            )
 
         # If these three tests pass, we equip the dictionary with convenient
         # info used by Sequence
@@ -263,11 +269,12 @@ class Element:
         # have the same number of points
         for chan in channels:
 
-            if not ('array' in chan.keys() or 'blueprint' in chan.keys()):
-                raise ValueError('Neither BluePrint nor array assigned to '
-                                 'chan {}!'.format(chan))
-            if 'blueprint' in chan.keys():
-                return chan['blueprint'].points
+            if not ("array" in chan.keys() or "blueprint" in chan.keys()):
+                raise ValueError(
+                    f"Neither BluePrint nor array assigned to chan {chan}!"
+                )
+            if "blueprint" in chan.keys():
+                return chan["blueprint"].points
             else:
                 return len(chan['array']['wfm'])
 

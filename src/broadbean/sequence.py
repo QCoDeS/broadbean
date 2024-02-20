@@ -14,8 +14,11 @@ from broadbean.blueprint import BluePrint
 from broadbean.element import Element  # TODO: change import to element.py
 from broadbean.ripasso import applyInverseRCFilter
 
-from .broadbean import _channelListSorter  # TODO: change import to helpers.py
-from .broadbean import PulseAtoms, _AWGOutput
+from .broadbean import (
+    PulseAtoms,
+    _AWGOutput,
+    _channelListSorter,  # TODO: change import to helpers.py
+)
 
 log = logging.getLogger(__name__)
 
@@ -405,17 +408,21 @@ class Sequence:
             subsequence: The subsequence to add
         """
         if not isinstance(subsequence, Sequence):
-            raise ValueError('Subsequence must be a sequence object. '
-                             'Received object of type '
-                             '{}.'.format(type(subsequence)))
+            raise ValueError(
+                "Subsequence must be a sequence object. "
+                "Received object of type "
+                f"{type(subsequence)}."
+            )
 
         for elem in subsequence._data.values():
             if isinstance(elem, Sequence):
                 raise ValueError('Subsequences can not contain subsequences.')
 
         if subsequence.SR != self.SR:
-            raise ValueError('Subsequence SR does not match (main) sequence SR'
-                             '. ({} and {}).'.format(subsequence.SR, self.SR))
+            raise ValueError(
+                "Subsequence SR does not match (main) sequence SR"
+                f". ({subsequence.SR} and {self.SR})."
+            )
 
         self._data[position] = subsequence.copy()
 
@@ -643,8 +650,7 @@ class Sequence:
         try:
             elem = self._data[pos]
         except KeyError:
-            raise KeyError('No element specified at sequence '
-                           'position {}'.format(pos))
+            raise KeyError(f"No element specified at sequence position {pos}")
 
         return elem
 
@@ -827,8 +833,9 @@ class Sequence:
         for chan in channels:
             ampkey = f"channel{chan}_amplitude"
             if ampkey not in self._awgspecs.keys():
-                raise KeyError('No amplitude specified for channel '
-                               '{}. Can not continue.'.format(chan))
+                raise KeyError(
+                    "No amplitude specified for channel {chan}. Can not continue."
+                )
 
         # Apply channel delays.
         delays = []
@@ -945,10 +952,12 @@ class Sequence:
         for chan in channels:
             offkey = f"channel{chan}_offset"
             if offkey in self._awgspecs.keys():
-                log.warning("Found a specified offset for channel "
-                            "{}, but .seqx files can't contain offset "
-                            "information. Will ignore the offset."
-                            "".format(chan))
+                log.warning(
+                    "Found a specified offset for channel "
+                    f"{chan}, but .seqx files can't contain offset "
+                    "information. Will ignore the offset."
+                    ""
+                )
 
         # now check that the amplitudes are within the allowed limits
         # also verify that all waveforms are at least 2400 points
@@ -969,24 +978,26 @@ class Sequence:
                 wfm = element[chan]["wfm"]
                 # check the waveform length
                 if len(wfm) < 2400:
-                    raise ValueError('Waveform too short on channel '
-                                     '{} at step {}; only {} points. '
-                                     'The required minimum is 2400 points.'
-                                     ''.format(chan, pos, len(wfm)))
+                    raise ValueError(
+                        "Waveform too short on channel "
+                        f"{chan} at step {pos}; only {len(wfm)} points. "
+                        "The required minimum is 2400 points."
+                        ""
+                    )
                 # check whether the waveform voltages can be realised
                 if wfm.max() > ampl / 2:
                     raise ValueError(
                         "Waveform voltages exceed channel range "
-                        "on channel {}".format(chan)
-                        + f" sequence element {pos}."
-                        + f" {wfm.max()} > {ampl/2}!"
+                        f"on channel {chan}"
+                        f" sequence element {pos}."
+                        f" {wfm.max()} > {ampl/2}!"
                     )
                 if wfm.min() < -ampl / 2:
                     raise ValueError(
                         "Waveform voltages exceed channel range "
-                        "on channel {}".format(chan)
-                        + f" sequence element {pos}. "
-                        + f"{wfm.min()} < {-ampl/2}!"
+                        f"on channel {chan}"
+                        f" sequence element {pos}. "
+                        f"{wfm.min()} < {-ampl/2}!"
                     )
                 element[chan]["wfm"] = wfm
             elements[pos - 1] = element
@@ -1016,31 +1027,41 @@ class Sequence:
             goto = self._sequencing[pos]['goto']
 
             if twait not in [0, 1, 2, 3]:
-                raise SequencingError('Invalid trigger input at position'
-                                      '{}: {}. Must be 0, 1, 2, or 3.'
-                                      ''.format(pos, twait))
+                raise SequencingError(
+                    "Invalid trigger input at position"
+                    f"{pos}: {twait}. Must be 0, 1, 2, or 3."
+                    ""
+                )
 
             if jump_state not in [0, 1, 2, 3]:
-                raise SequencingError('Invalid event jump input at position'
-                                      '{}: {}. Must be either 0, 1, 2, or 3.'
-                                      ''.format(pos, twait))
+                raise SequencingError(
+                    "Invalid event jump input at position"
+                    f"{pos}: {twait}. Must be either 0, 1, 2, or 3."
+                    ""
+                )
 
             if nrep not in range(0, 16384):
-                raise SequencingError('Invalid number of repetions at position'
-                                      '{}: {}. Must be either 0 (infinite) '
-                                      'or 1-16,383.'.format(pos, nrep))
+                raise SequencingError(
+                    "Invalid number of repetions at position"
+                    f"{pos}: {nrep}. Must be either 0 (infinite) "
+                    "or 1-16,383."
+                )
 
-            if jump_to not in range(-1, seqlen+1):
-                raise SequencingError('Invalid event jump target at position'
-                                      '{}: {}. Must be either -1 (next),'
-                                      ' 0 (off), or 1-{}.'
-                                      ''.format(pos, jump_to, seqlen))
+            if jump_to not in range(-1, seqlen + 1):
+                raise SequencingError(
+                    "Invalid event jump target at position"
+                    f"{pos}: {jump_to}. Must be either -1 (next),"
+                    f" 0 (off), or 1-{seqlen}."
+                    ""
+                )
 
-            if goto not in range(0, seqlen+1):
-                raise SequencingError('Invalid goto target at position'
-                                      '{}: {}. Must be either 0 (next),'
-                                      ' or 1-{}.'
-                                      ''.format(pos, goto, seqlen))
+            if goto not in range(0, seqlen + 1):
+                raise SequencingError(
+                    "Invalid goto target at position"
+                    f"{pos}: {goto}. Must be either 0 (next),"
+                    f" or 1-{seqlen}."
+                    ""
+                )
 
             trig_waits.append(twait)
             nreps.append(nrep)
@@ -1116,9 +1137,9 @@ class Sequence:
         for chan in channels:
             offkey = f"channel{chan}_offset"
             if offkey not in self._awgspecs.keys():
-                raise ValueError("No specified offset for channel "
-                                 "{}, can not continue."
-                                 "".format(chan))
+                raise ValueError(
+                    f"No specified offset for channel {chan}, can not continue."
+                )
 
         # Apply channel scaling
         # We must rescale to the interval -1, 1 where 1 is ampl/2+off and -1 is
@@ -1136,16 +1157,16 @@ class Sequence:
                 if wfm.max() > ampl / 2 + off:
                     raise ValueError(
                         "Waveform voltages exceed channel range "
-                        "on channel {}".format(chan)
-                        + f" sequence element {pos}."
-                        + f" {wfm.max()} > {ampl/2+off}!"
+                        f"on channel {chan}"
+                        f" sequence element {pos}."
+                        f" {wfm.max()} > {ampl/2+off}!"
                     )
                 if wfm.min() < -ampl / 2 + off:
                     raise ValueError(
                         "Waveform voltages exceed channel range "
-                        "on channel {}".format(chan)
-                        + f" sequence element {pos}. "
-                        + f"{wfm.min()} < {-ampl/2+off}!"
+                        f"on channel {chan}"
+                        f" sequence element {pos}. "
+                        f"{wfm.min()} < {-ampl/2+off}!"
                     )
                 wfm = rescaler(wfm, ampl, off)
                 element[chan]['wfm'] = wfm
@@ -1174,26 +1195,34 @@ class Sequence:
             goto = self._sequencing[pos]['goto']
 
             if twait not in [0, 1]:
-                raise SequencingError('Invalid trigger wait state at position'
-                                      '{}: {}. Must be either 0 or 1.'
-                                      ''.format(pos, twait))
+                raise SequencingError(
+                    "Invalid trigger wait state at position"
+                    f"{pos}: {twait}. Must be either 0 or 1."
+                    ""
+                )
 
             if nrep not in range(0, 65537):
-                raise SequencingError('Invalid number of repetions at position'
-                                      '{}: {}. Must be either 0 (infinite) '
-                                      'or 1-65,536.'.format(pos, nrep))
+                raise SequencingError(
+                    "Invalid number of repetions at position"
+                    f"{pos}: {nrep}. Must be either 0 (infinite) "
+                    "or 1-65,536."
+                )
 
-            if jump_to not in range(-1, seqlen+1):
-                raise SequencingError('Invalid event jump target at position'
-                                      '{}: {}. Must be either -1 (next),'
-                                      ' 0 (off), or 1-{}.'
-                                      ''.format(pos, jump_to, seqlen))
+            if jump_to not in range(-1, seqlen + 1):
+                raise SequencingError(
+                    "Invalid event jump target at position"
+                    f"{pos}: {jump_to}. Must be either -1 (next),"
+                    f" 0 (off), or 1-{seqlen}."
+                    ""
+                )
 
-            if goto not in range(0, seqlen+1):
-                raise SequencingError('Invalid goto target at position'
-                                      '{}: {}. Must be either 0 (next),'
-                                      ' or 1-{}.'
-                                      ''.format(pos, goto, seqlen))
+            if goto not in range(0, seqlen + 1):
+                raise SequencingError(
+                    "Invalid goto target at position"
+                    f"{pos}: {goto}. Must be either 0 (next),"
+                    f" or 1-{seqlen}."
+                    ""
+                )
 
             trig_waits.append(twait)
             nreps.append(nrep)

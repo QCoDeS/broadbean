@@ -1,10 +1,10 @@
 # This file is for defining the blueprint object
 
-import warnings
-from inspect import signature
 import functools as ft
 import json
 import re
+import warnings
+from inspect import signature
 
 import numpy as np
 
@@ -15,7 +15,7 @@ class SegmentDurationError(Exception):
     pass
 
 
-class BluePrint():
+class BluePrint:
     """
     The class of a waveform to become.
     """
@@ -52,9 +52,11 @@ class BluePrint():
         # Are the lists of matching lengths?
         lenlist = [len(funlist), len(argslist), len(namelist), len(durslist)]
 
-        if any(l != lenlist[0] for l in lenlist):
-            raise ValueError('All input lists must be of same length. '
-                             'Received lengths: {}'.format(lenlist))
+        if any(elem != lenlist[0] for elem in lenlist):
+            raise ValueError(
+                "All input lists must be of same length. "
+                f"Received lengths: {lenlist}"
+            )
         # Are the names valid names?
         for name in namelist:
             if not isinstance(name, str):
@@ -117,8 +119,9 @@ class BluePrint():
         """
 
         if not isinstance(string, str):
-            raise ValueError('_basename received a non-string input!'
-                             ' Got the following: {}'.format(string))
+            raise ValueError(
+                f"_basename received a non-string input! Got the following: {string}"
+            )
 
         if string == '':
             return string
@@ -148,8 +151,7 @@ class BluePrint():
         """
 
         if not isinstance(lst, list):
-            raise ValueError('_make_names_unique received a non-list input!'
-                             ' Got {}'.format(lst))
+            raise ValueError(f"_make_names_unique received a non-list input! Got {lst}")
 
         baselst = [BluePrint._basename(lstel) for lstel in lst]
         uns = np.unique(baselst)
@@ -356,8 +358,8 @@ class BluePrint():
             if dur < 0:
                 raise ValueError(
                     "Inconsistent timing. Can not wait until "
-                    + f"{wait_time} at position {pos}."
-                    + f" {elapsed_time} elapsed already"
+                    f"{wait_time} at position {pos}."
+                    f" {elapsed_time} elapsed already"
                 )
             else:
                 durations[pos] = dur
@@ -425,8 +427,10 @@ class BluePrint():
 
         # Validation
         if name not in self._namelist:
-            raise ValueError('No segment of that name in blueprint.'
-                             ' Contains segments: {}'.format(self._namelist))
+            raise ValueError(
+                "No segment of that name in blueprint."
+                f" Contains segments: {self._namelist}"
+            )
 
         for name in replacelist:
 
@@ -437,18 +441,19 @@ class BluePrint():
             # Validation
             if isinstance(arg, str):
                 if arg not in sig.parameters:
-                    raise ValueError('No such argument of function '
-                                     '{}.'.format(function.__name__) +
-                                     'Has arguments '
-                                     '{}.'.format(sig.parameters.keys()))
+                    raise ValueError(
+                        "No such argument of function "
+                        f"{function.__name__}. Has arguments "
+                        f"{sig.parameters.keys()}."
+                    )
             # Each function has two 'secret' arguments, SR and dur
             user_params = len(sig.parameters)-2
             if isinstance(arg, int) and (arg not in range(user_params)):
                 raise ValueError(
                     f"No argument {arg} "
-                    + f"of function {function.__name__}."
-                    + f" Has {user_params} "
-                    + "arguments."
+                    f"of function {function.__name__}."
+                    f" Has {user_params} "
+                    "arguments."
                 )
 
             # allow the user to input single values instead of (val,)
@@ -489,9 +494,10 @@ class BluePrint():
                 1/SR.
         """
 
-        if (not(isinstance(dur, float)) and not(isinstance(dur, int))):
-            raise ValueError('New duration must be an int or a float. '
-                             'Received {}'.format(type(dur)))
+        if not (isinstance(dur, float)) and not (isinstance(dur, int)):
+            raise ValueError(
+                f"New duration must be an int or a float. Received {type(dur)}"
+            )
 
         if replaceeverywhere:
             basename = BluePrint._basename
@@ -503,8 +509,10 @@ class BluePrint():
 
         # Validation
         if name not in self._namelist:
-            raise ValueError('No segment of that name in blueprint.'
-                             ' Contains segments: {}'.format(self._namelist))
+            raise ValueError(
+                "No segment of that name in blueprint."
+                f" Contains segments: {self._namelist}"
+            )
 
         for name in replacelist:
             position = self._namelist.index(name)
@@ -540,8 +548,7 @@ class BluePrint():
             markerID (int): Which marker channel to output on. Must be 1 or 2.
         """
         if markerID not in [1, 2]:
-            raise ValueError('MarkerID must be either 1 or 2.'
-                             ' Received {}.'.format(markerID))
+            raise ValueError(f"MarkerID must be either 1 or 2. Received {markerID}.")
 
         markerselect = {1: self._segmark1, 2: self._segmark2}
         position = self._namelist.index(name)
@@ -560,15 +567,13 @@ class BluePrint():
                 bound to one element. Default: 1 (the first marker).
         """
         if markerID not in [1, 2]:
-            raise ValueError('MarkerID must be either 1 or 2.'
-                             ' Received {}.'.format(markerID))
+            raise ValueError("MarkerID must be either 1 or 2. Received {markerID}.")
 
         markerselect = {1: self._segmark1, 2: self._segmark2}
         try:
             position = self._namelist.index(name)
         except ValueError:
-            raise KeyError('No segment named {} in this BluePrint.'
-                           ''.format(name))
+            raise KeyError(f"No segment named {name} in this BluePrint.")
         markerselect[markerID][position] = (0, 0)
 
     def copy(self):
@@ -700,10 +705,12 @@ class BluePrint():
             ValueError: If the input is not a BluePrint instance
         """
         if not isinstance(other, BluePrint):
-            raise ValueError("""
+            raise ValueError(
+                f"""
                              BluePrint can only be added to another Blueprint.
-                             Received an object of type {}
-                             """.format(type(other)))
+                             Received an object of type {type(other)}
+                             """
+            )
 
         nl = [self._basename(name) for name in self._namelist]
         nl += [self._basename(name) for name in other._namelist]
@@ -746,11 +753,13 @@ class BluePrint():
             ValueError: If the input is not a BluePrint instance
         """
         if not isinstance(other, BluePrint):
-            raise ValueError("""
+            raise ValueError(
+                f"""
                              Blueprint can only be compared to another
                              Blueprint.
-                             Received an object of type {}
-                             """.format(type(other)))
+                             Received an object of type {type(other)}
+                             """
+            )
 
         if not self._namelist == other._namelist:
             return False
@@ -807,8 +816,8 @@ def _subelementBuilder(
         if dur < 0:
             raise ValueError(
                 "Inconsistent timing. Can not wait until "
-                + f"{wait_time} at position {pos}."
-                + f" {elapsed_time} elapsed already"
+                f"{wait_time} at position {pos}."
+                f" {elapsed_time} elapsed already"
             )
         else:
             durations[pos] = dur
@@ -831,17 +840,15 @@ def _subelementBuilder(
     for ii, dur in enumerate(newdurations):
         int_dur = round(dur*SR)
         if int_dur < 2:
-            raise SegmentDurationError('Too short segment detected! '
-                                       'Segment "{}" at position {} '
-                                       'has a duration of {} which at '
-                                       'an SR of {:.3E} leads to just {} '
-                                       'point(s). There must be at least '
-                                       '2 points in each segment.'
-                                       ''.format(namelist[ii],
-                                                 ii,
-                                                 newdurations[ii],
-                                                 SR,
-                                                 int_dur))
+            raise SegmentDurationError(
+                "Too short segment detected! "
+                f'Segment "{namelist[ii]}" at position {ii} '
+                f"has a duration of {newdurations[ii]} which at "
+                f"an SR of {SR:.3E} leads to just {int_dur} "
+                "point(s). There must be at least "
+                "2 points in each segment."
+                ""
+            )
         else:
             intdurations[ii] = int_dur
             newdurations[ii] = int_dur/SR

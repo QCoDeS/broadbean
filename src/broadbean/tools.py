@@ -1,10 +1,11 @@
 # High-level tool for sequence building and manipulation
 #
 
-import numpy as np
 import logging
 
-from broadbean.sequence import (Sequence, SequenceConsistencyError)
+import numpy as np
+
+from broadbean.sequence import Sequence, SequenceConsistencyError
 
 log = logging.getLogger(__name__)
 

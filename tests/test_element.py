@@ -3,13 +3,15 @@
 # We let the test_blueprint.py test the BluePrint and only test that Elements
 # work on the Element level
 
-import pytest
-import broadbean as bb
-import numpy as np
-from broadbean.element import ElementDurationError, Element
-from hypothesis import HealthCheck, given, settings
-import hypothesis.strategies as hst
 import os
+
+import hypothesis.strategies as hst
+import numpy as np
+import pytest
+from hypothesis import HealthCheck, given, settings
+
+import broadbean as bb
+from broadbean.element import Element, ElementDurationError
 
 ramp = bb.PulseAtoms.ramp
 sine = bb.PulseAtoms.sine
