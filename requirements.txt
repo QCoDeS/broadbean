@@ -83,7 +83,7 @@ pytest-cov~=4.1.0
 python-dateutil~=2.8.2
 pytz~=2024.1
 pywin32==306; sys_platform == 'win32'
-pywinpty==2.0.12; sys_platform == 'win32'
+pywinpty==2.0.13; sys_platform == 'win32'
 PyYAML~=6.0
 pyzmq~=25.1.0
 qcodes~=0.44.0
