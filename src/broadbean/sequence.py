@@ -634,6 +634,17 @@ class Sequence:
         for elem in self._data.values():
             total += elem.points
         return total
+    
+    @property
+    def duration(self) -> float:
+        """
+        Returns the duration in seconds of the sequence.
+        """
+        duration = 0.0
+        for pos, elem in self._data.items():
+            nrep = self._sequencing[pos]['nrep']
+            duration += nrep * elem.duration
+        return duration
 
     def element(self, pos):
         """
