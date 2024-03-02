@@ -634,7 +634,7 @@ class Sequence:
         for elem in self._data.values():
             total += elem.points
         return total
-    
+
     @property
     def duration(self) -> float:
         """
