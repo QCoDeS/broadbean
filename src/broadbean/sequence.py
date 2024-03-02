@@ -642,7 +642,7 @@ class Sequence:
         """
         duration = 0.0
         for pos, elem in self._data.items():
-            nrep = self._sequencing[pos]['nrep']
+            nrep = self._sequencing[pos]["nrep"]
             duration += nrep * elem.duration
         return duration
 
