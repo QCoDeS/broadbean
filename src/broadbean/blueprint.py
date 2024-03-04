@@ -70,7 +70,7 @@ class BluePrint:
         for name in namelist:
             if not isinstance(name, str):
                 raise ValueError(
-                    "All segment names must be strings. " f"Received {name}."
+                    f"All segment names must be strings. Received {name}."
                 )
             if name != "" and name[-1].isdigit():
                 raise ValueError(
@@ -647,7 +647,7 @@ class BluePrint:
         )
         if func == "ensureaverage_fixed_level" and has_ensureavg:
             raise ValueError(
-                'Can not have more than one "ensureaverage"' " segment in a blueprint."
+                "Can not have more than one \"ensureaverage\" segment in a blueprint."
             )
 
         if durs is not None:
