@@ -69,9 +69,7 @@ class BluePrint:
         # Are the names valid names?
         for name in namelist:
             if not isinstance(name, str):
-                raise ValueError(
-                    f"All segment names must be strings. Received {name}."
-                )
+                raise ValueError(f"All segment names must be strings. Received {name}.")
             if name != "" and name[-1].isdigit():
                 raise ValueError(
                     "Segment names are not allowed to end"
@@ -647,7 +645,7 @@ class BluePrint:
         )
         if func == "ensureaverage_fixed_level" and has_ensureavg:
             raise ValueError(
-                "Can not have more than one \"ensureaverage\" segment in a blueprint."
+                'Can not have more than one "ensureaverage" segment in a blueprint.'
             )
 
         if durs is not None:

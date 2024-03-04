@@ -111,7 +111,7 @@ def applyInverseRCFilter(signal, SR, kind, f_cut, order, DCgain=1):
 
     if kind not in ["HP", "LP"]:
         raise ValueError(
-            "Wrong filter type. Please specify filter type as either \"HP\" or \"LP\"."
+            'Wrong filter type. Please specify filter type as either "HP" or "LP".'
         )
 
     if not DCgain > 0:
