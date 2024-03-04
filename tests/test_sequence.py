@@ -330,6 +330,14 @@ def test_add_subsequence_raises(protosequence1, squarepulse_baseelem):
 
 
 ##################################################
+# Sequence properties
+
+def test_duration(protosequence1, protosequence2):
+    assert np.round(protosequence1.duration, 12) == 50e-6
+    assert np.round(protosequence2.duration, 12) == 75e-6
+
+
+##################################################
 # AWG settings
 
 
