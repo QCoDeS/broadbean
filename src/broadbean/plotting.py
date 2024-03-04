@@ -351,9 +351,9 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
                 if seq_info["twait"] == 1:  # trigger wait
                     titlestring += "T "
                 if seq_info["nrep"] > 1:  # nreps
-                    titlestring += "\u21BB{} ".format(seq_info["nrep"])
+                    titlestring += "\u21bb{} ".format(seq_info["nrep"])
                 if seq_info["nrep"] == 0:
-                    titlestring += "\u221E "
+                    titlestring += "\u221e "
                 if seq_info["jump_input"] != 0:
                     if seq_info["jump_input"] == -1:
                         titlestring += "E\u2192 "

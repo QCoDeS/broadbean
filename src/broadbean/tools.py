@@ -104,12 +104,10 @@ def makeVaryingSequence(baseelement, channels, names, args, iters):
             else:
                 element.changeArg(chan, name, arg, val)
 
-    log.info(
-        "Created varying sequence using makeVaryingSequence." " Now validating it..."
-    )
+    log.info("Created varying sequence using makeVaryingSequence. Now validating it...")
 
     if not sequence.checkConsistency():
-        raise SequenceConsistencyError("Invalid sequence. See log for " "details.")
+        raise SequenceConsistencyError("Invalid sequence. See log for details.")
     else:
         log.info("Valid sequence")
         return sequence

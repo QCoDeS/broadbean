@@ -203,7 +203,7 @@ class BluePrint:
         elif ensavgs:
             # TODO: call the forger
             raise NotImplementedError(
-                "ensureaverage_fixed_level does not" " exist yet. Cannot proceed"
+                "ensureaverage_fixed_level does not exist yet. Cannot proceed"
             )
 
     @property
@@ -218,7 +218,7 @@ class BluePrint:
 
         if SR is None:
             raise ValueError(
-                "No sample rate specified, can not " "return the number of points."
+                "No sample rate specified, can not return the number of points."
             )
 
         if not (waits) and not (ensavgs):
@@ -229,7 +229,7 @@ class BluePrint:
         elif ensavgs:
             # TODO: call the forger
             raise NotImplementedError(
-                "ensureaverage_fixed_level does not" " exist yet. Cannot proceed"
+                "ensureaverage_fixed_level does not exist yet. Cannot proceed"
             )
 
     @property
@@ -538,12 +538,12 @@ class BluePrint:
             position = self._namelist.index(name)
 
             if dur <= 0:
-                raise ValueError("Duration must be strictly greater " "than zero.")
+                raise ValueError("Duration must be strictly greater than zero.")
 
             if self.SR is not None:
                 if dur * self.SR < 1:
                     raise ValueError(
-                        "Duration too short! Must be at" " least 1/sample rate."
+                        "Duration too short! Must be at least 1/sample rate."
                     )
 
             self._durslist[position] = dur

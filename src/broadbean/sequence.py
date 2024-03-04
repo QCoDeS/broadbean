@@ -124,7 +124,7 @@ class Sequence:
 
         if not self._awgspecs == other._awgspecs:
             raise SequenceCompatibilityError(
-                "Incompatible sequences: " "different AWG" "specifications."
+                "Incompatible sequences: different AWGspecifications."
             )
 
         newseq = Sequence()
@@ -369,13 +369,13 @@ class Sequence:
 
         if kind not in ["HP", "LP"]:
             raise ValueError(
-                'Filter kind must either be "LP" (low pass) or ' '"HP" (high pass).'
+                'Filter kind must either be "LP" (low pass) or "HP" (high pass).'
             )
         if not isinstance(order, int):
             raise ValueError("Filter order must be an integer.")
         if (f_cut is not None) and (tau is not None):
             raise SpecificationInconsistencyError(
-                "Can not specify BOTH a time" " constant and a cut-off " "frequency."
+                "Can not specify BOTH a time constant and a cut-off frequency."
             )
 
         keystr = f"channel{channel}_filtercompensation"
@@ -657,7 +657,7 @@ class Sequence:
             return self.element(1).channels
         else:
             raise SequenceConsistencyError(
-                "Sequence not consistent. Can not" " figure out the channels."
+                "Sequence not consistent. Can not figure out the channels."
             )
 
     @property
@@ -874,7 +874,7 @@ class Sequence:
         # check if sequencing information is specified for each element
         if not sorted(list(self._sequencing.keys())) == list(range(1, seqlen + 1)):
             raise ValueError(
-                "Can not generate output for file; " "incorrect sequencer information."
+                "Can not generate output for file; incorrect sequencer information."
             )
 
         # Verify physical amplitude specifiations

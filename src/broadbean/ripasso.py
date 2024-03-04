@@ -115,9 +115,7 @@ def applyInverseRCFilter(signal, SR, kind, f_cut, order, DCgain=1):
         )
 
     if not DCgain > 0:
-        raise ValueError(
-            "Non-invertible DCgain! " "Please set DCgain to a finite value."
-        )
+        raise ValueError("Non-invertible DCgain! Please set DCgain to a finite value.")
 
     N = len(signal)
     transfun = _rcFilter(SR, N, f_cut, order=-order, kind=kind, DCgain=DCgain)
