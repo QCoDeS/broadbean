@@ -172,7 +172,12 @@ def squarepulse_baseelem():
 
 def test_generate_arbitrary_waveform():
     def two_sine(t, amp1, freq1, amp2, freq2, phase, off):
-        return amp1 * np.sin(2 * np.pi * freq1 * t) + amp2 * np.sin(2 * np.pi * freq2 * t + phase) + off
+        return (
+            amp1 * np.sin(2 * np.pi * freq1 * t)
+            + amp2 * np.sin(2 * np.pi * freq2 * t + phase)
+            + off
+        )
+
     params = {"amp1": 1, "freq1": 1e6, "amp2": 1, "freq2": 2e6, "phase": 0, "off": 0}
     bp_func = bb.BluePrint()
     bp_func.setSR(1e9)

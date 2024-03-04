@@ -17,19 +17,19 @@ class MissingFrequenciesError(Exception):
     pass
 
 
-def _rcFilter(SR, npts, f_cut, kind='HP', order=1, DCgain=0):
+def _rcFilter(SR, npts, f_cut, kind="HP", order=1, DCgain=0):
     """
     Nth order (RC circuit) filter
     made with frequencies matching the fft output
     """
 
-    freqs = fftfreq(npts, 1/SR)
+    freqs = fftfreq(npts, 1 / SR)
 
-    tau = 1/f_cut
-    top = 2j*np.pi
+    tau = 1 / f_cut
+    top = 2j * np.pi
 
-    if kind == 'HP':
-        tf = top*tau*freqs/(1+top*tau*freqs)
+    if kind == "HP":
+        tf = top * tau * freqs / (1 + top * tau * freqs)
 
         # now, we have identically zero gain for the DC component,
         # which makes the transfer function non-invertible
@@ -38,8 +38,8 @@ def _rcFilter(SR, npts, f_cut, kind='HP', order=1, DCgain=0):
 
         tf[tf == 0] = DCgain  # No DC suppression
 
-    elif kind == 'LP':
-        tf = 1/(1+top*tau*freqs)
+    elif kind == "LP":
+        tf = 1 / (1 + top * tau * freqs)
 
     return tf**order
 
@@ -69,12 +69,12 @@ def applyRCFilter(signal, SR, kind, f_cut, order, DCgain=0):
         ValueError: If kind is neither 'HP' nor 'LP'
     """
 
-    if kind not in ['HP', 'LP']:
+    if kind not in ["HP", "LP"]:
         raise ValueError('Please specify filter type as either "HP" or "LP".')
 
     N = len(signal)
     transfun = _rcFilter(SR, N, f_cut, kind=kind, order=order, DCgain=DCgain)
-    output = ifft(fft(signal)*transfun)
+    output = ifft(fft(signal) * transfun)
     output = np.real(output)
 
     return output
@@ -109,17 +109,19 @@ def applyInverseRCFilter(signal, SR, kind, f_cut, order, DCgain=1):
         ValueError: If DCgain is zero.
     """
 
-    if kind not in ['HP', 'LP']:
-        raise ValueError('Wrong filter type. '
-                         'Please specify filter type as either "HP" or "LP".')
+    if kind not in ["HP", "LP"]:
+        raise ValueError(
+            "Wrong filter type. " 'Please specify filter type as either "HP" or "LP".'
+        )
 
     if not DCgain > 0:
-        raise ValueError('Non-invertible DCgain! '
-                         'Please set DCgain to a finite value.')
+        raise ValueError(
+            "Non-invertible DCgain! " "Please set DCgain to a finite value."
+        )
 
     N = len(signal)
     transfun = _rcFilter(SR, N, f_cut, order=-order, kind=kind, DCgain=DCgain)
-    output = ifft(fft(signal)*transfun)
+    output = ifft(fft(signal) * transfun)
     output = np.real(output)
 
     return output
@@ -154,25 +156,29 @@ def applyCustomTransferFunction(signal, SR, tf_freqs, tf_amp, invert=False):
     df = np.diff(tf_freqs).round(6)
 
     if not np.sum(df > 0) == len(df):
-        raise ValueError('Invalid transfer function freq. axis. '
-                         'Frequencies must be monotonically increasing.')
+        raise ValueError(
+            "Invalid transfer function freq. axis. "
+            "Frequencies must be monotonically increasing."
+        )
 
-    if not tf_freqs[-1] >= SR/2:
+    if not tf_freqs[-1] >= SR / 2:
         # TODO: think about whether this is a problem
         # What is the desired behaviour for high frequencies if nothing
         # is specified? I guess NOOP, i.e. the transfer func. is 1
-        raise MissingFrequenciesError('Supplied transfer function does not '
-                                      'specify frequency response up to the '
-                                      'Nyquist frequency of the signal.')
+        raise MissingFrequenciesError(
+            "Supplied transfer function does not "
+            "specify frequency response up to the "
+            "Nyquist frequency of the signal."
+        )
 
     if not tf_freqs[0] == 0:
         # what to do in this case? Extrapolate 1s? Make the user do this?
         pass
 
     # Step 1: resample to fftfreq type axis
-    freqax = fftfreq(npts, 1/SR)
-    freqax_pos = freqax[:npts//2]
-    freqax_neg = freqax[npts//2:]
+    freqax = fftfreq(npts, 1 / SR)
+    freqax_pos = freqax[: npts // 2]
+    freqax_neg = freqax[npts // 2 :]
 
     resampled_pos = np.interp(freqax_pos, tf_freqs, tf_amp)
     resampled_neg = np.interp(-freqax_neg[::-1], tf_freqs, tf_amp)
@@ -185,7 +191,7 @@ def applyCustomTransferFunction(signal, SR, tf_freqs, tf_amp, invert=False):
     else:
         power = 1
 
-    signal_filtered = ifft(fft(signal)*(transferfun**power))
+    signal_filtered = ifft(fft(signal) * (transferfun**power))
     imax = np.imag(signal_filtered).max()
     log.debug(
         "Applying custom transfer function. Discarding imag parts "

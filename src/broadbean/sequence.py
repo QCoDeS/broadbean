@@ -22,11 +22,20 @@ from .broadbean import (
 
 log = logging.getLogger(__name__)
 
-fs_schema = Schema({int: {'type': Or('subsequence', 'element'),
-                          'content': {int: {'data': {Or(str, int): {str: np.ndarray}},
-                                            Optional('sequencing'): {Optional(str):
-                                                                    int}}},
-                          'sequencing': {Optional(str): int}}})
+fs_schema = Schema(
+    {
+        int: {
+            "type": Or("subsequence", "element"),
+            "content": {
+                int: {
+                    "data": {Or(str, int): {str: np.ndarray}},
+                    Optional("sequencing"): {Optional(str): int},
+                }
+            },
+            "sequencing": {Optional(str): int},
+        }
+    }
+)
 
 
 class SequencingError(Exception):
@@ -84,7 +93,7 @@ class Sequence:
 
         # some backends (seqx files) allow for a sequence to have a name
         # we make the name a property of the sequence
-        self._name = ''
+        self._name = ""
 
     def __eq__(self, other):
         if not isinstance(other, Sequence):
@@ -109,14 +118,14 @@ class Sequence:
 
         # Validation
         if not self.checkConsistency():
-            raise SequenceConsistencyError('Left hand sequence inconsistent!')
+            raise SequenceConsistencyError("Left hand sequence inconsistent!")
         if not other.checkConsistency():
-            raise SequenceConsistencyError('Right hand sequence inconsistent!')
+            raise SequenceConsistencyError("Right hand sequence inconsistent!")
 
         if not self._awgspecs == other._awgspecs:
-            raise SequenceCompatibilityError('Incompatible sequences: '
-                                             'different AWG'
-                                             'specifications.')
+            raise SequenceCompatibilityError(
+                "Incompatible sequences: " "different AWG" "specifications."
+            )
 
         newseq = Sequence()
         N = len(self._data)
@@ -135,11 +144,11 @@ class Sequence:
         for key, item in other._sequencing.items():
             newitem = item.copy()
             # update goto and jump according to new sequence length
-            if newitem['goto'] > 0:
-                newitem['goto'] += N
-            if newitem['jump_target'] > 0:
-                newitem['jump_target'] += N
-            newsequencing2.update({key+N: newitem})
+            if newitem["goto"] > 0:
+                newitem["goto"] += N
+            if newitem["jump_target"] > 0:
+                newitem["jump_target"] += N
+            newsequencing2.update({key + N: newitem})
 
         newsequencing1.update(newsequencing2)
 
@@ -179,9 +188,11 @@ class Sequence:
                 0 means next.
         """
 
-        warnings.warn('Deprecation warning. This function is only compatible '
-                      'with AWG5014 output and will be removed. '
-                      'Please use the specific setSequencingXXX methods.')
+        warnings.warn(
+            "Deprecation warning. This function is only compatible "
+            "with AWG5014 output and will be removed. "
+            "Please use the specific setSequencingXXX methods."
+        )
 
         # Validation (some validation 'postponed' and put in checkConsistency)
         #
@@ -189,9 +200,13 @@ class Sequence:
         # most validation of these settings is deferred and performed
         # in the outputForXXX methods
 
-        self._sequencing[pos] = {'twait': wait, 'nrep': nreps,
-                                 'jump_target': jump, 'goto': goto,
-                                 'jump_input': 0}
+        self._sequencing[pos] = {
+            "twait": wait,
+            "nrep": nreps,
+            "jump_target": jump,
+            "goto": goto,
+            "jump_input": 0,
+        }
 
     def setSequencingTriggerWait(self, pos: int, wait: int) -> None:
         """
@@ -203,7 +218,7 @@ class Sequence:
             pos: The sequence element (counting from 1)
             wait: The wait state/input depending on backend.
         """
-        self._sequencing[pos]['twait'] = wait
+        self._sequencing[pos]["twait"] = wait
 
     def setSequencingNumberOfRepetitions(self, pos: int, nrep: int) -> None:
         """
@@ -213,7 +228,7 @@ class Sequence:
             pos: The sequence element (counting from 1)
             nrep: The number of repetitions (0 means infinite)
         """
-        self._sequencing[pos]['nrep'] = nrep
+        self._sequencing[pos]["nrep"] = nrep
 
     def setSequencingEventInput(self, pos: int, jump_input: int) -> None:
         """
@@ -225,7 +240,7 @@ class Sequence:
             jump_input: The input specifier,  0 for off,
                 1 for 'TrigA', 2 for 'TrigB', 3 for 'Internal'.
         """
-        self._sequencing[pos]['jump_input'] = jump_input
+        self._sequencing[pos]["jump_input"] = jump_input
 
     def setSequencingEventJumpTarget(self, pos: int, jump_target: int) -> None:
         """
@@ -235,7 +250,7 @@ class Sequence:
             pos: The sequence element (counting from 1)
             jump_target: The sequence element to jump to (counting from 1)
         """
-        self._sequencing[pos]['jump_target'] = jump_target
+        self._sequencing[pos]["jump_target"] = jump_target
 
     def setSequencingGoto(self, pos: int, goto: int) -> None:
         """
@@ -246,13 +261,13 @@ class Sequence:
             pos: The sequence element (counting from 1)
             goto: The position of the element to play. 0 means 'next in line'
         """
-        self._sequencing[pos]['goto'] = goto
+        self._sequencing[pos]["goto"] = goto
 
     def setSR(self, SR):
         """
         Set the sample rate for the sequence
         """
-        self._awgspecs['SR'] = SR
+        self._awgspecs["SR"] = SR
 
     def setChannelVoltageRange(self, channel, ampl, offset):
         """
@@ -267,17 +282,18 @@ class Sequence:
             ampl (float): The channel peak-to-peak amplitude (V)
             offset (float): The channel offset (V)
         """
-        warnings.warn('Deprecation warning. This function is deprecated.'
-                      ' Use setChannelAmplitude and SetChannelOffset '
-                      'instead.')
+        warnings.warn(
+            "Deprecation warning. This function is deprecated."
+            " Use setChannelAmplitude and SetChannelOffset "
+            "instead."
+        )
 
         keystr = f"channel{channel}_amplitude"
         self._awgspecs[keystr] = ampl
         keystr = f"channel{channel}_offset"
         self._awgspecs[keystr] = offset
 
-    def setChannelAmplitude(self, channel: Union[int, str],
-                            ampl: float) -> None:
+    def setChannelAmplitude(self, channel: Union[int, str], ampl: float) -> None:
         """
         Assign the physical voltage amplitude of the channel. This is used
         when making output for real instruments.
@@ -289,8 +305,7 @@ class Sequence:
         keystr = f"channel{channel}_amplitude"
         self._awgspecs[keystr] = ampl
 
-    def setChannelOffset(self, channel: Union[int, str],
-                         offset: float) -> None:
+    def setChannelOffset(self, channel: Union[int, str], offset: float) -> None:
         """
         Assign the physical voltage offset of the channel. This is used
         by some backends when making output for real instruments
@@ -302,8 +317,7 @@ class Sequence:
         keystr = f"channel{channel}_offset"
         self._awgspecs[keystr] = offset
 
-    def setChannelDelay(self, channel: Union[int, str],
-                        delay: float) -> None:
+    def setChannelDelay(self, channel: Union[int, str], delay: float) -> None:
         """
         Assign a delay to a channel. This is used when making output for .awg
         files. Use the delay to compensate for cable length differences etc.
@@ -353,15 +367,16 @@ class Sequence:
             SpecificationInconsistencyError: If both f_cut and tau are given.
         """
 
-        if kind not in ['HP', 'LP']:
-            raise ValueError('Filter kind must either be "LP" (low pass) or '
-                             '"HP" (high pass).')
+        if kind not in ["HP", "LP"]:
+            raise ValueError(
+                'Filter kind must either be "LP" (low pass) or ' '"HP" (high pass).'
+            )
         if not isinstance(order, int):
-            raise ValueError('Filter order must be an integer.')
+            raise ValueError("Filter order must be an integer.")
         if (f_cut is not None) and (tau is not None):
-            raise SpecificationInconsistencyError('Can not specify BOTH a time'
-                                                  ' constant and a cut-off '
-                                                  'frequency.')
+            raise SpecificationInconsistencyError(
+                "Can not specify BOTH a time" " constant and a cut-off " "frequency."
+            )
 
         keystr = f"channel{channel}_filtercompensation"
         self._awgspecs[keystr] = {
@@ -393,11 +408,15 @@ class Sequence:
         self._data.update({position: newelement})
 
         # insert default sequencing settings
-        self._sequencing[position] = {'twait': 0, 'nrep': 1,
-                                      'jump_input': 0, 'jump_target': 0,
-                                      'goto': 0}
+        self._sequencing[position] = {
+            "twait": 0,
+            "nrep": 1,
+            "jump_input": 0,
+            "jump_target": 0,
+            "goto": 0,
+        }
 
-    def addSubSequence(self, position: int, subsequence: 'Sequence') -> None:
+    def addSubSequence(self, position: int, subsequence: "Sequence") -> None:
         """
         Add a subsequence to the sequence. Overwrites anything previously
         assigned to this position. The subsequence can not contain any
@@ -416,7 +435,7 @@ class Sequence:
 
         for elem in subsequence._data.values():
             if isinstance(elem, Sequence):
-                raise ValueError('Subsequences can not contain subsequences.')
+                raise ValueError("Subsequences can not contain subsequences.")
 
         if subsequence.SR != self.SR:
             raise ValueError(
@@ -426,9 +445,13 @@ class Sequence:
 
         self._data[position] = subsequence.copy()
 
-        self._sequencing[position] = {'twait': 0, 'nrep': 1,
-                                      'jump_input': 0, 'jump_target': 0,
-                                      'goto': 0}
+        self._sequencing[position] = {
+            "twait": 0,
+            "nrep": 1,
+            "jump_input": 0,
+            "jump_target": 0,
+            "goto": 0,
+        }
 
     def checkConsistency(self, verbose=False):
         """
@@ -438,9 +461,9 @@ class Sequence:
         # TODO: Give helpful info if the check fails
 
         try:
-            self._awgspecs['SR']
+            self._awgspecs["SR"]
         except KeyError:
-            raise KeyError('No sample rate specified. Can not perform check')
+            raise KeyError("No sample rate specified. Can not perform check")
 
         # First check that all sample rates agree
         # Since all elements are validated on input, the SR exists
@@ -448,7 +471,7 @@ class Sequence:
         if SRs == []:  # case of empty Sequence
             SRs = [None]
         if SRs.count(SRs[0]) != len(SRs):
-            failmssg = ('checkConsistency failed: inconsistent sample rates.')
+            failmssg = "checkConsistency failed: inconsistent sample rates."
             log.info(failmssg)
             if verbose:
                 print(failmssg)
@@ -463,8 +486,10 @@ class Sequence:
             chans = None
             specchans = [None]
         if specchans.count(chans) != len(specchans):
-            failmssg = ('checkConsistency failed: different elements specify '
-                        'different channels')
+            failmssg = (
+                "checkConsistency failed: different elements specify "
+                "different channels"
+            )
             log.info(failmssg)
             if verbose:
                 print(failmssg)
@@ -476,9 +501,11 @@ class Sequence:
         positions = list(self._data.keys())
         if positions == []:  # case of empty Sequence
             positions = [1]
-        if not positions == list(range(1, len(positions)+1)):
-            failmssg = ('checkConsistency failed: inconsistent sequence'
-                        'positions. Must be 1, 2, 3, ...')
+        if not positions == list(range(1, len(positions) + 1)):
+            failmssg = (
+                "checkConsistency failed: inconsistent sequence"
+                "positions. Must be 1, 2, 3, ..."
+            )
             log.info(failmssg)
             if verbose:
                 print(failmssg)
@@ -496,18 +523,20 @@ class Sequence:
 
         for pos, elem in self._data.items():
             desc[str(pos)] = {}
-            desc[str(pos)]['channels'] = elem.description
+            desc[str(pos)]["channels"] = elem.description
             try:
                 sequencing = self._sequencing[pos]
-                seqdict = {'Wait trigger': sequencing['twait'],
-                           'Repeat': sequencing['nrep'],
-                           'jump_input': sequencing['jump_input'],
-                           'jump_target': sequencing['jump_target'],
-                           'Go to': sequencing['goto']}
-                desc[str(pos)]['sequencing'] = seqdict
+                seqdict = {
+                    "Wait trigger": sequencing["twait"],
+                    "Repeat": sequencing["nrep"],
+                    "jump_input": sequencing["jump_input"],
+                    "jump_target": sequencing["jump_target"],
+                    "Go to": sequencing["goto"],
+                }
+                desc[str(pos)]["sequencing"] = seqdict
             except KeyError:
-                desc[str(pos)]['sequencing'] = 'Not set'
-        desc['awgspecs'] = self._awgspecs
+                desc[str(pos)]["sequencing"] = "Not set"
+        desc["awgspecs"] = self._awgspecs
         return desc
 
     def write_to_json(self, path_to_file: str) -> None:
@@ -518,11 +547,11 @@ class Sequence:
             path_to_file: the path to the file to write to ex:
             path_to_file/sequense.json
         """
-        with open(path_to_file, 'w') as fp:
+        with open(path_to_file, "w") as fp:
             json.dump(self.description, fp, indent=4)
 
     @classmethod
-    def sequence_from_description(cls, seq_dict: dict) -> 'Sequence':
+    def sequence_from_description(cls, seq_dict: dict) -> "Sequence":
         """
         Returns a sequence from a description given as a dict
 
@@ -531,16 +560,18 @@ class Sequence:
             Sequence.description
         """
 
-        awgspecs = seq_dict['awgspecs']
-        SR = awgspecs['SR']
+        awgspecs = seq_dict["awgspecs"]
+        SR = awgspecs["SR"]
         elem_list = list(seq_dict.keys())
         new_instance = cls()
 
         for ele in elem_list[:-1]:
-            channels_list = list(seq_dict[ele]['channels'].keys())
+            channels_list = list(seq_dict[ele]["channels"].keys())
             elem = Element()
             for chan in channels_list:
-                bp_sum = BluePrint.blueprint_from_description(seq_dict[ele]['channels'][chan])
+                bp_sum = BluePrint.blueprint_from_description(
+                    seq_dict[ele]["channels"][chan]
+                )
                 bp_sum.setSR(SR)
                 elem.addBluePrint(int(chan), bp_sum)
                 if "flags" in seq_dict[ele]["channels"][chan]:
@@ -554,18 +585,23 @@ class Sequence:
                 new_instance.setChannelOffset(int(chan), ChannelOffset)
 
             new_instance.addElement(int(ele), elem)
-            sequencedict = seq_dict[ele]['sequencing']
-            new_instance.setSequencingTriggerWait(int(ele), sequencedict['Wait trigger'])
-            new_instance.setSequencingNumberOfRepetitions(int(ele), sequencedict['Repeat'])
-            new_instance.setSequencingEventInput(int(ele), sequencedict['jump_input'])
-            new_instance.setSequencingEventJumpTarget(int(ele), sequencedict['jump_target'])
-            new_instance.setSequencingGoto(int(ele), sequencedict['Go to'])
+            sequencedict = seq_dict[ele]["sequencing"]
+            new_instance.setSequencingTriggerWait(
+                int(ele), sequencedict["Wait trigger"]
+            )
+            new_instance.setSequencingNumberOfRepetitions(
+                int(ele), sequencedict["Repeat"]
+            )
+            new_instance.setSequencingEventInput(int(ele), sequencedict["jump_input"])
+            new_instance.setSequencingEventJumpTarget(
+                int(ele), sequencedict["jump_target"]
+            )
+            new_instance.setSequencingGoto(int(ele), sequencedict["Go to"])
         new_instance.setSR(SR)
         return new_instance
 
-
     @classmethod
-    def init_from_json(cls, path_to_file: str) -> 'Sequence':
+    def init_from_json(cls, path_to_file: str) -> "Sequence":
         """
         Reads sequense from JSON file
 
@@ -590,7 +626,7 @@ class Sequence:
     @name.setter
     def name(self, newname):
         if not isinstance(newname, str):
-            raise ValueError('The sequence name must be a string')
+            raise ValueError("The sequence name must be a string")
         self._name = newname
 
     @property
@@ -606,7 +642,7 @@ class Sequence:
         Returns the sample rate, if defined. Else returns -1.
         """
         try:
-            SR = self._awgspecs['SR']
+            SR = self._awgspecs["SR"]
         except KeyError:
             SR = -1
 
@@ -620,8 +656,9 @@ class Sequence:
         if self.checkConsistency():
             return self.element(1).channels
         else:
-            raise SequenceConsistencyError('Sequence not consistent. Can not'
-                                           ' figure out the channels.')
+            raise SequenceConsistencyError(
+                "Sequence not consistent. Can not" " figure out the channels."
+            )
 
     @property
     def points(self):
@@ -682,24 +719,25 @@ class Sequence:
         output = {}
 
         # we assume correctness, all postions specify the same channels
-        chans = seq[1]['data'].keys()
+        chans = seq[1]["data"].keys()
 
-        minmax = dict(zip(chans, [(0, 0)]*len(chans)))
+        minmax = dict(zip(chans, [(0, 0)] * len(chans)))
 
         for element in seq.values():
-
-            arr_dict = element['data']
+            arr_dict = element["data"]
 
             for chan in chans:
-                wfm = arr_dict[chan]['wfm']
+                wfm = arr_dict[chan]["wfm"]
                 if wfm.min() < minmax[chan][0]:
                     minmax[chan] = (wfm.min(), minmax[chan][1])
                 if wfm.max() > minmax[chan][1]:
                     minmax[chan] = (minmax[chan][0], wfm.max())
-                output[chan] = {'wfm': np.array(minmax[chan]),
-                                'm1': np.zeros(2),
-                                'm2': np.zeros(2),
-                                'time': np.linspace(0, 1, 2)}
+                output[chan] = {
+                    "wfm": np.array(minmax[chan]),
+                    "m1": np.zeros(2),
+                    "m2": np.zeros(2),
+                    "time": np.linspace(0, 1, 2),
+                }
 
         return output
 
@@ -727,9 +765,11 @@ class Sequence:
         """
         # Validation
         if not self.checkConsistency():
-            raise ValueError('Can not generate output. Something is '
-                             'inconsistent. Please run '
-                             'checkConsistency(verbose=True) for more details')
+            raise ValueError(
+                "Can not generate output. Something is "
+                "inconsistent. Please run "
+                "checkConsistency(verbose=True) for more details"
+            )
 
         output: dict[int, dict] = {}
         channels = self.channels
@@ -746,11 +786,11 @@ class Sequence:
             delays = []
             for chan in channels:
                 try:
-                    delays.append(self._awgspecs[f'channel{chan}_delay'])
+                    delays.append(self._awgspecs[f"channel{chan}_delay"])
                 except KeyError:
                     delays.append(0)
 
-            for pos in range(1, seqlen+1):
+            for pos in range(1, seqlen + 1):
                 if isinstance(data[pos], Sequence):
                     subseq = data[pos]
                     for elem in subseq._data.values():
@@ -759,55 +799,49 @@ class Sequence:
                     data[pos]._applyDelays(delays)
 
         # forge arrays and form the output dict
-        for pos in range(1, seqlen+1):
+        for pos in range(1, seqlen + 1):
             output[pos] = {}
-            output[pos]['sequencing'] = self._sequencing[pos]
+            output[pos]["sequencing"] = self._sequencing[pos]
             if isinstance(data[pos], Sequence):
                 subseq = data[pos]
-                output[pos]['type'] = 'subsequence'
-                output[pos]['content'] = {}
-                for pos2 in range(1, subseq.length_sequenceelements+1):
-                    output[pos]['content'][pos2] = {'data': {},
-                                                    'sequencing': {}}
+                output[pos]["type"] = "subsequence"
+                output[pos]["content"] = {}
+                for pos2 in range(1, subseq.length_sequenceelements + 1):
+                    output[pos]["content"][pos2] = {"data": {}, "sequencing": {}}
                     elem = subseq.element(pos2)
                     dictdata = elem.getArrays(includetime=includetime)
-                    output[pos]['content'][pos2]['data'] = dictdata
+                    output[pos]["content"][pos2]["data"] = dictdata
                     seqing = subseq._sequencing[pos2]
-                    output[pos]['content'][pos2]['sequencing'] = seqing
+                    output[pos]["content"][pos2]["sequencing"] = seqing
                     # TODO: update sequencing
             elif isinstance(data[pos], Element):
                 elem = data[pos]
-                output[pos]['type'] = 'element'
+                output[pos]["type"] = "element"
                 dictdata = elem.getArrays(includetime=includetime)
-                output[pos]['content'] = {1: {'data': dictdata}}
+                output[pos]["content"] = {1: {"data": dictdata}}
 
         # apply filter corrections to forged arrays
         if apply_filters:
-            for pos1 in range(1, seqlen+1):
-                thiselem = output[pos1]['content']
+            for pos1 in range(1, seqlen + 1):
+                thiselem = output[pos1]["content"]
                 for pos2 in thiselem.keys():
-                    data = thiselem[pos2]['data']
+                    data = thiselem[pos2]["data"]
                     for channame in data.keys():
-                        keystr = f'channel{channame}_filtercompensation'
+                        keystr = f"channel{channame}_filtercompensation"
                         if keystr in self._awgspecs.keys():
-                            kind = self._awgspecs[keystr]['kind']
-                            order = self._awgspecs[keystr]['order']
-                            f_cut = self._awgspecs[keystr]['f_cut']
-                            tau = self._awgspecs[keystr]['tau']
+                            kind = self._awgspecs[keystr]["kind"]
+                            order = self._awgspecs[keystr]["order"]
+                            f_cut = self._awgspecs[keystr]["f_cut"]
+                            tau = self._awgspecs[keystr]["tau"]
                             if f_cut is None:
-                                f_cut = 1/tau
-                            prefilter = data[channame]['wfm']
-                            postfilter = applyInverseRCFilter(prefilter,
-                                                              self.SR,
-                                                              kind,
-                                                              f_cut, order,
-                                                              DCgain=1)
-                            (output[pos1]
-                                   ['content']
-                                   [pos2]
-                                   ['data']
-                                   [channame]
-                                   ['wfm']) = postfilter
+                                f_cut = 1 / tau
+                            prefilter = data[channame]["wfm"]
+                            postfilter = applyInverseRCFilter(
+                                prefilter, self.SR, kind, f_cut, order, DCgain=1
+                            )
+                            (
+                                output[pos1]["content"][pos2]["data"][channame]["wfm"]
+                            ) = postfilter
 
         return output
 
@@ -825,9 +859,11 @@ class Sequence:
         """
         # Validation
         if not self.checkConsistency():
-            raise ValueError('Can not generate output. Something is '
-                             'inconsistent. Please run '
-                             'checkConsistency(verbose=True) for more details')
+            raise ValueError(
+                "Can not generate output. Something is "
+                "inconsistent. Please run "
+                "checkConsistency(verbose=True) for more details"
+            )
         #
         #
         channels = self.element(1).channels  # all elements have ident. chans
@@ -836,9 +872,10 @@ class Sequence:
         data = deepcopy(self._data)
         seqlen = len(data.keys())
         # check if sequencing information is specified for each element
-        if not sorted(list(self._sequencing.keys())) == list(range(1, seqlen+1)):
-            raise ValueError('Can not generate output for file; '
-                             'incorrect sequencer information.')
+        if not sorted(list(self._sequencing.keys())) == list(range(1, seqlen + 1)):
+            raise ValueError(
+                "Can not generate output for file; " "incorrect sequencer information."
+            )
 
         # Verify physical amplitude specifiations
         for chan in channels:
@@ -857,13 +894,13 @@ class Sequence:
                 delays.append(0)
         maxdelay = max(delays)
 
-        for pos in range(1, seqlen+1):
+        for pos in range(1, seqlen + 1):
             for chanind, chan in enumerate(channels):
                 element = data[pos]
                 delay = delays[chanind]
 
-                if 'blueprint' in element._data[chan].keys():
-                    blueprint = element._data[chan]['blueprint']
+                if "blueprint" in element._data[chan].keys():
+                    blueprint = element._data[chan]["blueprint"]
                     # prevent information about flags to be lost
                     if "flags" in element._data[chan].keys():
                         flags = element._data[chan]["flags"]
@@ -872,17 +909,17 @@ class Sequence:
 
                     # update existing waituntils
                     for segpos in range(len(blueprint._funlist)):
-                        if blueprint._funlist[segpos] == 'waituntil':
+                        if blueprint._funlist[segpos] == "waituntil":
                             oldwait = blueprint._argslist[segpos][0]
-                            blueprint._argslist[segpos] = (oldwait+delay,)
+                            blueprint._argslist[segpos] = (oldwait + delay,)
                     # insert delay before the waveform
                     if delay > 0:
-                        blueprint.insertSegment(0, 'waituntil', (delay,),
-                                                'waituntil')
+                        blueprint.insertSegment(0, "waituntil", (delay,), "waituntil")
                     # add zeros at the end
-                    if maxdelay-delay > 0:
-                        blueprint.insertSegment(-1, PulseAtoms.ramp, (0, 0),
-                                                dur=maxdelay-delay)
+                    if maxdelay - delay > 0:
+                        blueprint.insertSegment(
+                            -1, PulseAtoms.ramp, (0, 0), dur=maxdelay - delay
+                        )
                     # TODO: is the next line even needed?
                     # If not, remove the code updating the flags below
                     # and the one remembering them above
@@ -893,33 +930,31 @@ class Sequence:
                 else:
                     arrays = element._data[chan]["array"]
                     for name, arr in arrays.items():
-                        pre_wait = np.zeros(int(delay/self.SR))
-                        post_wait = np.zeros(int((maxdelay-delay)/self.SR))
-                        arrays[name] = np.concatenate((pre_wait, arr,
-                                                       post_wait))
+                        pre_wait = np.zeros(int(delay / self.SR))
+                        post_wait = np.zeros(int((maxdelay - delay) / self.SR))
+                        arrays[name] = np.concatenate((pre_wait, arr, post_wait))
 
         # Now forge all the elements as specified
         elements = []  # the forged elements
-        for pos in range(1, seqlen+1):
+        for pos in range(1, seqlen + 1):
             elements.append(data[pos].getArrays())
 
         # Now that the numerical arrays exist, we can apply filter compensation
         for chan in channels:
             keystr = f"channel{chan}_filtercompensation"
             if keystr in self._awgspecs.keys():
-                kind = self._awgspecs[keystr]['kind']
-                order = self._awgspecs[keystr]['order']
-                f_cut = self._awgspecs[keystr]['f_cut']
-                tau = self._awgspecs[keystr]['tau']
+                kind = self._awgspecs[keystr]["kind"]
+                order = self._awgspecs[keystr]["order"]
+                f_cut = self._awgspecs[keystr]["f_cut"]
+                tau = self._awgspecs[keystr]["tau"]
                 if f_cut is None:
-                    f_cut = 1/tau
+                    f_cut = 1 / tau
                 for pos in range(seqlen):
-                    prefilter = elements[pos][chan]['wfm']
-                    postfilter = applyInverseRCFilter(prefilter,
-                                                      self.SR,
-                                                      kind, f_cut, order,
-                                                      DCgain=1)
-                    elements[pos][chan]['wfm'] = postfilter
+                    prefilter = elements[pos][chan]["wfm"]
+                    postfilter = applyInverseRCFilter(
+                        prefilter, self.SR, kind, f_cut, order, DCgain=1
+                    )
+                    elements[pos][chan]["wfm"] = postfilter
 
         return elements
 
@@ -982,8 +1017,8 @@ class Sequence:
         if len(amplitudes) == 1:
             amplitudes.append(0)
 
-        for pos in range(1, seqlen+1):
-            element = elements[pos-1]
+        for pos in range(1, seqlen + 1):
+            element = elements[pos - 1]
             for chan in channels:
                 ampl = self._awgspecs[f"channel{chan}_amplitude"]
                 wfm = element[chan]["wfm"]
@@ -1024,18 +1059,18 @@ class Sequence:
 
         # Since sequencing options are valid/invalid differently for
         # different backends, we make the validation here
-        for pos in range(1, seqlen+1):
+        for pos in range(1, seqlen + 1):
             for chanind, chan in enumerate(channels):
-                wfm = elements[pos-1][chan]['wfm']
-                m1 = elements[pos-1][chan]['m1']
-                m2 = elements[pos-1][chan]['m2']
+                wfm = elements[pos - 1][chan]["wfm"]
+                m1 = elements[pos - 1][chan]["m1"]
+                m2 = elements[pos - 1][chan]["m2"]
                 waveforms[chanind].append(np.array([wfm, m1, m2]))
 
-            twait = self._sequencing[pos]['twait']
-            nrep = self._sequencing[pos]['nrep']
-            jump_to = self._sequencing[pos]['jump_target']
-            jump_state = self._sequencing[pos]['jump_input']
-            goto = self._sequencing[pos]['goto']
+            twait = self._sequencing[pos]["twait"]
+            nrep = self._sequencing[pos]["nrep"]
+            jump_to = self._sequencing[pos]["jump_target"]
+            jump_state = self._sequencing[pos]["jump_input"]
+            goto = self._sequencing[pos]["goto"]
 
             if twait not in [0, 1, 2, 3]:
                 raise SequencingError(
@@ -1080,8 +1115,16 @@ class Sequence:
             jump_states.append(jump_state)
             gotos.append(goto)
 
-        return (trig_waits, nreps, jump_states, jump_tos, gotos,
-                waveforms, amplitudes, self.name)
+        return (
+            trig_waits,
+            nreps,
+            jump_states,
+            jump_tos,
+            gotos,
+            waveforms,
+            amplitudes,
+            self.name,
+        )
 
     def outputForSEQXFileWithFlags(
         self,
@@ -1157,9 +1200,10 @@ class Sequence:
         # -ampl/2+off.
         #
         def rescaler(val, ampl, off):
-            return val/ampl*2-off
-        for pos in range(1, seqlen+1):
-            element = elements[pos-1]
+            return val / ampl * 2 - off
+
+        for pos in range(1, seqlen + 1):
+            element = elements[pos - 1]
             for chan in channels:
                 ampl = self._awgspecs[f"channel{chan}_amplitude"]
                 off = self._awgspecs[f"channel{chan}_offset"]
@@ -1180,8 +1224,8 @@ class Sequence:
                         f"{wfm.min()} < {-ampl/2+off}!"
                     )
                 wfm = rescaler(wfm, ampl, off)
-                element[chan]['wfm'] = wfm
-            elements[pos-1] = element
+                element[chan]["wfm"] = wfm
+            elements[pos - 1] = element
 
         # Finally cast the lists into the shapes required by the AWG driver
         waveforms = [[] for dummy in range(len(channels))]
@@ -1194,16 +1238,16 @@ class Sequence:
 
         # Since sequencing options are valid/invalid differently for
         # different backends, we make the validation here
-        for pos in range(1, seqlen+1):
+        for pos in range(1, seqlen + 1):
             for chanind, chan in enumerate(channels):
-                waveforms[chanind].append(elements[pos-1][chan]['wfm'])
-                m1s[chanind].append(elements[pos-1][chan]['m1'])
-                m2s[chanind].append(elements[pos-1][chan]['m2'])
+                waveforms[chanind].append(elements[pos - 1][chan]["wfm"])
+                m1s[chanind].append(elements[pos - 1][chan]["m1"])
+                m2s[chanind].append(elements[pos - 1][chan]["m2"])
 
-            twait = self._sequencing[pos]['twait']
-            nrep = self._sequencing[pos]['nrep']
-            jump_to = self._sequencing[pos]['jump_target']
-            goto = self._sequencing[pos]['goto']
+            twait = self._sequencing[pos]["twait"]
+            nrep = self._sequencing[pos]["nrep"]
+            jump_to = self._sequencing[pos]["jump_target"]
+            goto = self._sequencing[pos]["goto"]
 
             if twait not in [0, 1]:
                 raise SequencingError(
@@ -1241,8 +1285,8 @@ class Sequence:
             gotos.append(goto)
 
         # ...and make a sliceable object out of them
-        output = _AWGOutput((waveforms, m1s, m2s, nreps,
-                             trig_waits, gotos,
-                             jump_tos), self.channels)
+        output = _AWGOutput(
+            (waveforms, m1s, m2s, nreps, trig_waits, gotos, jump_tos), self.channels
+        )
 
         return output

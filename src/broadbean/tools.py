@@ -10,8 +10,7 @@ from broadbean.sequence import Sequence, SequenceConsistencyError
 log = logging.getLogger(__name__)
 
 
-def makeLinearlyVaryingSequence(baseelement, channel, name, arg, start, stop,
-                                step):
+def makeLinearlyVaryingSequence(baseelement, channel, name, arg, start, stop, step):
     """
     Make a pulse sequence where a single parameter varies linearly.
     The pulse sequence will consist of N copies of the same element with just
@@ -36,15 +35,15 @@ def makeLinearlyVaryingSequence(baseelement, channel, name, arg, start, stop,
 
     sequence.setSR(baseelement.SR)
 
-    iterator = np.linspace(start, stop, round(abs(stop-start)/step)+1)
+    iterator = np.linspace(start, stop, round(abs(stop - start) / step) + 1)
 
     for ind, val in enumerate(iterator):
         element = baseelement.copy()
-        if arg == 'duration':
+        if arg == "duration":
             element.changeDuration(channel, name, val)
         else:
             element.changeArg(channel, name, arg, val)
-        sequence.addElement(ind+1, element)
+        sequence.addElement(ind + 1, element)
 
     return sequence
 
@@ -79,36 +78,40 @@ def makeVaryingSequence(baseelement, channels, names, args, iters):
 
     inputlengths = [len(channels), len(names), len(args), len(iters)]
     if not inputlengths.count(inputlengths[0]) == len(inputlengths):
-        raise ValueError('Inconsistent number of channel, names, args, and '
-                         'parameter sequences. Please specify the same number '
-                         'of each.')
+        raise ValueError(
+            "Inconsistent number of channel, names, args, and "
+            "parameter sequences. Please specify the same number "
+            "of each."
+        )
     noofvals = [len(itr) for itr in iters]
     if not noofvals.count(noofvals[0]) == len(iters):
-        raise ValueError('Not the same number of values in each parameter '
-                         'value sequence (input argument: iters)')
+        raise ValueError(
+            "Not the same number of values in each parameter "
+            "value sequence (input argument: iters)"
+        )
 
     sequence = Sequence()
     sequence.setSR(baseelement.SR)
 
-    for elnum in range(1, noofvals[0]+1):
+    for elnum in range(1, noofvals[0] + 1):
         sequence.addElement(elnum, baseelement.copy())
 
-    for (chan, name, arg, vals) in zip(channels, names, args, iters):
+    for chan, name, arg, vals in zip(channels, names, args, iters):
         for mpos, val in enumerate(vals):
-            element = sequence.element(mpos+1)
-            if arg == 'duration':
+            element = sequence.element(mpos + 1)
+            if arg == "duration":
                 element.changeDuration(chan, name, val)
             else:
                 element.changeArg(chan, name, arg, val)
 
-    log.info('Created varying sequence using makeVaryingSequence.'
-             ' Now validating it...')
+    log.info(
+        "Created varying sequence using makeVaryingSequence." " Now validating it..."
+    )
 
     if not sequence.checkConsistency():
-        raise SequenceConsistencyError('Invalid sequence. See log for '
-                                       'details.')
+        raise SequenceConsistencyError("Invalid sequence. See log for " "details.")
     else:
-        log.info('Valid sequence')
+        log.info("Valid sequence")
         return sequence
 
 
@@ -133,20 +136,26 @@ def repeatAndVarySequence(seq, poss, channels, names, args, iters):
     """
 
     if not seq.checkConsistency():
-        raise SequenceConsistencyError('Inconsistent input sequence! Can not '
-                                       'proceed. Check all positions '
-                                       'and channels.')
+        raise SequenceConsistencyError(
+            "Inconsistent input sequence! Can not "
+            "proceed. Check all positions "
+            "and channels."
+        )
 
     inputlens = [len(poss), len(channels), len(names), len(args), len(iters)]
     if not inputlens.count(inputlens[0]) == len(inputlens):
-        raise ValueError('Inconsistent number of position, channel, name, args'
-                         ', and '
-                         'parameter sequences. Please specify the same number '
-                         'of each.')
+        raise ValueError(
+            "Inconsistent number of position, channel, name, args"
+            ", and "
+            "parameter sequences. Please specify the same number "
+            "of each."
+        )
     noofvals = [len(itr) for itr in iters]
     if not noofvals.count(noofvals[0]) == len(iters):
-        raise ValueError('Not the same number of values in each parameter '
-                         'value sequence (input argument: iters)')
+        raise ValueError(
+            "Not the same number of values in each parameter "
+            "value sequence (input argument: iters)"
+        )
 
     newseq = Sequence()
     newseq._awgspecs = seq._awgspecs
@@ -155,12 +164,11 @@ def repeatAndVarySequence(seq, poss, channels, names, args, iters):
 
     for step in range(no_of_steps):
         tempseq = seq.copy()
-        for (pos, chan, name, arg, vals) in zip(poss, channels, names,
-                                                args, iters):
+        for pos, chan, name, arg, vals in zip(poss, channels, names, args, iters):
             element = tempseq.element(pos)
             val = vals[step]
 
-            if arg == 'duration':
+            if arg == "duration":
                 element.changeDuration(chan, name, val)
             else:
                 element.changeArg(chan, name, arg, val)

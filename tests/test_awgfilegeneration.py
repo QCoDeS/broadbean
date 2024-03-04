@@ -15,13 +15,12 @@ sine = bb.PulseAtoms.sine
 
 @pytest.fixture
 def protosequence1():
-
     SR = 1e9
 
     th = bb.BluePrint()
-    th.insertSegment(0, ramp, args=(0, 0), name='ramp', dur=10e-6)
-    th.insertSegment(1, ramp, args=(1, 1), name='ramp', dur=5e-6)
-    th.insertSegment(2, ramp, args=(0, 0), name='ramp', dur=10e-6)
+    th.insertSegment(0, ramp, args=(0, 0), name="ramp", dur=10e-6)
+    th.insertSegment(1, ramp, args=(1, 1), name="ramp", dur=5e-6)
+    th.insertSegment(2, ramp, args=(0, 0), name="ramp", dur=10e-6)
     th.setSR(SR)
 
     wiggle1 = bb.BluePrint()
@@ -44,7 +43,7 @@ def protosequence1():
     seq.addElement(1, elem1)
     seq.addElement(2, elem2)
     seq.setSR(SR)
-    seq.name = 'protoSequence'
+    seq.name = "protoSequence"
 
     seq.setChannelAmplitude(1, 2)
     seq.setChannelAmplitude(2, 2)
@@ -61,7 +60,6 @@ def protosequence1():
 
 
 def test_awg_output(protosequence1):
-
     # basic check: no exceptions should be raised
     package = protosequence1.outputForAWGFile()
 
@@ -79,18 +77,21 @@ def should_raise_sequencingerror(wait, nrep, jump_to, goto, num_elms):
         return True
     if nrep not in range(0, 16384):
         return True
-    if jump_to not in range(-1, num_elms+1):
+    if jump_to not in range(-1, num_elms + 1):
         return True
-    if goto not in range(0, num_elms+1):
+    if goto not in range(0, num_elms + 1):
         return True
     return False
 
 
 @settings(max_examples=25, suppress_health_check=(HealthCheck.function_scoped_fixture,))
-@given(wait=hst.integers(), nrep=hst.integers(), jump_to=hst.integers(),
-       goto=hst.integers())
+@given(
+    wait=hst.integers(),
+    nrep=hst.integers(),
+    jump_to=hst.integers(),
+    goto=hst.integers(),
+)
 def test_awg_output_validations(protosequence1, wait, nrep, jump_to, goto):
-
     protosequence1.setSequencingTriggerWait(1, wait)
     protosequence1.setSequencingNumberOfRepetitions(1, nrep)
     protosequence1.setSequencingEventJumpTarget(1, jump_to)

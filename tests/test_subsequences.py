@@ -126,14 +126,13 @@ def noise_element():
 
 @pytest.fixture
 def bp_element():
-
     dur = 100e-9
 
     bp1 = bb.BluePrint()
     bp1.insertSegment(0, sine, (1e6, 10e-3, 0, 0), dur=dur)
 
     bp2 = bb.BluePrint()
-    bp2.insertSegment(0, sine, (2e6, 10e-3, 0, np.pi/2), dur=dur)
+    bp2.insertSegment(0, sine, (2e6, 10e-3, 0, np.pi / 2), dur=dur)
 
     bp3 = bb.BluePrint()
     bp3.insertSegment(0, sine, (3e6, 10e-3, 0, -1), dur=dur)
@@ -143,7 +142,7 @@ def bp_element():
 
     elem = bb.Element()
     for ch, bp in enumerate([bp1, bp2, bp3]):
-        elem.addBluePrint(ch+1, bp)
+        elem.addBluePrint(ch + 1, bp)
 
     return elem
 
@@ -167,7 +166,6 @@ def master_sequence(subseq1, subseq2, bp_element, noise_element):
 
 
 def test_forge(master_sequence):
-
     assert master_sequence.length_sequenceelements == 4
 
     forged_seq = master_sequence.forge()
