@@ -5,7 +5,7 @@ def _get_version() -> str:
 
     import broadbean
 
-    project_dir = Path(broadbean.__file__).parent.parent
+    project_dir = Path(broadbean.__file__).parent.parent.parent
     return versioningit.get_version(project_dir=project_dir)
 
 
