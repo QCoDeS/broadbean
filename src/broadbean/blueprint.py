@@ -20,9 +20,18 @@ class BluePrint:
     The class of a waveform to become.
     """
 
-    def __init__(self, funlist=None, argslist=None, namelist=None,
-                 marker1=None, marker2=None, segmentmarker1=None,
-                 segmentmarker2=None, SR=None, durslist=None):
+    def __init__(
+        self,
+        funlist=None,
+        argslist=None,
+        namelist=None,
+        marker1=None,
+        marker2=None,
+        segmentmarker1=None,
+        segmentmarker2=None,
+        SR=None,
+        durslist=None,
+    ):
         """
         Create a BluePrint instance
 
@@ -60,12 +69,13 @@ class BluePrint:
         # Are the names valid names?
         for name in namelist:
             if not isinstance(name, str):
-                raise ValueError('All segment names must be strings. '
-                                f'Received {name}.')
-            if name != '' and name[-1].isdigit():
-                raise ValueError('Segment names are not allowed to end'
-                                f' in a number. {name} is '
-                                 'therefore not a valid name.')
+                raise ValueError(f"All segment names must be strings. Received {name}.")
+            if name != "" and name[-1].isdigit():
+                raise ValueError(
+                    "Segment names are not allowed to end"
+                    f" in a number. {name} is "
+                    "therefore not a valid name."
+                )
 
         self._funlist = funlist
 
@@ -75,7 +85,7 @@ class BluePrint:
         for ii, name in enumerate(namelist):
             if isinstance(funlist[ii], str):
                 namelist[ii] = funlist[ii]
-            elif name == '':
+            elif name == "":
                 namelist[ii] = funlist[ii].__name__
 
         # Allow single arguments to be given as not tuples
@@ -97,11 +107,11 @@ class BluePrint:
         else:
             self.marker2 = marker2
         if segmentmarker1 is None:
-            self._segmark1 = [(0, 0)]*len(funlist)
+            self._segmark1 = [(0, 0)] * len(funlist)
         else:
             self._segmark1 = segmentmarker1
         if segmentmarker2 is None:
-            self._segmark2 = [(0, 0)]*len(funlist)
+            self._segmark2 = [(0, 0)] * len(funlist)
         else:
             self._segmark2 = segmentmarker2
 
@@ -123,9 +133,9 @@ class BluePrint:
                 f"_basename received a non-string input! Got the following: {string}"
             )
 
-        if string == '':
+        if string == "":
             return string
-        if not(string[-1].isdigit()):
+        if not (string[-1].isdigit()):
             return string
         else:
             counter = 0
@@ -180,18 +190,19 @@ class BluePrint:
         The total duration of the BluePrint. If necessary, all the arrays
         are built.
         """
-        waits = 'waituntil' in self._funlist
-        ensavgs = 'ensureaverage_fixed_level' in self._funlist
+        waits = "waituntil" in self._funlist
+        ensavgs = "ensureaverage_fixed_level" in self._funlist
 
-        if (not(waits) and not(ensavgs)):
+        if not (waits) and not (ensavgs):
             return sum(self._durslist)
-        elif (waits and not(ensavgs)):
+        elif waits and not (ensavgs):
             waitdurations = self._makeWaitDurations()
             return sum(waitdurations)
         elif ensavgs:
             # TODO: call the forger
-            raise NotImplementedError('ensureaverage_fixed_level does not'
-                                      ' exist yet. Cannot proceed')
+            raise NotImplementedError(
+                "ensureaverage_fixed_level does not exist yet. Cannot proceed"
+            )
 
     @property
     def points(self):
@@ -199,23 +210,25 @@ class BluePrint:
         The total number of points in the BluePrint. If necessary,
         all the arrays are built.
         """
-        waits = 'waituntil' in self._funlist
-        ensavgs = 'ensureaverage_fixed_level' in self._funlist
+        waits = "waituntil" in self._funlist
+        ensavgs = "ensureaverage_fixed_level" in self._funlist
         SR = self.SR
 
         if SR is None:
-            raise ValueError('No sample rate specified, can not '
-                             'return the number of points.')
+            raise ValueError(
+                "No sample rate specified, can not return the number of points."
+            )
 
-        if (not(waits) and not(ensavgs)):
-            return int(np.round(sum(self._durslist)*SR))
-        elif (waits and not(ensavgs)):
+        if not (waits) and not (ensavgs):
+            return int(np.round(sum(self._durslist) * SR))
+        elif waits and not (ensavgs):
             waitdurations = self._makeWaitDurations()
-            return int(np.round(sum(waitdurations)*SR))
+            return int(np.round(sum(waitdurations) * SR))
         elif ensavgs:
             # TODO: call the forger
-            raise NotImplementedError('ensureaverage_fixed_level does not'
-                                      ' exist yet. Cannot proceed')
+            raise NotImplementedError(
+                "ensureaverage_fixed_level does not exist yet. Cannot proceed"
+            )
 
     @property
     def durations(self):
@@ -243,25 +256,26 @@ class BluePrint:
         for sn in range(no_segs):
             segkey = f"segment_{sn+1:02d}"
             desc[segkey] = {}
-            desc[segkey]['name'] = self._namelist[sn]
-            if self._funlist[sn] == 'waituntil':
-                desc[segkey]['function'] = self._funlist[sn]
+            desc[segkey]["name"] = self._namelist[sn]
+            if self._funlist[sn] == "waituntil":
+                desc[segkey]["function"] = self._funlist[sn]
             else:
                 funname = str(self._funlist[sn])[1:]
-                funname = funname[:funname.find(' at')]
-                desc[segkey]['function'] = funname
-            desc[segkey]['durations'] = self._durslist[sn]
-            if desc[segkey]['function'] == 'waituntil':
-                desc[segkey]['arguments'] = {'waittime': self._argslist[sn]}
+                funname = funname[: funname.find(" at")]
+                desc[segkey]["function"] = funname
+            desc[segkey]["durations"] = self._durslist[sn]
+            if desc[segkey]["function"] == "waituntil":
+                desc[segkey]["arguments"] = {"waittime": self._argslist[sn]}
             else:
                 sig = signature(self._funlist[sn])
-                desc[segkey]['arguments'] = dict(zip(sig.parameters,
-                                                     self._argslist[sn]))
+                desc[segkey]["arguments"] = dict(
+                    zip(sig.parameters, self._argslist[sn])
+                )
 
-        desc['marker1_abs'] = self.marker1
-        desc['marker2_abs'] = self.marker2
-        desc['marker1_rel'] = self._segmark1
-        desc['marker2_rel'] = self._segmark2
+        desc["marker1_abs"] = self.marker1
+        desc["marker2_abs"] = self.marker2
+        desc["marker1_rel"] = self._segmark1
+        desc["marker2_rel"] = self._segmark2
 
         return desc
 
@@ -273,7 +287,7 @@ class BluePrint:
             path_to_file: the path to the file to write to ex:
             path_to_file/blueprint.json
         """
-        with open(path_to_file, 'w') as fp:
+        with open(path_to_file, "w") as fp:
             json.dump(self.description, fp, indent=4)
 
     @classmethod
@@ -291,30 +305,35 @@ class BluePrint:
             if "__" not in fun
         }
         seg_mar_list = list(blue_dict.keys())
-        seg_list = [s for s in seg_mar_list if 'segment' in s]
+        seg_list = [s for s in seg_mar_list if "segment" in s]
         bp_sum = cls()
         for i, seg in enumerate(seg_list):
             seg_dict = blue_dict[seg]
             bp_seg = BluePrint()
-            if seg_dict['function'] == 'waituntil':
-                arguments = blue_dict[seg]['arguments'].values()
+            if seg_dict["function"] == "waituntil":
+                arguments = blue_dict[seg]["arguments"].values()
                 arguments = (list(arguments)[0][0],)
-                bp_seg.insertSegment(i, 'waituntil', arguments)
+                bp_seg.insertSegment(i, "waituntil", arguments)
             else:
-                arguments = tuple(blue_dict[seg]['arguments'].values())
-                bp_seg.insertSegment(i, knowfunctions[seg_dict['function']],
-                                     arguments, name=re.sub(r'\d', "", seg_dict['name']), dur=seg_dict['durations'])
+                arguments = tuple(blue_dict[seg]["arguments"].values())
+                bp_seg.insertSegment(
+                    i,
+                    knowfunctions[seg_dict["function"]],
+                    arguments,
+                    name=re.sub(r"\d", "", seg_dict["name"]),
+                    dur=seg_dict["durations"],
+                )
             bp_sum = bp_sum + bp_seg
-        bp_sum.marker1 = blue_dict['marker1_abs']
-        bp_sum.marker2 = blue_dict['marker2_abs']
-        listmarker1 = blue_dict['marker1_rel']
-        listmarker2 = blue_dict['marker2_rel']
+        bp_sum.marker1 = blue_dict["marker1_abs"]
+        bp_sum.marker2 = blue_dict["marker2_abs"]
+        listmarker1 = blue_dict["marker1_rel"]
+        listmarker2 = blue_dict["marker2_rel"]
         bp_sum._segmark1 = [tuple(mark) for mark in listmarker1]
         bp_sum._segmark2 = [tuple(mark) for mark in listmarker2]
         return bp_sum
 
     @classmethod
-    def init_from_json(cls, path_to_file: str) -> 'BluePrint':
+    def init_from_json(cls, path_to_file: str) -> "BluePrint":
         """
         Reads blueprint from JSON file
 
@@ -334,18 +353,19 @@ class BluePrint:
         Translate waituntills into durations and return that list.
         """
 
-        if 'ensureaverage_fixed_level' in self._funlist:
-            raise NotImplementedError('There is an "ensureaverage_fixed_level"'
-                                      ' in this BluePrint. Cannot compute.')
+        if "ensureaverage_fixed_level" in self._funlist:
+            raise NotImplementedError(
+                'There is an "ensureaverage_fixed_level"'
+                " in this BluePrint. Cannot compute."
+            )
 
         funlist = self._funlist.copy()
         durations = self._durslist.copy()
         argslist = self._argslist
 
-        no_of_waits = funlist.count('waituntil')
+        no_of_waits = funlist.count("waituntil")
 
-        waitpositions = [ii for ii, el in enumerate(funlist)
-                         if el == 'waituntil']
+        waitpositions = [ii for ii, el in enumerate(funlist) if el == "waituntil"]
 
         # Calculate elapsed times
 
@@ -373,27 +393,26 @@ class BluePrint:
         # TODO: tidy up this method and make it use the description property
 
         if self._durslist is None:
-            dl = [None]*len(self._namelist)
+            dl = [None] * len(self._namelist)
         else:
             dl = self._durslist
 
-        datalists = [self._namelist, self._funlist, self._argslist,
-                     dl]
+        datalists = [self._namelist, self._funlist, self._argslist, dl]
 
         lzip = zip(*datalists)
 
-        print('Legend: Name, function, arguments, timesteps, durations')
+        print("Legend: Name, function, arguments, timesteps, durations")
 
         for ind, (name, fun, args, dur) in enumerate(lzip):
-            ind_p = ind+1
-            if fun == 'waituntil':
+            ind_p = ind + 1
+            if fun == "waituntil":
                 fun_p = fun
             else:
-                fun_p = fun.__str__().split(' ')[1]
+                fun_p = fun.__str__().split(" ")[1]
 
             list_p = [ind_p, name, fun_p, args, dur]
             print('Segment {}: "{}", {}, {}, {}'.format(*list_p))
-        print('-'*10)
+        print("-" * 10)
 
     def changeArg(self, name, arg, value, replaceeverywhere=False):
         """
@@ -433,7 +452,6 @@ class BluePrint:
             )
 
         for name in replacelist:
-
             position = self._namelist.index(name)
             function = self._funlist[position]
             sig = signature(function)
@@ -447,7 +465,7 @@ class BluePrint:
                         f"{sig.parameters.keys()}."
                     )
             # Each function has two 'secret' arguments, SR and dur
-            user_params = len(sig.parameters)-2
+            user_params = len(sig.parameters) - 2
             if isinstance(arg, int) and (arg not in range(user_params)):
                 raise ValueError(
                     f"No argument {arg} "
@@ -518,13 +536,13 @@ class BluePrint:
             position = self._namelist.index(name)
 
             if dur <= 0:
-                raise ValueError('Duration must be strictly greater '
-                                 'than zero.')
+                raise ValueError("Duration must be strictly greater than zero.")
 
             if self.SR is not None:
-                if dur*self.SR < 1:
-                    raise ValueError('Duration too short! Must be at'
-                                     ' least 1/sample rate.')
+                if dur * self.SR < 1:
+                    raise ValueError(
+                        "Duration too short! Must be at least 1/sample rate."
+                    )
 
             self._durslist[position] = dur
 
@@ -584,18 +602,19 @@ class BluePrint:
         # Needed because of input validation in __init__
         namelist = [self._basename(name) for name in self._namelist.copy()]
 
-        return BluePrint(self._funlist.copy(),
-                         self._argslist.copy(),
-                         namelist,
-                         self.marker1.copy(),
-                         self.marker2.copy(),
-                         self._segmark1.copy(),
-                         self._segmark2.copy(),
-                         self._SR,
-                         self._durslist)
+        return BluePrint(
+            self._funlist.copy(),
+            self._argslist.copy(),
+            namelist,
+            self.marker1.copy(),
+            self.marker2.copy(),
+            self._segmark1.copy(),
+            self._segmark2.copy(),
+            self._SR,
+            self._durslist,
+        )
 
-    def insertSegment(self, pos, func, args=(), dur=None, name=None,
-                      durs=None):
+    def insertSegment(self, pos, func, args=(), dur=None, name=None, durs=None):
         """
         Insert a segment into the bluePrint.
 
@@ -620,15 +639,20 @@ class BluePrint:
         """
 
         # Validation
-        has_ensureavg = ('ensureaverage_fixed_level' in self._funlist or
-                         'ensureaverage_fixed_dur' in self._funlist)
-        if func == 'ensureaverage_fixed_level' and has_ensureavg:
-            raise ValueError('Can not have more than one "ensureaverage"'
-                             ' segment in a blueprint.')
+        has_ensureavg = (
+            "ensureaverage_fixed_level" in self._funlist
+            or "ensureaverage_fixed_dur" in self._funlist
+        )
+        if func == "ensureaverage_fixed_level" and has_ensureavg:
+            raise ValueError(
+                'Can not have more than one "ensureaverage" segment in a blueprint.'
+            )
 
         if durs is not None:
-            warnings.warn('Deprecation warning: please specify "dur" rather '
-                          'than "durs" when inserting a segment')
+            warnings.warn(
+                'Deprecation warning: please specify "dur" rather '
+                'than "durs" when inserting a segment'
+            )
             if dur is None:
                 dur = durs
             else:
@@ -640,17 +664,17 @@ class BluePrint:
             args = (args,)
 
         if pos < -1:
-            raise ValueError('Position must be strictly larger than -1')
+            raise ValueError("Position must be strictly larger than -1")
 
-        if name is None or name == '':
-            if func == 'waituntil':
-                name = 'waituntil'
+        if name is None or name == "":
+            if func == "waituntil":
+                name = "waituntil"
             else:
                 name = func.__name__
         elif isinstance(name, str):
             if len(name) > 0:
                 if name[-1].isdigit():
-                    raise ValueError('Segment name must not end in a number')
+                    raise ValueError("Segment name must not end in a number")
 
         if pos == -1:
             self._namelist.append(name)
@@ -800,10 +824,10 @@ def _subelementBuilder(
 
     durations = durs.copy()
 
-    no_of_waits = funlist.count('waituntil')
+    no_of_waits = funlist.count("waituntil")
 
     # handle waituntil by translating it into a normal function
-    waitpositions = [ii for ii, el in enumerate(funlist) if el == 'waituntil']
+    waitpositions = [ii for ii, el in enumerate(funlist) if el == "waituntil"]
 
     # Calculate elapsed times
 
@@ -838,7 +862,7 @@ def _subelementBuilder(
     intdurations = np.zeros(len(newdurations), dtype=int)
 
     for ii, dur in enumerate(newdurations):
-        int_dur = round(dur*SR)
+        int_dur = round(dur * SR)
         if int_dur < 2:
             raise SegmentDurationError(
                 "Too short segment detected! "
@@ -851,13 +875,15 @@ def _subelementBuilder(
             )
         else:
             intdurations[ii] = int_dur
-            newdurations[ii] = int_dur/SR
+            newdurations[ii] = int_dur / SR
 
     # The actual forging of the waveform
     wf_length = np.sum(intdurations)
     parts = [ft.partial(fun, *args) for (fun, args) in zip(funlist, argslist)]
     blocks = [p(SR, d) for (p, d) in zip(parts, intdurations)]
-    output = np.fromiter((block for sl in blocks for block in sl), float, count=wf_length)
+    output = np.fromiter(
+        (block for sl in blocks for block in sl), float, count=wf_length
+    )
 
     # now make the markers
     time = np.linspace(0, sum(newdurations), wf_length, endpoint=False)
@@ -879,12 +905,17 @@ def _subelementBuilder(
     msettings = [marker1, marker2]
     marks = [m1, m2]
     for marker, setting in zip(marks, msettings):
-        for (t, dur) in setting:
-            ind = np.abs(time-t).argmin()
-            chunk = int(np.round(dur*SR))
-            marker[ind:ind+chunk] = 1
+        for t, dur in setting:
+            ind = np.abs(time - t).argmin()
+            chunk = int(np.round(dur * SR))
+            marker[ind : ind + chunk] = 1
 
-    outdict = {'wfm': output, 'm1': m1, 'm2': m2, 'time': time,
-               'newdurations': newdurations}
+    outdict = {
+        "wfm": output,
+        "m1": m1,
+        "m2": m2,
+        "time": time,
+        "newdurations": newdurations,
+    }
 
     return outdict

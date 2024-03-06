@@ -25,7 +25,6 @@ class Element:
     """
 
     def __init__(self):
-
         # The internal data structure, a dict with key channel number
         # Each value is a dict with the following possible keys, values:
         # 'blueprint': a BluePrint
@@ -41,25 +40,30 @@ class Element:
         self._data = {}
         self._meta = {}
 
-    def addBluePrint(self, channel: Union[str, int],
-                     blueprint: BluePrint) -> None:
+    def addBluePrint(self, channel: Union[str, int], blueprint: BluePrint) -> None:
         """
         Add a blueprint to the element on the specified channel.
         Overwrites whatever was there before.
         """
         if not isinstance(blueprint, BluePrint):
-            raise ValueError('Invalid blueprint given. Must be an instance'
-                             ' of the BluePrint class.')
+            raise ValueError(
+                "Invalid blueprint given. Must be an instance"
+                " of the BluePrint class."
+            )
 
-        if [] in [blueprint._funlist, blueprint._argslist, blueprint._namelist,
-                  blueprint._durslist]:
-            raise ValueError('Received empty BluePrint. Can not proceed.')
+        if [] in [
+            blueprint._funlist,
+            blueprint._argslist,
+            blueprint._namelist,
+            blueprint._durslist,
+        ]:
+            raise ValueError("Received empty BluePrint. Can not proceed.")
 
         # important: make a copy of the blueprint
         newprint = blueprint.copy()
 
         self._data[channel] = {}
-        self._data[channel]['blueprint'] = newprint
+        self._data[channel]["blueprint"] = newprint
 
     def addFlags(
         self, channel: Union[str, int], flags: Sequence[Union[str, int]]
@@ -102,8 +106,9 @@ class Element:
 
         self._data[channel]["flags"] = flags_int
 
-    def addArray(self, channel: Union[int, str], waveform: np.ndarray,
-                 SR: int, **kwargs) -> None:
+    def addArray(
+        self, channel: Union[int, str], waveform: np.ndarray, SR: int, **kwargs
+    ) -> None:
         """
         Add an array of voltage value to the element on the specified channel.
         Overwrites whatever was there before. Markers can be specified via
@@ -118,16 +123,18 @@ class Element:
 
         N = len(waveform)
         self._data[channel] = {}
-        self._data[channel]['array'] = {}
+        self._data[channel]["array"] = {}
 
         for name, array in kwargs.items():
             if len(array) != N:
-                raise ValueError('Length mismatch between waveform and '
-                                 f'array {name}. Must be same length')
-            self._data[channel]['array'].update({name: array})
+                raise ValueError(
+                    "Length mismatch between waveform and "
+                    f"array {name}. Must be same length"
+                )
+            self._data[channel]["array"].update({name: array})
 
-        self._data[channel]['array']['wfm'] = waveform
-        self._data[channel]['SR'] = SR
+        self._data[channel]["array"]["wfm"] = waveform
+        self._data[channel]["SR"] = SR
 
     def validateDurations(self):
         """
@@ -139,15 +146,15 @@ class Element:
         channels = self._data.values()
 
         if len(channels) == 0:
-            raise KeyError('Empty Element, nothing assigned')
+            raise KeyError("Empty Element, nothing assigned")
 
         # First the sample rate
         SRs = []
         for channel in channels:
-            if 'blueprint' in channel.keys():
-                SRs.append(channel['blueprint'].SR)
-            elif 'array' in channel.keys():
-                SR = channel['SR']
+            if "blueprint" in channel.keys():
+                SRs.append(channel["blueprint"].SR)
+            elif "array" in channel.keys():
+                SR = channel["SR"]
                 SRs.append(SR)
 
         if not SRs.count(SRs[0]) == len(SRs):
@@ -161,10 +168,10 @@ class Element:
         # Next the total time
         durations = []
         for channel in channels:
-            if 'blueprint' in channel.keys():
-                durations.append(channel['blueprint'].duration)
-            elif 'array' in channel.keys():
-                length = len(channel['array']['wfm'])/channel['SR']
+            if "blueprint" in channel.keys():
+                durations.append(channel["blueprint"].duration)
+            elif "array" in channel.keys():
+                length = len(channel["array"]["wfm"]) / channel["SR"]
                 durations.append(length)
 
         if None not in SRs:
@@ -184,10 +191,10 @@ class Element:
         # (kind of redundant if sample rate and duration match?)
         npts = []
         for channel in channels:
-            if 'blueprint' in channel.keys():
-                npts.append(channel['blueprint'].points)
-            elif 'array' in channel.keys():
-                length = len(channel['array']['wfm'])
+            if "blueprint" in channel.keys():
+                npts.append(channel["blueprint"].points)
+            elif "array" in channel.keys():
+                length = len(channel["array"]["wfm"])
                 npts.append(length)
 
         if not npts.count(npts[0]) == len(npts):
@@ -200,8 +207,8 @@ class Element:
 
         # If these three tests pass, we equip the dictionary with convenient
         # info used by Sequence
-        self._meta['SR'] = SRs[0]
-        self._meta['duration'] = durations[0]
+        self._meta["SR"] = SRs[0]
+        self._meta["duration"] = durations[0]
 
     def getArrays(self, includetime: bool = False) -> dict[int, dict[str, np.ndarray]]:
         """
@@ -237,8 +244,8 @@ class Element:
                 if "flags" in signal.keys():
                     outdict[channel]["flags"] = signal["flags"]
                 if not includetime:
-                    outdict[channel].pop('time')
-                    outdict[channel].pop('newdurations')
+                    outdict[channel].pop("time")
+                    outdict[channel].pop("newdurations")
                 # TODO: should the be a separate bool for newdurations?
 
         return outdict
@@ -252,7 +259,7 @@ class Element:
         # Will either raise an error or set self._data['SR']
         self.validateDurations()
 
-        return self._meta['SR']
+        return self._meta["SR"]
 
     @property
     def points(self) -> int:
@@ -268,7 +275,6 @@ class Element:
         # if validateDurations did not raise an error, all channels
         # have the same number of points
         for chan in channels:
-
             if not ("array" in chan.keys() or "blueprint" in chan.keys()):
                 raise ValueError(
                     f"Neither BluePrint nor array assigned to chan {chan}!"
@@ -276,12 +282,12 @@ class Element:
             if "blueprint" in chan.keys():
                 return chan["blueprint"].points
             else:
-                return len(chan['array']['wfm'])
+                return len(chan["array"]["wfm"])
 
         else:
             # this line is here to make mypy happy; this exception is
             # already raised by validateDurations
-            raise KeyError('Empty Element, nothing assigned')
+            raise KeyError("Empty Element, nothing assigned")
 
     @property
     def duration(self):
@@ -292,7 +298,7 @@ class Element:
         # Will either raise an error or set self._data['SR']
         self.validateDurations()
 
-        return self._meta['duration']
+        return self._meta["duration"]
 
     @property
     def channels(self):
@@ -310,10 +316,10 @@ class Element:
         desc = {}
 
         for key, val in self._data.items():
-            if 'blueprint' in val.keys():
-                desc[str(key)] = val['blueprint'].description
-            elif 'array' in val.keys():
-                desc[str(key)] = 'array'
+            if "blueprint" in val.keys():
+                desc[str(key)] = val["blueprint"].description
+            elif "array" in val.keys():
+                desc[str(key)] = "array"
 
             if "flags" in val.keys():
                 desc[str(key)]["flags"] = val["flags"]
@@ -328,7 +334,7 @@ class Element:
             path_to_file: the path to the file to write to ex:
             path_to_file/element.json
         """
-        with open(path_to_file, 'w') as fp:
+        with open(path_to_file, "w") as fp:
             json.dump(self.description, fp, indent=4)
 
     @classmethod
@@ -363,9 +369,14 @@ class Element:
             data_loaded = json.load(fp)
         return cls.element_from_description(data_loaded)
 
-    def changeArg(self, channel: Union[str, int],
-                  name: str, arg: Union[str, int], value: Union[int, float],
-                  replaceeverywhere: bool=False) -> None:
+    def changeArg(
+        self,
+        channel: Union[str, int],
+        name: str,
+        arg: Union[str, int],
+        value: Union[int, float],
+        replaceeverywhere: bool = False,
+    ) -> None:
         """
         Change the argument of a function of the blueprint on the specified
         channel.
@@ -388,18 +399,22 @@ class Element:
         """
 
         if channel not in self.channels:
-            raise ValueError(f'Nothing assigned to channel {channel}')
+            raise ValueError(f"Nothing assigned to channel {channel}")
 
         if "blueprint" not in self._data[channel].keys():
             raise ValueError(f"No blueprint on channel {channel}.")
 
-        bp = self._data[channel]['blueprint']
+        bp = self._data[channel]["blueprint"]
 
         bp.changeArg(name, arg, value, replaceeverywhere)
 
-    def changeDuration(self, channel: Union[str, int], name: str,
-                       newdur: Union[int, float],
-                       replaceeverywhere: bool=False) -> None:
+    def changeDuration(
+        self,
+        channel: Union[str, int],
+        name: str,
+        newdur: Union[int, float],
+        replaceeverywhere: bool = False,
+    ) -> None:
         """
         Change the duration of a segment of the blueprint on the specified
         channel
@@ -416,12 +431,12 @@ class Element:
         """
 
         if channel not in self.channels:
-            raise ValueError(f'Nothing assigned to channel {channel}')
+            raise ValueError(f"Nothing assigned to channel {channel}")
 
         if "blueprint" not in self._data[channel].keys():
             raise ValueError(f"No blueprint on channel {channel}.")
 
-        bp = self._data[channel]['blueprint']
+        bp = self._data[channel]["blueprint"]
 
         bp.changeDuration(name, newdur, replaceeverywhere)
 
@@ -438,11 +453,13 @@ class Element:
                 1 by 1 ms and channel 3 by nothing.
         """
         if len(delays) != len(self.channels):
-            raise ValueError('Incorrect number of delays specified.'
-                             ' Must match the number of channels.')
+            raise ValueError(
+                "Incorrect number of delays specified."
+                " Must match the number of channels."
+            )
 
         if not sum(d >= 0 for d in delays) == len(delays):
-            raise ValueError('Negative delays not allowed.')
+            raise ValueError("Negative delays not allowed.")
 
         # The strategy is:
         # Add waituntil at the beginning, update all waituntils inside, add a
@@ -455,28 +472,28 @@ class Element:
         for chanind, chan in enumerate(self.channels):
             delay = delays[chanind]
 
-            if 'blueprint' in self._data[chan].keys():
-                blueprint = self._data[chan]['blueprint']
+            if "blueprint" in self._data[chan].keys():
+                blueprint = self._data[chan]["blueprint"]
 
                 # update existing waituntils
                 for segpos in range(len(blueprint._funlist)):
-                    if blueprint._funlist[segpos] == 'waituntil':
+                    if blueprint._funlist[segpos] == "waituntil":
                         oldwait = blueprint._argslist[segpos][0]
-                        blueprint._argslist[segpos] = (oldwait+delay,)
+                        blueprint._argslist[segpos] = (oldwait + delay,)
                 # insert delay before the waveform
                 if delay > 0:
-                    blueprint.insertSegment(0, 'waituntil', (delay,),
-                                            'waituntil')
+                    blueprint.insertSegment(0, "waituntil", (delay,), "waituntil")
                 # add zeros at the end
-                if maxdelay-delay > 0:
-                    blueprint.insertSegment(-1, PulseAtoms.ramp, (0, 0),
-                                            dur=maxdelay-delay)
+                if maxdelay - delay > 0:
+                    blueprint.insertSegment(
+                        -1, PulseAtoms.ramp, (0, 0), dur=maxdelay - delay
+                    )
 
             else:
-                arrays = self._data[chan]['array']
+                arrays = self._data[chan]["array"]
                 for name, arr in arrays.items():
-                    pre_wait = np.zeros(int(delay*SR))
-                    post_wait = np.zeros(int((maxdelay-delay)*SR))
+                    pre_wait = np.zeros(int(delay * SR))
+                    post_wait = np.zeros(int((maxdelay - delay) * SR))
                     arrays[name] = np.concatenate((pre_wait, arr, post_wait))
 
     def copy(self):
