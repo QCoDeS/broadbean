@@ -1,7 +1,7 @@
 [build-system]
 requires = [
     "setuptools >= 68.1.2",
-    "versioningit >= 2.0.1",
+    "versioningit >= 2.2.1",
 ]
 build-backend = 'setuptools.build_meta'
 
@@ -28,7 +28,7 @@ dependencies = [
     "numpy>=1.12.1",
     "matplotlib",
     "schema",
-    "versioningit>=2.0.1",
+    "versioningit>=2.2.1",
 ]
 dynamic = ["version"]
 
@@ -88,6 +88,10 @@ known-first-party = ["broadbean"]
 
 [tool.ruff.lint.pyupgrade]
 keep-runtime-typing = true
+
+[tool.setuptools.cmdclass]
+sdist = "versioningit.cmdclass.sdist"
+build_py = "versioningit.cmdclass.build_py"
 
 [tool.versioningit]
 default-version = "0.0"
