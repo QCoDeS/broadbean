@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>broadbean.broadbean &mdash; broadbean 0.15.0.dev37 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/documentation_options.js?v=b9d58934"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            broadbean
+          </a>
+              <div class="version">
+                0.15.0.dev37+main.g344e559
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/generated/broadbean.html">broadbean package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../start/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Broadbean Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changes/index.html">Changelogs</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">broadbean</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">broadbean.broadbean</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for broadbean.broadbean</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">functools</span> <span class="k">as</span> <span class="nn">ft</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="PulseAtoms">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.broadbean.PulseAtoms">[docs]</a>
+<span class="k">class</span> <span class="nc">PulseAtoms</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class full of static methods.</span>
+<span class="sd">    The basic pulse shapes.</span>
+
+<span class="sd">    Any pulse shape function should return a list or an np.array</span>
+<span class="sd">    and have SR, npoints as its final two arguments.</span>
+
+<span class="sd">    Rounding errors are a real concern/pain in the business of</span>
+<span class="sd">    making waveforms of short duration (few samples). Therefore,</span>
+<span class="sd">    the PulseAtoms take the number of points rather than the</span>
+<span class="sd">    duration as input argument, so that all ambiguity can be handled</span>
+<span class="sd">    in one place (the _subelementBuilder)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PulseAtoms.sine">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.broadbean.PulseAtoms.sine">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">sine</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">ampl</span><span class="p">,</span> <span class="n">off</span><span class="p">,</span> <span class="n">phase</span><span class="p">,</span> <span class="n">SR</span><span class="p">,</span> <span class="n">npts</span><span class="p">):</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">npts</span> <span class="o">/</span> <span class="n">SR</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">npts</span><span class="p">),</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">freq</span> <span class="o">*=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+        <span class="k">return</span> <span class="n">ampl</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">freq</span> <span class="o">*</span> <span class="n">time</span> <span class="o">+</span> <span class="n">phase</span><span class="p">)</span> <span class="o">+</span> <span class="n">off</span></div>
+
+
+<div class="viewcode-block" id="PulseAtoms.ramp">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.broadbean.PulseAtoms.ramp">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">ramp</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">SR</span><span class="p">,</span> <span class="n">npts</span><span class="p">):</span>
+        <span class="n">dur</span> <span class="o">=</span> <span class="n">npts</span> <span class="o">/</span> <span class="n">SR</span>
+        <span class="n">slope</span> <span class="o">=</span> <span class="p">(</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="n">dur</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dur</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">npts</span><span class="p">),</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">slope</span> <span class="o">*</span> <span class="n">time</span> <span class="o">+</span> <span class="n">start</span></div>
+
+
+<div class="viewcode-block" id="PulseAtoms.arb_func">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.broadbean.PulseAtoms.arb_func">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">arb_func</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">SR</span><span class="p">,</span> <span class="n">npts</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function is used to generate an arbitrary waveform from a function.</span>
+<span class="sd">        The function must be of the form f(time, \*\*kwargs) where time is a numpy array and</span>
+<span class="sd">        kwargs is a dict that provides any additional parameters needed for the function.</span>
+
+<span class="sd">        Example:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            func = lambda time, freq, ampl, off, phase: ampl*np.sin(freq*time+phase)+off</span>
+<span class="sd">            kwargs = {&#39;freq&#39;: 1e6, &#39;ampl&#39;: 1, &#39;off&#39;: 0, &#39;phase&#39;: 0}</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">npts</span> <span class="o">/</span> <span class="n">SR</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">npts</span><span class="p">),</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PulseAtoms.waituntil">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.broadbean.PulseAtoms.waituntil">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">waituntil</span><span class="p">(</span><span class="n">dummy</span><span class="p">,</span> <span class="n">SR</span><span class="p">,</span> <span class="n">npts</span><span class="p">):</span>
+        <span class="c1"># for internal call signature consistency, a dummy variable is needed</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">npts</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="PulseAtoms.gaussian">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.broadbean.PulseAtoms.gaussian">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">gaussian</span><span class="p">(</span><span class="n">ampl</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">SR</span><span class="p">,</span> <span class="n">npts</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a Gaussian of peak height ampl (when offset==0)</span>
+
+<span class="sd">        Is by default centred in the middle of the interval</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dur</span> <span class="o">=</span> <span class="n">npts</span> <span class="o">/</span> <span class="n">SR</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dur</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">npts</span><span class="p">),</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">centre</span> <span class="o">=</span> <span class="n">dur</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">baregauss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">time</span> <span class="o">-</span> <span class="n">mu</span> <span class="o">-</span> <span class="n">centre</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">ampl</span> <span class="o">*</span> <span class="n">baregauss</span> <span class="o">+</span> <span class="n">offset</span></div>
+
+
+<div class="viewcode-block" id="PulseAtoms.gaussian_smooth_cutoff">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.broadbean.PulseAtoms.gaussian_smooth_cutoff">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">gaussian_smooth_cutoff</span><span class="p">(</span><span class="n">ampl</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">SR</span><span class="p">,</span> <span class="n">npts</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a Gaussian of peak height ampl (when offset==0)</span>
+
+<span class="sd">        Is by default centred in the middle of the interval</span>
+
+<span class="sd">        smooth cutoff by making offsetting the Gaussian so endpoint = 0 and normalizing the hight to 1</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dur</span> <span class="o">=</span> <span class="n">npts</span> <span class="o">/</span> <span class="n">SR</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dur</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">npts</span><span class="p">),</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">centre</span> <span class="o">=</span> <span class="n">dur</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">baregauss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">time</span> <span class="o">-</span> <span class="n">mu</span> <span class="o">-</span> <span class="n">centre</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+            <span class="o">-</span><span class="p">((</span><span class="mi">0</span> <span class="o">-</span> <span class="n">mu</span> <span class="o">-</span> <span class="n">centre</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">normalization</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="mi">0</span> <span class="o">-</span> <span class="n">mu</span> <span class="o">-</span> <span class="n">centre</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">ampl</span> <span class="o">*</span> <span class="n">baregauss</span> <span class="o">/</span> <span class="n">normalization</span> <span class="o">+</span> <span class="n">offset</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="marked_for_deletion">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.broadbean.marked_for_deletion">[docs]</a>
+<span class="k">def</span> <span class="nf">marked_for_deletion</span><span class="p">(</span><span class="n">replaced_by</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A decorator for functions we want to kill. The function still</span>
+<span class="sd">    gets called.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="nd">@ft</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">warner</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">warnstr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> is obsolete.&quot;</span>
+            <span class="k">if</span> <span class="n">replaced_by</span><span class="p">:</span>
+                <span class="n">warnstr</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; Please use </span><span class="si">{</span><span class="n">replaced_by</span><span class="si">}</span><span class="s2"> insted.&quot;</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">warnstr</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">warner</span>
+
+    <span class="k">return</span> <span class="n">decorator</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_channelListSorter</span><span class="p">(</span><span class="n">channels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Sort a list of channel names. Channel names can be ints or strings. Sorts</span>
+<span class="sd">    ints as being before strings.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">intlist</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">intlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">ch</span> <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">channels</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="nb">int</span><span class="p">)]</span>
+    <span class="n">strlist</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">strlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">ch</span> <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">channels</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="nb">str</span><span class="p">)]</span>
+
+    <span class="n">sorted_list</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">intlist</span><span class="p">)</span> <span class="o">+</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">strlist</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">sorted_list</span>
+
+
+<span class="k">class</span> <span class="nc">_AWGOutput</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class used inside Sequence.outputForAWGFile</span>
+
+<span class="sd">    Allows for easy-access slicing to return several valid tuples</span>
+<span class="sd">    for the QCoDeS Tektronix AWG 5014 driver from the same sequence.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">    A sequence, myseq, specifies channels 1, 2, 3, 4.</span>
+
+<span class="sd">    out = myseq.outputForAWGFile()</span>
+
+<span class="sd">    out[:] &lt;--- tuple with all channels</span>
+<span class="sd">    out[1:3] &lt;--- tuple with channels 1, 2</span>
+<span class="sd">    out[2] &lt;--- tuple with channel 2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rawpackage</span><span class="p">,</span> <span class="n">channels</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Rawpackage is a tuple:</span>
+<span class="sd">        (wfms, m1s, m2s, nreps, trig_wait, goto, jump)</span>
+
+<span class="sd">        Channels is a list of what the channels were called in their</span>
+<span class="sd">        sequence object whence this instance is created</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">channels</span> <span class="o">=</span> <span class="n">channels</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_channels</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rawpackage</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_channels</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;wfms&quot;</span><span class="p">:</span> <span class="n">rawpackage</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">ii</span><span class="p">],</span>
+                <span class="s2">&quot;m1s&quot;</span><span class="p">:</span> <span class="n">rawpackage</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">ii</span><span class="p">],</span>
+                <span class="s2">&quot;m2s&quot;</span><span class="p">:</span> <span class="n">rawpackage</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="n">ii</span><span class="p">],</span>
+            <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nreps</span> <span class="o">=</span> <span class="n">rawpackage</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trig_wait</span> <span class="o">=</span> <span class="n">rawpackage</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">goto</span> <span class="o">=</span> <span class="n">rawpackage</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jump</span> <span class="o">=</span> <span class="n">rawpackage</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_channels</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_channels</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;wfms&quot;</span><span class="p">]],</span>
+                    <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_channels</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;m1s&quot;</span><span class="p">]],</span>
+                    <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_channels</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;m2s&quot;</span><span class="p">]],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">nreps</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">trig_wait</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">goto</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">jump</span><span class="p">,</span>
+                <span class="p">)</span>
+
+                <span class="k">return</span> <span class="n">output</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> is not a valid key.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">start</span>
+            <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="n">stop</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">stop</span>
+            <span class="k">if</span> <span class="n">stop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_channels</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+            <span class="n">step</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">step</span>
+            <span class="k">if</span> <span class="n">step</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">step</span> <span class="o">=</span> <span class="mi">1</span>
+
+            <span class="n">indeces</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+
+            <span class="n">wfms</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_channels</span><span class="p">[</span><span class="n">ind</span><span class="p">][</span><span class="s2">&quot;wfms&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">indeces</span><span class="p">]</span>
+            <span class="n">m1s</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_channels</span><span class="p">[</span><span class="n">ind</span><span class="p">][</span><span class="s2">&quot;m1s&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">indeces</span><span class="p">]</span>
+            <span class="n">m2s</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_channels</span><span class="p">[</span><span class="n">ind</span><span class="p">][</span><span class="s2">&quot;m2s&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">indeces</span><span class="p">]</span>
+
+            <span class="n">output</span> <span class="o">=</span> <span class="p">(</span><span class="n">wfms</span><span class="p">,</span> <span class="n">m1s</span><span class="p">,</span> <span class="n">m2s</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nreps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trig_wait</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">goto</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">jump</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">output</span>
+
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Key must be int or slice!&quot;</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Microsoft Quantum.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
