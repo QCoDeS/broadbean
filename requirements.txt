@@ -34,7 +34,7 @@ imagesize~=1.4.1
 iniconfig~=2.0.0
 ipykernel~=6.29.0
 ipython~=8.18.1; python_version < "3.10"
-ipython~=8.23.0; python_version >= "3.10"
+ipython~=8.24.0; python_version >= "3.10"
 ipython-genutils~=0.2.0
 ipywidgets~=8.1.0
 jedi~=0.19.0
