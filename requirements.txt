@@ -59,7 +59,7 @@ nbsphinx==0.9.1
 nbconvert~=7.16.0
 nbformat~=5.10.2
 nest-asyncio~=1.6.0
-nodeenv~=1.8.0
+nodeenv~=1.9.0
 notebook~=7.2.0
 packaging~=24.0
 pandocfilters~=1.5.0
