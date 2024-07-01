@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Changelog for broadbean 0.11.0 &mdash; broadbean 0.15.0.dev182 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/documentation_options.js?v=5f9b4a9f"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Changelog for broadbean 0.10.0" href="0.10.0.html" />
+    <link rel="prev" title="Changelogs" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            broadbean
+          </a>
+              <div class="version">
+                0.15.0.dev182+main.gea7e9fc
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../api/generated/broadbean.html">broadbean package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../start/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Broadbean Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Changelogs</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">0.11.0</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#breaking-changes">Breaking Changes:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#new">New:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improved">Improved:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#behind-the-scenes">Behind The Scenes:</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="0.10.0.html">0.10.0</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">broadbean</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Changelogs</a></li>
+      <li class="breadcrumb-item active">Changelog for broadbean 0.11.0</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/changes/0.11.0.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="changelog-for-broadbean-0-11-0">
+<h1>Changelog for broadbean 0.11.0<a class="headerlink" href="#changelog-for-broadbean-0-11-0" title="Link to this heading">¶</a></h1>
+<p>The August 2022 release of broadbean with many great improvements for modernizing broadbean’s infrastructure.</p>
+<section id="breaking-changes">
+<h2>Breaking Changes:<a class="headerlink" href="#breaking-changes" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Methods and functions  marked for deletion in version <cite>0.10.0</cite> have now been removed. Specifically
+<cite>BluePrint.plot</cite>, <cite>broadbean.bluePrintPlotter</cite>, <cite>Element.plotElement</cite>, <cite>Sequence.plotSequence</cite>
+and <cite>Sequence.plotAWGOutput</cite>. (#107)</p></li>
+</ul>
+</section>
+<section id="new">
+<h2>New:<a class="headerlink" href="#new" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>New <cite>Sequence</cite> method <cite>outputForSEQXFileWithFlags</cite> for setting flags for every element forming a sequence.
+This is useful for auxiliary outputs on a Tektronix AWG70000. (#101)</p></li>
+</ul>
+</section>
+<section id="improved">
+<h2>Improved:<a class="headerlink" href="#improved" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fix for invalid identity comparisons in blueprint submodule. (#102)</p></li>
+</ul>
+</section>
+<section id="behind-the-scenes">
+<h2>Behind The Scenes:<a class="headerlink" href="#behind-the-scenes" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Updated <cite>README.md</cite> that includes updated link to <cite>broadbean</cite> documentation. (#158)</p></li>
+<li><p>Replace Conda test job with regular pip job on windows. (#139)</p></li>
+<li><p>Enable dependabot for <cite>broadbean</cite>. (#111)</p></li>
+<li><p>Enable precommit hook. (#110)</p></li>
+<li><p>Documentation infrastructure improvements. (#110)</p></li>
+<li><p>Modernize setup and build infrastructure (convert to pep516/517, build wheels and sdist using build,
+automatic upload to pypi, move config to pyproject.toml and setup.cfg and pinning dependencies with
+requirements.txt). (#109)</p></li>
+<li><p>Move tests into package to include them into distribution. (#108)</p></li>
+<li><p>Use GitHub actions, test on python 3.7-3.10, remove python 3.6 support, remove Travis and AppVeyor. (#103)</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Changelogs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="0.10.0.html" class="btn btn-neutral float-right" title="Changelog for broadbean 0.10.0" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Microsoft Quantum.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

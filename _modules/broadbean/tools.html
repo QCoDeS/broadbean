@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>broadbean.tools &mdash; broadbean 0.15.0.dev182 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/documentation_options.js?v=5f9b4a9f"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            broadbean
+          </a>
+              <div class="version">
+                0.15.0.dev182+main.gea7e9fc
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/generated/broadbean.html">broadbean package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../start/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Broadbean Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changes/index.html">Changelogs</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">broadbean</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">broadbean.tools</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for broadbean.tools</h1><div class="highlight"><pre>
+<span></span><span class="c1"># High-level tool for sequence building and manipulation</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">broadbean.sequence</span> <span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">SequenceConsistencyError</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="makeLinearlyVaryingSequence">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.tools.makeLinearlyVaryingSequence">[docs]</a>
+<span class="k">def</span> <span class="nf">makeLinearlyVaryingSequence</span><span class="p">(</span><span class="n">baseelement</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make a pulse sequence where a single parameter varies linearly.</span>
+<span class="sd">    The pulse sequence will consist of N copies of the same element with just</span>
+<span class="sd">    the specified argument changed (N = abs(stop-start)/steps)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        baseelement (Element): The basic element.</span>
+<span class="sd">        channel (int): The channel where the change should happen</span>
+<span class="sd">        name (str): Name of the blueprint segment to change</span>
+<span class="sd">        arg (Union[str, int]): Name (str) or position (int) of the argument</span>
+<span class="sd">            to change. If the arg is &#39;duration&#39;, the duration is changed</span>
+<span class="sd">            instead.</span>
+<span class="sd">        start (float): Start point of the variation (included)</span>
+<span class="sd">        stop (float): Stop point of the variation (included)</span>
+<span class="sd">        step (float): Increment of the variation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># TODO: validation</span>
+    <span class="c1"># TODO: Make more general varyer and refactor code</span>
+
+    <span class="n">sequence</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">()</span>
+
+    <span class="n">sequence</span><span class="o">.</span><span class="n">setSR</span><span class="p">(</span><span class="n">baseelement</span><span class="o">.</span><span class="n">SR</span><span class="p">)</span>
+
+    <span class="n">iterator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="n">step</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">iterator</span><span class="p">):</span>
+        <span class="n">element</span> <span class="o">=</span> <span class="n">baseelement</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">arg</span> <span class="o">==</span> <span class="s2">&quot;duration&quot;</span><span class="p">:</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">changeDuration</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">element</span><span class="o">.</span><span class="n">changeArg</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+        <span class="n">sequence</span><span class="o">.</span><span class="n">addElement</span><span class="p">(</span><span class="n">ind</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">element</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">sequence</span></div>
+
+
+
+<div class="viewcode-block" id="makeVaryingSequence">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.tools.makeVaryingSequence">[docs]</a>
+<span class="k">def</span> <span class="nf">makeVaryingSequence</span><span class="p">(</span><span class="n">baseelement</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">iters</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make a pulse sequence where N parameters vary simultaneously in M steps.</span>
+<span class="sd">    The user inputs a baseelement which is copied M times and changed</span>
+<span class="sd">    according to the given inputs.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        baseelement (Element): The basic element.</span>
+<span class="sd">        channels (Union[list, tuple]): Either a list or a tuple of channels on</span>
+<span class="sd">            which to find the blueprint to change. Must have length N.</span>
+<span class="sd">        names (Union[list, tuple]): Either a list or a tuple of names of the</span>
+<span class="sd">            segment to change. Must have length N.</span>
+<span class="sd">        args (Union[list, tuple]): Either a list or a tuple of argument</span>
+<span class="sd">            specifications for the argument to change. Use &#39;duration&#39; to change</span>
+<span class="sd">            the segment duration. Must have length N.</span>
+<span class="sd">        iters (Union[list, tuple]): Either a list or a tuple of length N</span>
+<span class="sd">            containing Union[list, tuple, range] of length M.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If not channels, names, args, and iters are of the same</span>
+<span class="sd">            length.</span>
+<span class="sd">        ValueError: If not each iter in iters specifies the same number of</span>
+<span class="sd">            values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Validation</span>
+    <span class="n">baseelement</span><span class="o">.</span><span class="n">validateDurations</span><span class="p">()</span>
+
+    <span class="n">inputlengths</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">channels</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">iters</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">inputlengths</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">inputlengths</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">inputlengths</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Inconsistent number of channel, names, args, and &quot;</span>
+            <span class="s2">&quot;parameter sequences. Please specify the same number &quot;</span>
+            <span class="s2">&quot;of each.&quot;</span>
+        <span class="p">)</span>
+    <span class="n">noofvals</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">itr</span><span class="p">)</span> <span class="k">for</span> <span class="n">itr</span> <span class="ow">in</span> <span class="n">iters</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">noofvals</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">noofvals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Not the same number of values in each parameter &quot;</span>
+            <span class="s2">&quot;value sequence (input argument: iters)&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">sequence</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">()</span>
+    <span class="n">sequence</span><span class="o">.</span><span class="n">setSR</span><span class="p">(</span><span class="n">baseelement</span><span class="o">.</span><span class="n">SR</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">elnum</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">noofvals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">sequence</span><span class="o">.</span><span class="n">addElement</span><span class="p">(</span><span class="n">elnum</span><span class="p">,</span> <span class="n">baseelement</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+    <span class="k">for</span> <span class="n">chan</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">vals</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">iters</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">mpos</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vals</span><span class="p">):</span>
+            <span class="n">element</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">element</span><span class="p">(</span><span class="n">mpos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">arg</span> <span class="o">==</span> <span class="s2">&quot;duration&quot;</span><span class="p">:</span>
+                <span class="n">element</span><span class="o">.</span><span class="n">changeDuration</span><span class="p">(</span><span class="n">chan</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">element</span><span class="o">.</span><span class="n">changeArg</span><span class="p">(</span><span class="n">chan</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Created varying sequence using makeVaryingSequence. Now validating it...&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">sequence</span><span class="o">.</span><span class="n">checkConsistency</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="n">SequenceConsistencyError</span><span class="p">(</span><span class="s2">&quot;Invalid sequence. See log for details.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Valid sequence&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sequence</span></div>
+
+
+
+<div class="viewcode-block" id="repeatAndVarySequence">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.tools.repeatAndVarySequence">[docs]</a>
+<span class="k">def</span> <span class="nf">repeatAndVarySequence</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">poss</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">iters</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Repeat a sequence and vary part(s) of it. Returns a new sequence.</span>
+<span class="sd">    Given N specifications of M steps, N parameters are varied in M</span>
+<span class="sd">    steps.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        seq (Sequence): The sequence to be repeated.</span>
+<span class="sd">        poss (Union[list, tuple]): A length N list/tuple specifying at which</span>
+<span class="sd">            sequence position(s) the blueprint to change is.</span>
+<span class="sd">        channels (Union[list, tuple]): A length N list/tuple specifying on</span>
+<span class="sd">            which channel(s) the blueprint to change is.</span>
+<span class="sd">        names (Union[list, tuple]): A length N list/tuple specifying the name</span>
+<span class="sd">            of the segment to change.</span>
+<span class="sd">        args (Union[list, tuple]): A length N list/tuple specifying which</span>
+<span class="sd">            argument to change. A valid argument is also &#39;duration&#39;.</span>
+<span class="sd">        iters (Union[list, tuple]): A length N list/tuple containing length</span>
+<span class="sd">            M indexable iterables with the values to step through.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">seq</span><span class="o">.</span><span class="n">checkConsistency</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="n">SequenceConsistencyError</span><span class="p">(</span>
+            <span class="s2">&quot;Inconsistent input sequence! Can not &quot;</span>
+            <span class="s2">&quot;proceed. Check all positions &quot;</span>
+            <span class="s2">&quot;and channels.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">inputlens</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">poss</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">channels</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">iters</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">inputlens</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">inputlens</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">inputlens</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Inconsistent number of position, channel, name, args&quot;</span>
+            <span class="s2">&quot;, and &quot;</span>
+            <span class="s2">&quot;parameter sequences. Please specify the same number &quot;</span>
+            <span class="s2">&quot;of each.&quot;</span>
+        <span class="p">)</span>
+    <span class="n">noofvals</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">itr</span><span class="p">)</span> <span class="k">for</span> <span class="n">itr</span> <span class="ow">in</span> <span class="n">iters</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">noofvals</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">noofvals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Not the same number of values in each parameter &quot;</span>
+            <span class="s2">&quot;value sequence (input argument: iters)&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">newseq</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">()</span>
+    <span class="n">newseq</span><span class="o">.</span><span class="n">_awgspecs</span> <span class="o">=</span> <span class="n">seq</span><span class="o">.</span><span class="n">_awgspecs</span>
+
+    <span class="n">no_of_steps</span> <span class="o">=</span> <span class="n">noofvals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">no_of_steps</span><span class="p">):</span>
+        <span class="n">tempseq</span> <span class="o">=</span> <span class="n">seq</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">pos</span><span class="p">,</span> <span class="n">chan</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">vals</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">poss</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">iters</span><span class="p">):</span>
+            <span class="n">element</span> <span class="o">=</span> <span class="n">tempseq</span><span class="o">.</span><span class="n">element</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">vals</span><span class="p">[</span><span class="n">step</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">arg</span> <span class="o">==</span> <span class="s2">&quot;duration&quot;</span><span class="p">:</span>
+                <span class="n">element</span><span class="o">.</span><span class="n">changeDuration</span><span class="p">(</span><span class="n">chan</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">element</span><span class="o">.</span><span class="n">changeArg</span><span class="p">(</span><span class="n">chan</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+        <span class="n">newseq</span> <span class="o">=</span> <span class="n">newseq</span> <span class="o">+</span> <span class="n">tempseq</span>
+
+    <span class="k">return</span> <span class="n">newseq</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Microsoft Quantum.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
