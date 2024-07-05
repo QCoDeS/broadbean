@@ -1,7 +1,8 @@
 # A little helper module for plotting of broadbean objects
 
-from typing import Union
+from typing import Union, cast
 
+import matplotlib.axes
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -171,7 +172,7 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
                     wfmdata = elem[chan]["wfm"]
                     chanminmax = update_minmax(chanminmax, wfmdata, chanind)
 
-    fig, axs = plt.subplots(len(chans), seqlen)
+    fig, axs = plt.subplots(len(chans), seqlen, squeeze=False)
 
     # ...and do the plotting
     for chanind, chan in enumerate(chans):
@@ -184,17 +185,7 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
         voltageunit = voltageprefix + "V"
 
         for pos in range(seqlen):
-            # 1 by N arrays are indexed differently than M by N arrays
-            # and 1 by 1 arrays are not arrays at all...
-            if len(chans) == 1 and seqlen > 1:
-                ax = axs[pos]
-            if len(chans) > 1 and seqlen == 1:
-                ax = axs[chanind]
-            if len(chans) == 1 and seqlen == 1:
-                ax = axs
-            if len(chans) > 1 and seqlen > 1:
-                ax = axs[chanind, pos]
-
+            ax = cast(matplotlib.axes.Axes, axs[chanind, pos])
             # reduce the tickmark density (must be called before scaling)
             ax.locator_params(tight=True, nbins=4, prune="lower")
 
@@ -245,7 +236,7 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
             ymax = voltagescaling * chanminmax[chanind][1]
             ymin = voltagescaling * chanminmax[chanind][0]
             yrange = ymax - ymin
-            ax.set_ylim([ymin - 0.05 * yrange, ymax + 0.2 * yrange])
+            ax.set_ylim((ymin - 0.05 * yrange, ymax + 0.2 * yrange))
 
             if seq[pos + 1]["type"] == "element":
                 # TODO: make this work for more than two markers
