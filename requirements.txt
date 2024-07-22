@@ -52,7 +52,7 @@ matplotlib~=3.9.0
 matplotlib-inline~=0.1.6
 mistune~=3.0.1
 numpy~=2.0.0
-mypy~=1.10.0
+mypy~=1.11.0
 mypy-extensions~=1.0.0
 nbclient~=0.10.0
 nbsphinx==0.9.1
