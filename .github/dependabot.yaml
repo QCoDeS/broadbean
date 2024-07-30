@@ -7,6 +7,11 @@ updates:
   open-pull-requests-limit: 10
   rebase-strategy: "disabled"
   versioning-strategy: increase-if-necessary
+  groups:
+    sphinx:
+      patterns:
+        - "sphinx"
+        - "sphinxcontrib*"
 - package-ecosystem: github-actions
   directory: "/"
   rebase-strategy: "disabled"
