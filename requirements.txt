@@ -1,5 +1,5 @@
 # pinned depedancies for CI
-alabaster~=0.7.12
+alabaster~=1.0.0
 argon2-cffi~=23.1.0
 argon2-cffi-bindings~=21.2.0
 asttokens~=2.4.0
