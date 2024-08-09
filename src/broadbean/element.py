@@ -4,7 +4,6 @@ from __future__ import annotations
 import json
 from collections.abc import Sequence
 from copy import deepcopy
-from typing import Union
 
 import numpy as np
 
@@ -40,7 +39,7 @@ class Element:
         self._data = {}
         self._meta = {}
 
-    def addBluePrint(self, channel: Union[str, int], blueprint: BluePrint) -> None:
+    def addBluePrint(self, channel: str | int, blueprint: BluePrint) -> None:
         """
         Add a blueprint to the element on the specified channel.
         Overwrites whatever was there before.
@@ -66,7 +65,7 @@ class Element:
         self._data[channel]["blueprint"] = newprint
 
     def addFlags(
-        self, channel: Union[str, int], flags: Sequence[Union[str, int]]
+        self, channel: str | int, flags: Sequence[str | int]
     ) -> None:
         """
         Adds flags for the specified channel.
@@ -107,7 +106,7 @@ class Element:
         self._data[channel]["flags"] = flags_int
 
     def addArray(
-        self, channel: Union[int, str], waveform: np.ndarray, SR: int, **kwargs
+        self, channel: int | str, waveform: np.ndarray, SR: int, **kwargs
     ) -> None:
         """
         Add an array of voltage value to the element on the specified channel.
@@ -371,10 +370,10 @@ class Element:
 
     def changeArg(
         self,
-        channel: Union[str, int],
+        channel: str | int,
         name: str,
-        arg: Union[str, int],
-        value: Union[int, float],
+        arg: str | int,
+        value: int | float,
         replaceeverywhere: bool = False,
     ) -> None:
         """
@@ -410,9 +409,9 @@ class Element:
 
     def changeDuration(
         self,
-        channel: Union[str, int],
+        channel: str | int,
         name: str,
-        newdur: Union[int, float],
+        newdur: int | float,
         replaceeverywhere: bool = False,
     ) -> None:
         """

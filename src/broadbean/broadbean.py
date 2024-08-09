@@ -1,7 +1,7 @@
 import functools as ft
 import logging
 import warnings
-from typing import Callable, Union
+from collections.abc import Callable
 
 import numpy as np
 
@@ -91,7 +91,7 @@ class PulseAtoms:
         return ampl * baregauss / normalization + offset
 
 
-def marked_for_deletion(replaced_by: Union[str, None] = None) -> Callable:
+def marked_for_deletion(replaced_by: str | None = None) -> Callable:
     """
     A decorator for functions we want to kill. The function still
     gets called.
@@ -111,14 +111,14 @@ def marked_for_deletion(replaced_by: Union[str, None] = None) -> Callable:
     return decorator
 
 
-def _channelListSorter(channels: list[Union[str, int]]) -> list[Union[str, int]]:
+def _channelListSorter(channels: list[str | int]) -> list[str | int]:
     """
     Sort a list of channel names. Channel names can be ints or strings. Sorts
     ints as being before strings.
     """
-    intlist: list[Union[str, int]] = []
+    intlist: list[str | int] = []
     intlist = [ch for ch in channels if isinstance(ch, int)]
-    strlist: list[Union[str, int]] = []
+    strlist: list[str | int] = []
     strlist = [ch for ch in channels if isinstance(ch, str)]
 
     sorted_list = sorted(intlist) + sorted(strlist)
