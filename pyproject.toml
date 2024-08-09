@@ -15,7 +15,6 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -23,7 +22,7 @@ classifiers = [
 ]
 license = {text = "MIT"}
 urls = {Homepage = "https://github.com/QCoDeS/broadbean"}
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "numpy>=1.12.1",
     "matplotlib",
@@ -78,6 +77,8 @@ extend-include = ["*.ipynb"]
 
 [tool.ruff.lint]
 extend-select = ["UP", "ISC", "I"]
+# UP038 may result in slower code
+ignore = ["UP038"]
 
 [tool.ruff.lint.per-file-ignores]
 "*.ipynb" = ["E402"]

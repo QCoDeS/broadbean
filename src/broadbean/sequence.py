@@ -2,10 +2,9 @@
 # along with a few helpers
 import json
 import logging
-import typing
 import warnings
 from copy import deepcopy
-from typing import Union, cast
+from typing import cast
 
 import numpy as np
 from schema import Optional, Or, Schema
@@ -293,7 +292,7 @@ class Sequence:
         keystr = f"channel{channel}_offset"
         self._awgspecs[keystr] = offset
 
-    def setChannelAmplitude(self, channel: Union[int, str], ampl: float) -> None:
+    def setChannelAmplitude(self, channel: int | str, ampl: float) -> None:
         """
         Assign the physical voltage amplitude of the channel. This is used
         when making output for real instruments.
@@ -305,7 +304,7 @@ class Sequence:
         keystr = f"channel{channel}_amplitude"
         self._awgspecs[keystr] = ampl
 
-    def setChannelOffset(self, channel: Union[int, str], offset: float) -> None:
+    def setChannelOffset(self, channel: int | str, offset: float) -> None:
         """
         Assign the physical voltage offset of the channel. This is used
         by some backends when making output for real instruments
@@ -317,7 +316,7 @@ class Sequence:
         keystr = f"channel{channel}_offset"
         self._awgspecs[keystr] = offset
 
-    def setChannelDelay(self, channel: Union[int, str], delay: float) -> None:
+    def setChannelDelay(self, channel: int | str, delay: float) -> None:
         """
         Assign a delay to a channel. This is used when making output for .awg
         files. Use the delay to compensate for cable length differences etc.
@@ -337,11 +336,11 @@ class Sequence:
 
     def setChannelFilterCompensation(
         self,
-        channel: Union[str, int],
+        channel: str | int,
         kind: str,
         order: int = 1,
-        f_cut: typing.Optional[float] = None,
-        tau: typing.Optional[float] = None,
+        f_cut: float | None = None,
+        tau: float | None = None,
     ) -> None:
         """
         Specify a filter to compensate for.
