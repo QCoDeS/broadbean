@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>broadbean.blueprint &mdash; broadbean 0.15.0.dev256 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/documentation_options.js?v=8d889764"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            broadbean
+          </a>
+              <div class="version">
+                0.15.0.dev256+main.g81f9dfb
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/generated/broadbean.html">broadbean package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../start/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Broadbean Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changes/index.html">Changelogs</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">broadbean</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">broadbean.blueprint</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for broadbean.blueprint</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is for defining the blueprint object</span>
+
+<span class="kn">import</span> <span class="nn">functools</span> <span class="k">as</span> <span class="nn">ft</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">signature</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">.broadbean</span> <span class="kn">import</span> <span class="n">PulseAtoms</span>
+
+
+<div class="viewcode-block" id="SegmentDurationError">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.blueprint.SegmentDurationError">[docs]</a>
+<span class="k">class</span> <span class="nc">SegmentDurationError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="BluePrint">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.blueprint.BluePrint">[docs]</a>
+<span class="k">class</span> <span class="nc">BluePrint</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The class of a waveform to become.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">funlist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">argslist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">namelist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">marker1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">marker2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">segmentmarker1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">segmentmarker2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">SR</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">durslist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a BluePrint instance</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            funlist (list): List of functions</span>
+<span class="sd">            argslist (list): List of tuples of arguments</span>
+<span class="sd">            namelist (list): List of names for the functions</span>
+<span class="sd">            marker1 (list): List of marker1 specification tuples</span>
+<span class="sd">            marker2 (list): List of marker2 specifiation tuples</span>
+<span class="sd">            durslist (list): List of durations</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            BluePrint</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: validate input</span>
+
+        <span class="c1"># Sanitising</span>
+        <span class="k">if</span> <span class="n">funlist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">funlist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">argslist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">argslist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">namelist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">namelist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">durslist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">durslist</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Are the lists of matching lengths?</span>
+        <span class="n">lenlist</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">funlist</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">argslist</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">namelist</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">durslist</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">elem</span> <span class="o">!=</span> <span class="n">lenlist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">lenlist</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;All input lists must be of same length. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Received lengths: </span><span class="si">{</span><span class="n">lenlist</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="c1"># Are the names valid names?</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">namelist</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;All segment names must be strings. Received </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">name</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Segment names are not allowed to end&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; in a number. </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> is &quot;</span>
+                    <span class="s2">&quot;therefore not a valid name.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span> <span class="o">=</span> <span class="n">funlist</span>
+
+        <span class="c1"># Make special functions live in the funlist but transfer their names</span>
+        <span class="c1"># to the namelist</span>
+        <span class="c1"># Infer names from signature if not given, i.e. allow for &#39;&#39; names</span>
+        <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">namelist</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">funlist</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">namelist</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">funlist</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="n">namelist</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">funlist</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">.</span><span class="vm">__name__</span>
+
+        <span class="c1"># Allow single arguments to be given as not tuples</span>
+        <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">args</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">argslist</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">argslist</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">args</span><span class="p">,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_argslist</span> <span class="o">=</span> <span class="n">argslist</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span> <span class="o">=</span> <span class="n">namelist</span>
+        <span class="n">namelist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_names_unique</span><span class="p">(</span><span class="n">namelist</span><span class="p">)</span>
+
+        <span class="c1"># initialise markers</span>
+        <span class="k">if</span> <span class="n">marker1</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">marker1</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">marker1</span> <span class="o">=</span> <span class="n">marker1</span>
+        <span class="k">if</span> <span class="n">marker2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">marker2</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">marker2</span> <span class="o">=</span> <span class="n">marker2</span>
+        <span class="k">if</span> <span class="n">segmentmarker1</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_segmark1</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">funlist</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_segmark1</span> <span class="o">=</span> <span class="n">segmentmarker1</span>
+        <span class="k">if</span> <span class="n">segmentmarker2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_segmark2</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">funlist</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_segmark2</span> <span class="o">=</span> <span class="n">segmentmarker2</span>
+
+        <span class="k">if</span> <span class="n">durslist</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_durslist</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">durslist</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_durslist</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_SR</span> <span class="o">=</span> <span class="n">SR</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_basename</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove trailing numbers from a string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;_basename received a non-string input! Got the following: </span><span class="si">{</span><span class="n">string</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">string</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">string</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">string</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()):</span>
+            <span class="k">return</span> <span class="n">string</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">ss</span> <span class="ow">in</span> <span class="n">string</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">ss</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+                    <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">break</span>
+            <span class="k">return</span> <span class="n">string</span><span class="p">[:</span><span class="o">-</span><span class="n">counter</span><span class="p">]</span>
+
+        <span class="c1"># lst = [letter for letter in string if not letter.isdigit()]</span>
+        <span class="c1"># return &#39;&#39;.join(lst)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_make_names_unique</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Make all strings in the input list unique</span>
+<span class="sd">        by appending numbers to reoccuring strings</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lst (list): List of strings. Intended for the _namelist</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;_make_names_unique received a non-list input! Got </span><span class="si">{</span><span class="n">lst</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">baselst</span> <span class="o">=</span> <span class="p">[</span><span class="n">BluePrint</span><span class="o">.</span><span class="n">_basename</span><span class="p">(</span><span class="n">lstel</span><span class="p">)</span> <span class="k">for</span> <span class="n">lstel</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">]</span>
+        <span class="n">uns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">baselst</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">un</span> <span class="ow">in</span> <span class="n">uns</span><span class="p">:</span>
+            <span class="n">inds</span> <span class="o">=</span> <span class="p">[</span><span class="n">ii</span> <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">el</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">baselst</span><span class="p">)</span> <span class="k">if</span> <span class="n">el</span> <span class="o">==</span> <span class="n">un</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">ind</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">inds</span><span class="p">):</span>
+                <span class="c1"># Do not append numbers to the first occurence</span>
+                <span class="k">if</span> <span class="n">ii</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">lst</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">un</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">lst</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">un</span><span class="si">}{</span><span class="n">ii</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">return</span> <span class="n">lst</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">length_segments</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the number of segments in the blueprint</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">duration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The total duration of the BluePrint. If necessary, all the arrays</span>
+<span class="sd">        are built.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">waits</span> <span class="o">=</span> <span class="s2">&quot;waituntil&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span>
+        <span class="n">ensavgs</span> <span class="o">=</span> <span class="s2">&quot;ensureaverage_fixed_level&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">waits</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">ensavgs</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_durslist</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">waits</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">ensavgs</span><span class="p">):</span>
+            <span class="n">waitdurations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_makeWaitDurations</span><span class="p">()</span>
+            <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">waitdurations</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">ensavgs</span><span class="p">:</span>
+            <span class="c1"># TODO: call the forger</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">&quot;ensureaverage_fixed_level does not exist yet. Cannot proceed&quot;</span>
+            <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The total number of points in the BluePrint. If necessary,</span>
+<span class="sd">        all the arrays are built.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">waits</span> <span class="o">=</span> <span class="s2">&quot;waituntil&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span>
+        <span class="n">ensavgs</span> <span class="o">=</span> <span class="s2">&quot;ensureaverage_fixed_level&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span>
+        <span class="n">SR</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SR</span>
+
+        <span class="k">if</span> <span class="n">SR</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;No sample rate specified, can not return the number of points.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">waits</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">ensavgs</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_durslist</span><span class="p">)</span> <span class="o">*</span> <span class="n">SR</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">waits</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">ensavgs</span><span class="p">):</span>
+            <span class="n">waitdurations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_makeWaitDurations</span><span class="p">()</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">waitdurations</span><span class="p">)</span> <span class="o">*</span> <span class="n">SR</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">ensavgs</span><span class="p">:</span>
+            <span class="c1"># TODO: call the forger</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">&quot;ensureaverage_fixed_level does not exist yet. Cannot proceed&quot;</span>
+            <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">durations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The list of durations</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_durslist</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">SR</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sample rate of the blueprint</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_SR</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a dict describing the blueprint.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">desc</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># the dict to return</span>
+
+        <span class="n">no_segs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">sn</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">no_segs</span><span class="p">):</span>
+            <span class="n">segkey</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;segment_</span><span class="si">{</span><span class="n">sn</span><span class="o">+</span><span class="mi">1</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">desc</span><span class="p">[</span><span class="n">segkey</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">desc</span><span class="p">[</span><span class="n">segkey</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="p">[</span><span class="n">sn</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span><span class="p">[</span><span class="n">sn</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;waituntil&quot;</span><span class="p">:</span>
+                <span class="n">desc</span><span class="p">[</span><span class="n">segkey</span><span class="p">][</span><span class="s2">&quot;function&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span><span class="p">[</span><span class="n">sn</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">funname</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span><span class="p">[</span><span class="n">sn</span><span class="p">])[</span><span class="mi">1</span><span class="p">:]</span>
+                <span class="n">funname</span> <span class="o">=</span> <span class="n">funname</span><span class="p">[:</span> <span class="n">funname</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot; at&quot;</span><span class="p">)]</span>
+                <span class="n">desc</span><span class="p">[</span><span class="n">segkey</span><span class="p">][</span><span class="s2">&quot;function&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">funname</span>
+            <span class="n">desc</span><span class="p">[</span><span class="n">segkey</span><span class="p">][</span><span class="s2">&quot;durations&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_durslist</span><span class="p">[</span><span class="n">sn</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">desc</span><span class="p">[</span><span class="n">segkey</span><span class="p">][</span><span class="s2">&quot;function&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;waituntil&quot;</span><span class="p">:</span>
+                <span class="n">desc</span><span class="p">[</span><span class="n">segkey</span><span class="p">][</span><span class="s2">&quot;arguments&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;waittime&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_argslist</span><span class="p">[</span><span class="n">sn</span><span class="p">]}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sig</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span><span class="p">[</span><span class="n">sn</span><span class="p">])</span>
+                <span class="n">desc</span><span class="p">[</span><span class="n">segkey</span><span class="p">][</span><span class="s2">&quot;arguments&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                    <span class="nb">zip</span><span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_argslist</span><span class="p">[</span><span class="n">sn</span><span class="p">])</span>
+                <span class="p">)</span>
+
+        <span class="n">desc</span><span class="p">[</span><span class="s2">&quot;marker1_abs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">marker1</span>
+        <span class="n">desc</span><span class="p">[</span><span class="s2">&quot;marker2_abs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">marker2</span>
+        <span class="n">desc</span><span class="p">[</span><span class="s2">&quot;marker1_rel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segmark1</span>
+        <span class="n">desc</span><span class="p">[</span><span class="s2">&quot;marker2_rel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segmark2</span>
+
+        <span class="k">return</span> <span class="n">desc</span>
+
+<div class="viewcode-block" id="BluePrint.write_to_json">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.blueprint.BluePrint.write_to_json">[docs]</a>
+    <span class="k">def</span> <span class="nf">write_to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path_to_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Writes blueprint to JSON file</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path_to_file: the path to the file to write to ex:</span>
+<span class="sd">            path_to_file/blueprint.json</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path_to_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BluePrint.blueprint_from_description">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.blueprint.BluePrint.blueprint_from_description">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">blueprint_from_description</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">blue_dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a blueprint from a description given as a dict</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            blue_dict: a dict in the same form as returned by</span>
+<span class="sd">            BluePrint.description</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">knowfunctions</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="sa">f</span><span class="s2">&quot;function PulseAtoms.</span><span class="si">{</span><span class="n">fun</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">PulseAtoms</span><span class="p">,</span> <span class="n">fun</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">fun</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">PulseAtoms</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;__&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fun</span>
+        <span class="p">}</span>
+        <span class="n">seg_mar_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">blue_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">seg_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">seg_mar_list</span> <span class="k">if</span> <span class="s2">&quot;segment&quot;</span> <span class="ow">in</span> <span class="n">s</span><span class="p">]</span>
+        <span class="n">bp_sum</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">seg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">seg_list</span><span class="p">):</span>
+            <span class="n">seg_dict</span> <span class="o">=</span> <span class="n">blue_dict</span><span class="p">[</span><span class="n">seg</span><span class="p">]</span>
+            <span class="n">bp_seg</span> <span class="o">=</span> <span class="n">BluePrint</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">seg_dict</span><span class="p">[</span><span class="s2">&quot;function&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;waituntil&quot;</span><span class="p">:</span>
+                <span class="n">arguments</span> <span class="o">=</span> <span class="n">blue_dict</span><span class="p">[</span><span class="n">seg</span><span class="p">][</span><span class="s2">&quot;arguments&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                <span class="n">arguments</span> <span class="o">=</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">arguments</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],)</span>
+                <span class="n">bp_seg</span><span class="o">.</span><span class="n">insertSegment</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;waituntil&quot;</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">arguments</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">blue_dict</span><span class="p">[</span><span class="n">seg</span><span class="p">][</span><span class="s2">&quot;arguments&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+                <span class="n">bp_seg</span><span class="o">.</span><span class="n">insertSegment</span><span class="p">(</span>
+                    <span class="n">i</span><span class="p">,</span>
+                    <span class="n">knowfunctions</span><span class="p">[</span><span class="n">seg_dict</span><span class="p">[</span><span class="s2">&quot;function&quot;</span><span class="p">]],</span>
+                    <span class="n">arguments</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\d&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">seg_dict</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]),</span>
+                    <span class="n">dur</span><span class="o">=</span><span class="n">seg_dict</span><span class="p">[</span><span class="s2">&quot;durations&quot;</span><span class="p">],</span>
+                <span class="p">)</span>
+            <span class="n">bp_sum</span> <span class="o">=</span> <span class="n">bp_sum</span> <span class="o">+</span> <span class="n">bp_seg</span>
+        <span class="n">bp_sum</span><span class="o">.</span><span class="n">marker1</span> <span class="o">=</span> <span class="n">blue_dict</span><span class="p">[</span><span class="s2">&quot;marker1_abs&quot;</span><span class="p">]</span>
+        <span class="n">bp_sum</span><span class="o">.</span><span class="n">marker2</span> <span class="o">=</span> <span class="n">blue_dict</span><span class="p">[</span><span class="s2">&quot;marker2_abs&quot;</span><span class="p">]</span>
+        <span class="n">listmarker1</span> <span class="o">=</span> <span class="n">blue_dict</span><span class="p">[</span><span class="s2">&quot;marker1_rel&quot;</span><span class="p">]</span>
+        <span class="n">listmarker2</span> <span class="o">=</span> <span class="n">blue_dict</span><span class="p">[</span><span class="s2">&quot;marker2_rel&quot;</span><span class="p">]</span>
+        <span class="n">bp_sum</span><span class="o">.</span><span class="n">_segmark1</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span> <span class="k">for</span> <span class="n">mark</span> <span class="ow">in</span> <span class="n">listmarker1</span><span class="p">]</span>
+        <span class="n">bp_sum</span><span class="o">.</span><span class="n">_segmark2</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span> <span class="k">for</span> <span class="n">mark</span> <span class="ow">in</span> <span class="n">listmarker2</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">bp_sum</span></div>
+
+
+<div class="viewcode-block" id="BluePrint.init_from_json">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.blueprint.BluePrint.init_from_json">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">init_from_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path_to_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BluePrint&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads blueprint from JSON file</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path_to_file: the path to the file to be read ex:</span>
+<span class="sd">            path_to_file/blueprint.json</span>
+<span class="sd">            This function is the inverse of write_to_json</span>
+<span class="sd">            The JSON file needs to be structured as if it was writen</span>
+<span class="sd">            by the function write_to_json</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path_to_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">data_loaded</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">blueprint_from_description</span><span class="p">(</span><span class="n">data_loaded</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_makeWaitDurations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Translate waituntills into durations and return that list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="s2">&quot;ensureaverage_fixed_level&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s1">&#39;There is an &quot;ensureaverage_fixed_level&quot;&#39;</span>
+                <span class="s2">&quot; in this BluePrint. Cannot compute.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">funlist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">durations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_durslist</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">argslist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_argslist</span>
+
+        <span class="n">no_of_waits</span> <span class="o">=</span> <span class="n">funlist</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;waituntil&quot;</span><span class="p">)</span>
+
+        <span class="n">waitpositions</span> <span class="o">=</span> <span class="p">[</span><span class="n">ii</span> <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">el</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">funlist</span><span class="p">)</span> <span class="k">if</span> <span class="n">el</span> <span class="o">==</span> <span class="s2">&quot;waituntil&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Calculate elapsed times</span>
+
+        <span class="k">for</span> <span class="n">nw</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">no_of_waits</span><span class="p">):</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">waitpositions</span><span class="p">[</span><span class="n">nw</span><span class="p">]</span>
+            <span class="n">funlist</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">PulseAtoms</span><span class="o">.</span><span class="n">waituntil</span>
+            <span class="n">elapsed_time</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">durations</span><span class="p">[:</span><span class="n">pos</span><span class="p">])</span>
+            <span class="n">wait_time</span> <span class="o">=</span> <span class="n">argslist</span><span class="p">[</span><span class="n">pos</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">dur</span> <span class="o">=</span> <span class="n">wait_time</span> <span class="o">-</span> <span class="n">elapsed_time</span>
+            <span class="k">if</span> <span class="n">dur</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Inconsistent timing. Can not wait until &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">wait_time</span><span class="si">}</span><span class="s2"> at position </span><span class="si">{</span><span class="n">pos</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">elapsed_time</span><span class="si">}</span><span class="s2"> elapsed already&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">durations</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">dur</span>
+
+        <span class="k">return</span> <span class="n">durations</span>
+
+<div class="viewcode-block" id="BluePrint.showPrint">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.blueprint.BluePrint.showPrint">[docs]</a>
+    <span class="k">def</span> <span class="nf">showPrint</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Pretty-print the contents of the BluePrint. Not finished.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: tidy up this method and make it use the description property</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_durslist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dl</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_durslist</span>
+
+        <span class="n">datalists</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_argslist</span><span class="p">,</span> <span class="n">dl</span><span class="p">]</span>
+
+        <span class="n">lzip</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">datalists</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Legend: Name, function, arguments, timesteps, durations&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">fun</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">dur</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lzip</span><span class="p">):</span>
+            <span class="n">ind_p</span> <span class="o">=</span> <span class="n">ind</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">fun</span> <span class="o">==</span> <span class="s2">&quot;waituntil&quot;</span><span class="p">:</span>
+                <span class="n">fun_p</span> <span class="o">=</span> <span class="n">fun</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fun_p</span> <span class="o">=</span> <span class="n">fun</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">list_p</span> <span class="o">=</span> <span class="p">[</span><span class="n">ind_p</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">fun_p</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">dur</span><span class="p">]</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Segment </span><span class="si">{}</span><span class="s1">: &quot;</span><span class="si">{}</span><span class="s1">&quot;, </span><span class="si">{}</span><span class="s1">, </span><span class="si">{}</span><span class="s1">, </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">list_p</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BluePrint.changeArg">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.blueprint.BluePrint.changeArg">[docs]</a>
+    <span class="k">def</span> <span class="nf">changeArg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">replaceeverywhere</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Change an argument of one or more of the functions in the blueprint.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): The name of the segment in which to change an argument</span>
+<span class="sd">            arg (Union[int, str]): Either the position (int) or name (str) of</span>
+<span class="sd">                the argument to change</span>
+<span class="sd">            value (Union[int, float]): The new value of the argument</span>
+<span class="sd">            replaceeverywhere (bool): If True, the same argument is overwritten</span>
+<span class="sd">                in ALL segments where the name matches. E.g. &#39;gaussian1&#39; will</span>
+<span class="sd">                match &#39;gaussian&#39;, &#39;gaussian2&#39;, etc. If False, only the segment</span>
+<span class="sd">                with exact name match gets a replacement.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the argument can not be matched (either the argument</span>
+<span class="sd">                name does not match or the argument number is wrong).</span>
+<span class="sd">            ValueError: If the name can not be matched.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: is there any reason to use tuples internally?</span>
+
+        <span class="k">if</span> <span class="n">replaceeverywhere</span><span class="p">:</span>
+            <span class="n">basename</span> <span class="o">=</span> <span class="n">BluePrint</span><span class="o">.</span><span class="n">_basename</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">basename</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">nmlst</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span>
+            <span class="n">replacelist</span> <span class="o">=</span> <span class="p">[</span><span class="n">nm</span> <span class="k">for</span> <span class="n">nm</span> <span class="ow">in</span> <span class="n">nmlst</span> <span class="k">if</span> <span class="n">basename</span><span class="p">(</span><span class="n">nm</span><span class="p">)</span> <span class="o">==</span> <span class="n">name</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">replacelist</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+        <span class="c1"># Validation</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;No segment of that name in blueprint.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; Contains segments: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">replacelist</span><span class="p">:</span>
+            <span class="n">position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">function</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span><span class="p">[</span><span class="n">position</span><span class="p">]</span>
+            <span class="n">sig</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
+
+            <span class="c1"># Validation</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">arg</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;No such argument of function &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">function</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">. Has arguments &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="p">)</span>
+            <span class="c1"># Each function has two &#39;secret&#39; arguments, SR and dur</span>
+            <span class="n">user_params</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">arg</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">user_params</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;No argument </span><span class="si">{</span><span class="n">arg</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;of function </span><span class="si">{</span><span class="n">function</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; Has </span><span class="si">{</span><span class="n">user_params</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;arguments.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="c1"># allow the user to input single values instead of (val,)</span>
+            <span class="n">no_of_args</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_argslist</span><span class="p">[</span><span class="n">position</span><span class="p">])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="n">no_of_args</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="n">value</span><span class="p">,)</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">arg</span> <span class="o">==</span> <span class="n">param</span><span class="p">:</span>
+                        <span class="n">arg</span> <span class="o">=</span> <span class="n">ii</span>
+                        <span class="k">break</span>
+
+            <span class="c1"># Mutating the immutable...</span>
+            <span class="n">larg</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_argslist</span><span class="p">[</span><span class="n">position</span><span class="p">])</span>
+            <span class="n">larg</span><span class="p">[</span><span class="n">arg</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_argslist</span><span class="p">[</span><span class="n">position</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">larg</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BluePrint.changeDuration">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.blueprint.BluePrint.changeDuration">[docs]</a>
+    <span class="k">def</span> <span class="nf">changeDuration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">dur</span><span class="p">,</span> <span class="n">replaceeverywhere</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Change the duration of one or more segments in the blueprint</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): The name of the segment in which to change duration</span>
+<span class="sd">            dur (Union[float, int]): The new duration.</span>
+<span class="sd">            replaceeverywhere (Optional[bool]): If True, the duration(s)</span>
+<span class="sd">                is(are) overwritten in ALL segments where the name matches.</span>
+<span class="sd">                E.g. &#39;gaussian1&#39; will match &#39;gaussian&#39;, &#39;gaussian2&#39;,</span>
+<span class="sd">                etc. If False, only the segment with exact name match</span>
+<span class="sd">                gets a replacement.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If durations are not specified for the blueprint</span>
+<span class="sd">            ValueError: If too many or too few durations are given.</span>
+<span class="sd">            ValueError: If no segment matches the name.</span>
+<span class="sd">            ValueError: If dur is not positive</span>
+<span class="sd">            ValueError: If SR is given for the blueprint and dur is less than</span>
+<span class="sd">                1/SR.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">dur</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">dur</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;New duration must be an int or a float. Received </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">dur</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">replaceeverywhere</span><span class="p">:</span>
+            <span class="n">basename</span> <span class="o">=</span> <span class="n">BluePrint</span><span class="o">.</span><span class="n">_basename</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">basename</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">nmlst</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span>
+            <span class="n">replacelist</span> <span class="o">=</span> <span class="p">[</span><span class="n">nm</span> <span class="k">for</span> <span class="n">nm</span> <span class="ow">in</span> <span class="n">nmlst</span> <span class="k">if</span> <span class="n">basename</span><span class="p">(</span><span class="n">nm</span><span class="p">)</span> <span class="o">==</span> <span class="n">name</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">replacelist</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+        <span class="c1"># Validation</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;No segment of that name in blueprint.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; Contains segments: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">replacelist</span><span class="p">:</span>
+            <span class="n">position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">dur</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Duration must be strictly greater than zero.&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">SR</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">dur</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">SR</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;Duration too short! Must be at least 1/sample rate.&quot;</span>
+                    <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_durslist</span><span class="p">[</span><span class="n">position</span><span class="p">]</span> <span class="o">=</span> <span class="n">dur</span></div>
+
+
+<div class="viewcode-block" id="BluePrint.setSR">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.blueprint.BluePrint.setSR">[docs]</a>
+    <span class="k">def</span> <span class="nf">setSR</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SR</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the associated sample rate</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            SR (Union[int, float]): The sample rate in Sa/s.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_SR</span> <span class="o">=</span> <span class="n">SR</span></div>
+
+
+<div class="viewcode-block" id="BluePrint.setSegmentMarker">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.blueprint.BluePrint.setSegmentMarker">[docs]</a>
+    <span class="k">def</span> <span class="nf">setSegmentMarker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">specs</span><span class="p">,</span> <span class="n">markerID</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Bind a marker to a specific segment.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): Name of the segment</span>
+<span class="sd">            specs (tuple): Marker specification tuple, (delay, duration),</span>
+<span class="sd">                where the delay is relative to the segment start</span>
+<span class="sd">            markerID (int): Which marker channel to output on. Must be 1 or 2.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">markerID</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;MarkerID must be either 1 or 2. Received </span><span class="si">{</span><span class="n">markerID</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="n">markerselect</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segmark1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segmark2</span><span class="p">}</span>
+        <span class="n">position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="c1"># TODO: Do we need more than one bound marker per segment?</span>
+        <span class="n">markerselect</span><span class="p">[</span><span class="n">markerID</span><span class="p">][</span><span class="n">position</span><span class="p">]</span> <span class="o">=</span> <span class="n">specs</span></div>
+
+
+<div class="viewcode-block" id="BluePrint.removeSegmentMarker">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.blueprint.BluePrint.removeSegmentMarker">[docs]</a>
+    <span class="k">def</span> <span class="nf">removeSegmentMarker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">markerID</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove all bound markers from a specific segment</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): Name of the segment</span>
+<span class="sd">            markerID (int): Which marker channel to remove from (1 or 2).</span>
+<span class="sd">            number (int): The number of the marker, in case several markers are</span>
+<span class="sd">                bound to one element. Default: 1 (the first marker).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">markerID</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;MarkerID must be either 1 or 2. Received </span><span class="si">{markerID}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="n">markerselect</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segmark1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segmark2</span><span class="p">}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No segment named </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> in this BluePrint.&quot;</span><span class="p">)</span>
+        <span class="n">markerselect</span><span class="p">[</span><span class="n">markerID</span><span class="p">][</span><span class="n">position</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BluePrint.copy">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.blueprint.BluePrint.copy">[docs]</a>
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a copy of the BluePrint</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Needed because of input validation in __init__</span>
+        <span class="n">namelist</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_basename</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="o">.</span><span class="n">copy</span><span class="p">()]</span>
+
+        <span class="k">return</span> <span class="n">BluePrint</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_argslist</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+            <span class="n">namelist</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">marker1</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">marker2</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_segmark1</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_segmark2</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_SR</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_durslist</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BluePrint.insertSegment">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.blueprint.BluePrint.insertSegment">[docs]</a>
+    <span class="k">def</span> <span class="nf">insertSegment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">dur</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">durs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Insert a segment into the bluePrint.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pos (int): The position at which to add the segment. Counts like</span>
+<span class="sd">                a python list; 0 is first, -1 is last. Values below -1 are</span>
+<span class="sd">                not allowed, though.</span>
+<span class="sd">            func (function): Function describing the segment. Must have its</span>
+<span class="sd">               duration as the last argument (unless its a special function).</span>
+<span class="sd">            args (Optional[Tuple[Any]]): Tuple of arguments BESIDES duration.</span>
+<span class="sd">                Default: ()</span>
+<span class="sd">            dur (Optional[Union[int, float]]): The duration of the</span>
+<span class="sd">                segment. Must be given UNLESS the segment is</span>
+<span class="sd">                &#39;waituntil&#39; or &#39;ensureaverage_fixed_level&#39;</span>
+<span class="sd">            name Optional[str]: Name of the segment. If none is given,</span>
+<span class="sd">                the segment will receive the name of its function,</span>
+<span class="sd">                possibly with a number appended.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the position is negative</span>
+<span class="sd">            ValueError: If the name ends in a number</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Validation</span>
+        <span class="n">has_ensureavg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;ensureaverage_fixed_level&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span>
+            <span class="ow">or</span> <span class="s2">&quot;ensureaverage_fixed_dur&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">func</span> <span class="o">==</span> <span class="s2">&quot;ensureaverage_fixed_level&quot;</span> <span class="ow">and</span> <span class="n">has_ensureavg</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s1">&#39;Can not have more than one &quot;ensureaverage&quot; segment in a blueprint.&#39;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">durs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s1">&#39;Deprecation warning: please specify &quot;dur&quot; rather &#39;</span>
+                <span class="s1">&#39;than &quot;durs&quot; when inserting a segment&#39;</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">dur</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">dur</span> <span class="o">=</span> <span class="n">durs</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;You can not specify &quot;durs&quot; AND &quot;dur&quot;!&#39;</span><span class="p">)</span>
+        <span class="c1"># Take care of &#39;waituntil&#39;</span>
+
+        <span class="c1"># allow users to input single values</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">args</span><span class="p">,)</span>
+
+        <span class="k">if</span> <span class="n">pos</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Position must be strictly larger than -1&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">func</span> <span class="o">==</span> <span class="s2">&quot;waituntil&quot;</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;waituntil&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">name</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Segment name must not end in a number&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">pos</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_names_unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_argslist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_segmark1</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_segmark2</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_durslist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dur</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_names_unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_argslist</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_segmark1</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_segmark2</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_durslist</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">dur</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BluePrint.removeSegment">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.blueprint.BluePrint.removeSegment">[docs]</a>
+    <span class="k">def</span> <span class="nf">removeSegment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove the specified segment from the blueprint.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): The name of the segment to remove.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No segment called </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> in blueprint.&quot;</span><span class="p">)</span>
+
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span><span class="p">[</span><span class="n">position</span><span class="p">]</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_argslist</span><span class="p">[</span><span class="n">position</span><span class="p">]</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="p">[</span><span class="n">position</span><span class="p">]</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segmark1</span><span class="p">[</span><span class="n">position</span><span class="p">]</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segmark2</span><span class="p">[</span><span class="n">position</span><span class="p">]</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_durslist</span><span class="p">[</span><span class="n">position</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_names_unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add two BluePrints. The second argument is appended to the first</span>
+<span class="sd">        and a new BluePrint is returned.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (BluePrint): A BluePrint instance</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            BluePrint: A new blueprint.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the input is not a BluePrint instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">BluePrint</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                             BluePrint can only be added to another Blueprint.</span>
+<span class="s2">                             Received an object of type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="si">}</span>
+<span class="s2">                             &quot;&quot;&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">nl</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_basename</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span><span class="p">]</span>
+        <span class="n">nl</span> <span class="o">+=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_basename</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">_namelist</span><span class="p">]</span>
+        <span class="n">al</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_argslist</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">_argslist</span>
+        <span class="n">fl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">_funlist</span>
+        <span class="n">m1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">marker1</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">marker1</span>
+        <span class="n">m2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">marker2</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">marker2</span>
+        <span class="n">sm1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segmark1</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">_segmark1</span>
+        <span class="n">sm2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segmark2</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">_segmark2</span>
+        <span class="n">dl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_durslist</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">_durslist</span>
+
+        <span class="n">new_bp</span> <span class="o">=</span> <span class="n">BluePrint</span><span class="p">()</span>
+
+        <span class="n">new_bp</span><span class="o">.</span><span class="n">_namelist</span> <span class="o">=</span> <span class="n">new_bp</span><span class="o">.</span><span class="n">_make_names_unique</span><span class="p">(</span><span class="n">nl</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        <span class="n">new_bp</span><span class="o">.</span><span class="n">_funlist</span> <span class="o">=</span> <span class="n">fl</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">new_bp</span><span class="o">.</span><span class="n">_argslist</span> <span class="o">=</span> <span class="n">al</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">new_bp</span><span class="o">.</span><span class="n">marker1</span> <span class="o">=</span> <span class="n">m1</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">new_bp</span><span class="o">.</span><span class="n">marker2</span> <span class="o">=</span> <span class="n">m2</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">new_bp</span><span class="o">.</span><span class="n">_segmark1</span> <span class="o">=</span> <span class="n">sm1</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">new_bp</span><span class="o">.</span><span class="n">_segmark2</span> <span class="o">=</span> <span class="n">sm2</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">new_bp</span><span class="o">.</span><span class="n">_durslist</span> <span class="o">=</span> <span class="n">dl</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">SR</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">new_bp</span><span class="o">.</span><span class="n">setSR</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SR</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">new_bp</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compare two blueprints. They are the same iff all</span>
+<span class="sd">        lists are identical.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (BluePrint): A BluePrint instance</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: whether the two blueprints are identical</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the input is not a BluePrint instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">BluePrint</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                             Blueprint can only be compared to another</span>
+<span class="s2">                             Blueprint.</span>
+<span class="s2">                             Received an object of type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="si">}</span>
+<span class="s2">                             &quot;&quot;&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_namelist</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_namelist</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_funlist</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_funlist</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_argslist</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_argslist</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">marker1</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">marker1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">marker2</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">marker2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segmark1</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_segmark1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segmark2</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_segmark2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_subelementBuilder</span><span class="p">(</span>
+    <span class="n">blueprint</span><span class="p">:</span> <span class="n">BluePrint</span><span class="p">,</span> <span class="n">SR</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">durs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The function building a blueprint, returning a numpy array.</span>
+
+<span class="sd">    This is the core translater from description of pulse to actual data points</span>
+<span class="sd">    All arrays must be made with this function</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Important: building the element must NOT modify any of the mutable</span>
+    <span class="c1"># inputs, therefore all lists are copied</span>
+    <span class="n">funlist</span> <span class="o">=</span> <span class="n">blueprint</span><span class="o">.</span><span class="n">_funlist</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">argslist</span> <span class="o">=</span> <span class="n">blueprint</span><span class="o">.</span><span class="n">_argslist</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">namelist</span> <span class="o">=</span> <span class="n">blueprint</span><span class="o">.</span><span class="n">_namelist</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">marker1</span> <span class="o">=</span> <span class="n">blueprint</span><span class="o">.</span><span class="n">marker1</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">marker2</span> <span class="o">=</span> <span class="n">blueprint</span><span class="o">.</span><span class="n">marker2</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">segmark1</span> <span class="o">=</span> <span class="n">blueprint</span><span class="o">.</span><span class="n">_segmark1</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">segmark2</span> <span class="o">=</span> <span class="n">blueprint</span><span class="o">.</span><span class="n">_segmark2</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="n">durations</span> <span class="o">=</span> <span class="n">durs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="n">no_of_waits</span> <span class="o">=</span> <span class="n">funlist</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;waituntil&quot;</span><span class="p">)</span>
+
+    <span class="c1"># handle waituntil by translating it into a normal function</span>
+    <span class="n">waitpositions</span> <span class="o">=</span> <span class="p">[</span><span class="n">ii</span> <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">el</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">funlist</span><span class="p">)</span> <span class="k">if</span> <span class="n">el</span> <span class="o">==</span> <span class="s2">&quot;waituntil&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Calculate elapsed times</span>
+
+    <span class="k">for</span> <span class="n">nw</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">no_of_waits</span><span class="p">):</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">waitpositions</span><span class="p">[</span><span class="n">nw</span><span class="p">]</span>
+        <span class="n">funlist</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">PulseAtoms</span><span class="o">.</span><span class="n">waituntil</span>
+        <span class="n">elapsed_time</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">durations</span><span class="p">[:</span><span class="n">pos</span><span class="p">])</span>
+        <span class="n">wait_time</span> <span class="o">=</span> <span class="n">argslist</span><span class="p">[</span><span class="n">pos</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">dur</span> <span class="o">=</span> <span class="n">wait_time</span> <span class="o">-</span> <span class="n">elapsed_time</span>
+        <span class="k">if</span> <span class="n">dur</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Inconsistent timing. Can not wait until &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">wait_time</span><span class="si">}</span><span class="s2"> at position </span><span class="si">{</span><span class="n">pos</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">elapsed_time</span><span class="si">}</span><span class="s2"> elapsed already&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">durations</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">dur</span>
+
+    <span class="c1"># When special segments like &#39;waituntil&#39; and &#39;ensureaverage&#39; get</span>
+    <span class="c1"># evaluated, the list of durations gets updated. That new list</span>
+    <span class="c1"># is newdurations</span>
+
+    <span class="n">newdurations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">durations</span><span class="p">)</span>
+
+    <span class="c1"># All waveforms must ultimately have an integer number of samples</span>
+    <span class="c1"># Now figure out from the durations what these integers are</span>
+    <span class="c1">#</span>
+    <span class="c1"># The most honest thing to do is to simply round off dur*SR</span>
+    <span class="c1"># and raise an exception if the segment ends up with less than</span>
+    <span class="c1"># two points</span>
+
+    <span class="n">intdurations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">newdurations</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">dur</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">newdurations</span><span class="p">):</span>
+        <span class="n">int_dur</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">dur</span> <span class="o">*</span> <span class="n">SR</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">int_dur</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SegmentDurationError</span><span class="p">(</span>
+                <span class="s2">&quot;Too short segment detected! &quot;</span>
+                <span class="sa">f</span><span class="s1">&#39;Segment &quot;</span><span class="si">{</span><span class="n">namelist</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="si">}</span><span class="s1">&quot; at position </span><span class="si">{</span><span class="n">ii</span><span class="si">}</span><span class="s1"> &#39;</span>
+                <span class="sa">f</span><span class="s2">&quot;has a duration of </span><span class="si">{</span><span class="n">newdurations</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="si">}</span><span class="s2"> which at &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;an SR of </span><span class="si">{</span><span class="n">SR</span><span class="si">:</span><span class="s2">.3E</span><span class="si">}</span><span class="s2"> leads to just </span><span class="si">{</span><span class="n">int_dur</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="s2">&quot;point(s). There must be at least &quot;</span>
+                <span class="s2">&quot;2 points in each segment.&quot;</span>
+                <span class="s2">&quot;&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">intdurations</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">int_dur</span>
+            <span class="n">newdurations</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">int_dur</span> <span class="o">/</span> <span class="n">SR</span>
+
+    <span class="c1"># The actual forging of the waveform</span>
+    <span class="n">wf_length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">intdurations</span><span class="p">)</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">ft</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">funlist</span><span class="p">,</span> <span class="n">argslist</span><span class="p">)]</span>
+    <span class="n">blocks</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="p">(</span><span class="n">SR</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">parts</span><span class="p">,</span> <span class="n">intdurations</span><span class="p">)]</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">block</span> <span class="k">for</span> <span class="n">sl</span> <span class="ow">in</span> <span class="n">blocks</span> <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">sl</span><span class="p">),</span> <span class="nb">float</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="n">wf_length</span>
+    <span class="p">)</span>
+
+    <span class="c1"># now make the markers</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">newdurations</span><span class="p">),</span> <span class="n">wf_length</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">m1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+    <span class="n">m2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+
+    <span class="c1"># update the &#39;absolute time&#39; marker list with &#39;relative time&#39;</span>
+    <span class="c1"># (segment bound) markers converted to absolute time</span>
+    <span class="n">elapsed_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">([</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">newdurations</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">pos</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">segmark1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">spec</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">ontime</span> <span class="o">=</span> <span class="n">elapsed_times</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">+</span> <span class="n">spec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># spec is (delay, duration)</span>
+            <span class="n">marker1</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ontime</span><span class="p">,</span> <span class="n">spec</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="k">for</span> <span class="n">pos</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">segmark2</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">spec</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">ontime</span> <span class="o">=</span> <span class="n">elapsed_times</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">+</span> <span class="n">spec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># spec is (delay, duration)</span>
+            <span class="n">marker2</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ontime</span><span class="p">,</span> <span class="n">spec</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">msettings</span> <span class="o">=</span> <span class="p">[</span><span class="n">marker1</span><span class="p">,</span> <span class="n">marker2</span><span class="p">]</span>
+    <span class="n">marks</span> <span class="o">=</span> <span class="p">[</span><span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">marker</span><span class="p">,</span> <span class="n">setting</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">marks</span><span class="p">,</span> <span class="n">msettings</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">dur</span> <span class="ow">in</span> <span class="n">setting</span><span class="p">:</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">time</span> <span class="o">-</span> <span class="n">t</span><span class="p">)</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+            <span class="n">chunk</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">dur</span> <span class="o">*</span> <span class="n">SR</span><span class="p">))</span>
+            <span class="n">marker</span><span class="p">[</span><span class="n">ind</span> <span class="p">:</span> <span class="n">ind</span> <span class="o">+</span> <span class="n">chunk</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">outdict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;wfm&quot;</span><span class="p">:</span> <span class="n">output</span><span class="p">,</span>
+        <span class="s2">&quot;m1&quot;</span><span class="p">:</span> <span class="n">m1</span><span class="p">,</span>
+        <span class="s2">&quot;m2&quot;</span><span class="p">:</span> <span class="n">m2</span><span class="p">,</span>
+        <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">time</span><span class="p">,</span>
+        <span class="s2">&quot;newdurations&quot;</span><span class="p">:</span> <span class="n">newdurations</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">outdict</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Microsoft Quantum.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

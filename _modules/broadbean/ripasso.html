@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>broadbean.ripasso &mdash; broadbean 0.15.0.dev256 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/documentation_options.js?v=8d889764"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            broadbean
+          </a>
+              <div class="version">
+                0.15.0.dev256+main.g81f9dfb
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/generated/broadbean.html">broadbean package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../start/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Broadbean Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changes/index.html">Changelogs</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">broadbean</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">broadbean.ripasso</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for broadbean.ripasso</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Module providing filter compensation. Developed for use with the broadbean</span>
+<span class="c1"># pulse building module, but provides a standalone API</span>
+<span class="c1">#</span>
+<span class="c1"># The name is (of course) a pun. Ripasso; first a filter, then a compensation,</span>
+<span class="c1"># i.e. something that is re-passed. Also not quite an Amarone...</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy.fft</span> <span class="kn">import</span> <span class="n">fft</span><span class="p">,</span> <span class="n">fftfreq</span><span class="p">,</span> <span class="n">ifft</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="MissingFrequenciesError">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.ripasso.MissingFrequenciesError">[docs]</a>
+<span class="k">class</span> <span class="nc">MissingFrequenciesError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_rcFilter</span><span class="p">(</span><span class="n">SR</span><span class="p">,</span> <span class="n">npts</span><span class="p">,</span> <span class="n">f_cut</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;HP&quot;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">DCgain</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Nth order (RC circuit) filter</span>
+<span class="sd">    made with frequencies matching the fft output</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">freqs</span> <span class="o">=</span> <span class="n">fftfreq</span><span class="p">(</span><span class="n">npts</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">SR</span><span class="p">)</span>
+
+    <span class="n">tau</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">f_cut</span>
+    <span class="n">top</span> <span class="o">=</span> <span class="mi">2</span><span class="n">j</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;HP&quot;</span><span class="p">:</span>
+        <span class="n">tf</span> <span class="o">=</span> <span class="n">top</span> <span class="o">*</span> <span class="n">tau</span> <span class="o">*</span> <span class="n">freqs</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">top</span> <span class="o">*</span> <span class="n">tau</span> <span class="o">*</span> <span class="n">freqs</span><span class="p">)</span>
+
+        <span class="c1"># now, we have identically zero gain for the DC component,</span>
+        <span class="c1"># which makes the transfer function non-invertible</span>
+        <span class="c1">#</span>
+        <span class="c1"># It is a bit of an open question what DC compensation we want...</span>
+
+        <span class="n">tf</span><span class="p">[</span><span class="n">tf</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">DCgain</span>  <span class="c1"># No DC suppression</span>
+
+    <span class="k">elif</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;LP&quot;</span><span class="p">:</span>
+        <span class="n">tf</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">top</span> <span class="o">*</span> <span class="n">tau</span> <span class="o">*</span> <span class="n">freqs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">tf</span><span class="o">**</span><span class="n">order</span>
+
+
+<div class="viewcode-block" id="applyRCFilter">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.ripasso.applyRCFilter">[docs]</a>
+<span class="k">def</span> <span class="nf">applyRCFilter</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">SR</span><span class="p">,</span> <span class="n">kind</span><span class="p">,</span> <span class="n">f_cut</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">DCgain</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply a simple RC-circuit filter</span>
+<span class="sd">    to signal and return the filtered signal.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        signal (np.array): The input signal. The signal is assumed to start at</span>
+<span class="sd">            t=0 and be evenly sampled at sample rate SR.</span>
+<span class="sd">        SR (int): Sample rate (Sa/s) of the input signal</span>
+<span class="sd">        kind (str): The type of filter. Either &#39;HP&#39; or &#39;LP&#39;.</span>
+<span class="sd">        f_cut (float): The cutoff frequency of the filter (Hz)</span>
+<span class="sd">        order (int): The order of the filter. The first order filter is</span>
+<span class="sd">            applied order times.</span>
+<span class="sd">        DCgain (Optional[float]): The DC gain of the filter. ONLY used by the</span>
+<span class="sd">            high-pass filter. Default: 0.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.array:</span>
+<span class="sd">            The filtered signal along the original time axis. Imaginary</span>
+<span class="sd">            parts are discarded prior to return.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If kind is neither &#39;HP&#39; nor &#39;LP&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">kind</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;HP&quot;</span><span class="p">,</span> <span class="s2">&quot;LP&quot;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Please specify filter type as either &quot;HP&quot; or &quot;LP&quot;.&#39;</span><span class="p">)</span>
+
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+    <span class="n">transfun</span> <span class="o">=</span> <span class="n">_rcFilter</span><span class="p">(</span><span class="n">SR</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">f_cut</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">DCgain</span><span class="o">=</span><span class="n">DCgain</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">ifft</span><span class="p">(</span><span class="n">fft</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span> <span class="o">*</span> <span class="n">transfun</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">output</span></div>
+
+
+
+<div class="viewcode-block" id="applyInverseRCFilter">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.ripasso.applyInverseRCFilter">[docs]</a>
+<span class="k">def</span> <span class="nf">applyInverseRCFilter</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">SR</span><span class="p">,</span> <span class="n">kind</span><span class="p">,</span> <span class="n">f_cut</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">DCgain</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply the inverse of an RC-circuit filter to a signal and return the</span>
+<span class="sd">    compensated signal.</span>
+
+<span class="sd">    Note that a high-pass filter in principle has identically zero DC</span>
+<span class="sd">    gain which requires an infinite offset to compensate.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        signal (np.array): The input signal. The signal is assumed to start at</span>
+<span class="sd">            t=0 and be evenly sampled at sample rate SR.</span>
+<span class="sd">        SR (int): Sample rate (Sa/s) of the input signal</span>
+<span class="sd">        kind (str): The type of filter. Either &#39;HP&#39; or &#39;LP&#39;.</span>
+<span class="sd">        f_cut (float): The cutoff frequency of the filter (Hz)</span>
+<span class="sd">        order (int): The order of the filter. The first order filter is</span>
+<span class="sd">            applied order times.</span>
+<span class="sd">        DCgain (Optional[float]): The DC gain of the filter. ONLY used by the</span>
+<span class="sd">            high-pass filter. Default: 1.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.array:</span>
+<span class="sd">            The filtered signal along the original time axis. Imaginary</span>
+<span class="sd">            parts are discarded prior to return.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If kind is neither &#39;HP&#39; nor &#39;LP&#39;</span>
+<span class="sd">        ValueError: If DCgain is zero.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">kind</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;HP&quot;</span><span class="p">,</span> <span class="s2">&quot;LP&quot;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s1">&#39;Wrong filter type. Please specify filter type as either &quot;HP&quot; or &quot;LP&quot;.&#39;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">DCgain</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Non-invertible DCgain! Please set DCgain to a finite value.&quot;</span><span class="p">)</span>
+
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+    <span class="n">transfun</span> <span class="o">=</span> <span class="n">_rcFilter</span><span class="p">(</span><span class="n">SR</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">f_cut</span><span class="p">,</span> <span class="n">order</span><span class="o">=-</span><span class="n">order</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">,</span> <span class="n">DCgain</span><span class="o">=</span><span class="n">DCgain</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">ifft</span><span class="p">(</span><span class="n">fft</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span> <span class="o">*</span> <span class="n">transfun</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">output</span></div>
+
+
+
+<div class="viewcode-block" id="applyCustomTransferFunction">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.ripasso.applyCustomTransferFunction">[docs]</a>
+<span class="k">def</span> <span class="nf">applyCustomTransferFunction</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">SR</span><span class="p">,</span> <span class="n">tf_freqs</span><span class="p">,</span> <span class="n">tf_amp</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply custom transfer function</span>
+
+<span class="sd">    Given a signal, its sample rate, and a provided transfer function, apply</span>
+<span class="sd">    the transfer function to the signal.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        signal (np.array): A numpy array containing the signal</span>
+<span class="sd">        SR (int): The sample rate of the signal (Sa/s)</span>
+<span class="sd">        tf_freqs (np.array): The frequencies of the transfer function. Must</span>
+<span class="sd">            be monotonically increasing.</span>
+<span class="sd">        tf_amp (np.array): The amplitude of the transfer function. Must be</span>
+<span class="sd">            dimensionless.</span>
+<span class="sd">        invert (Optional[bool]): If True, the inverse transfer function is</span>
+<span class="sd">            applied. Default: False.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.array:</span>
+<span class="sd">        The modified signal.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">npts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+
+    <span class="c1"># validate tf_freqs</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">tf_freqs</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">df</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Invalid transfer function freq. axis. &quot;</span>
+            <span class="s2">&quot;Frequencies must be monotonically increasing.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">tf_freqs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">SR</span> <span class="o">/</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="c1"># TODO: think about whether this is a problem</span>
+        <span class="c1"># What is the desired behaviour for high frequencies if nothing</span>
+        <span class="c1"># is specified? I guess NOOP, i.e. the transfer func. is 1</span>
+        <span class="k">raise</span> <span class="n">MissingFrequenciesError</span><span class="p">(</span>
+            <span class="s2">&quot;Supplied transfer function does not &quot;</span>
+            <span class="s2">&quot;specify frequency response up to the &quot;</span>
+            <span class="s2">&quot;Nyquist frequency of the signal.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">tf_freqs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># what to do in this case? Extrapolate 1s? Make the user do this?</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Step 1: resample to fftfreq type axis</span>
+    <span class="n">freqax</span> <span class="o">=</span> <span class="n">fftfreq</span><span class="p">(</span><span class="n">npts</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">SR</span><span class="p">)</span>
+    <span class="n">freqax_pos</span> <span class="o">=</span> <span class="n">freqax</span><span class="p">[:</span> <span class="n">npts</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">freqax_neg</span> <span class="o">=</span> <span class="n">freqax</span><span class="p">[</span><span class="n">npts</span> <span class="o">//</span> <span class="mi">2</span> <span class="p">:]</span>
+
+    <span class="n">resampled_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">freqax_pos</span><span class="p">,</span> <span class="n">tf_freqs</span><span class="p">,</span> <span class="n">tf_amp</span><span class="p">)</span>
+    <span class="n">resampled_neg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="o">-</span><span class="n">freqax_neg</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">tf_freqs</span><span class="p">,</span> <span class="n">tf_amp</span><span class="p">)</span>
+
+    <span class="n">transferfun</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">resampled_pos</span><span class="p">,</span> <span class="n">resampled_neg</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+
+    <span class="c1"># Step 2: Apply transfer function</span>
+    <span class="k">if</span> <span class="n">invert</span><span class="p">:</span>
+        <span class="n">power</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">power</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">signal_filtered</span> <span class="o">=</span> <span class="n">ifft</span><span class="p">(</span><span class="n">fft</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">transferfun</span><span class="o">**</span><span class="n">power</span><span class="p">))</span>
+    <span class="n">imax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">signal_filtered</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+        <span class="s2">&quot;Applying custom transfer function. Discarding imag parts &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;no larger than </span><span class="si">{</span><span class="n">imax</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+    <span class="n">signal_filtered</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">signal_filtered</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">signal_filtered</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Microsoft Quantum.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>broadbean.element &mdash; broadbean 0.15.0.dev256 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/documentation_options.js?v=8d889764"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            broadbean
+          </a>
+              <div class="version">
+                0.15.0.dev256+main.g81f9dfb
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/generated/broadbean.html">broadbean package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../start/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Broadbean Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changes/index.html">Changelogs</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">broadbean</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">broadbean.element</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for broadbean.element</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file contains the Element definition</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Sequence</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">broadbean.blueprint</span> <span class="kn">import</span> <span class="n">BluePrint</span><span class="p">,</span> <span class="n">_subelementBuilder</span>
+
+<span class="kn">from</span> <span class="nn">.broadbean</span> <span class="kn">import</span> <span class="n">PulseAtoms</span>
+
+
+<div class="viewcode-block" id="ElementDurationError">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.element.ElementDurationError">[docs]</a>
+<span class="k">class</span> <span class="nc">ElementDurationError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="Element">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.element.Element">[docs]</a>
+<span class="k">class</span> <span class="nc">Element</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Object representing an element. An element is a collection of waves that</span>
+<span class="sd">    are to be run simultaneously. The element consists of a number of channels</span>
+<span class="sd">    that are then each filled with anything of the appropriate length.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># The internal data structure, a dict with key channel number</span>
+        <span class="c1"># Each value is a dict with the following possible keys, values:</span>
+        <span class="c1"># &#39;blueprint&#39;: a BluePrint</span>
+        <span class="c1"># &#39;channelname&#39;: channel name for later use with a Tektronix AWG5014</span>
+        <span class="c1"># &#39;array&#39;: a dict {&#39;wfm&#39;: np.array} (other keys: &#39;m1&#39;, &#39;m2&#39;, etc)</span>
+        <span class="c1"># &#39;SR&#39;: Sample rate. Used with array.</span>
+        <span class="c1">#</span>
+        <span class="c1"># Another dict is meta, which holds:</span>
+        <span class="c1"># &#39;duration&#39;: duration in seconds of the entire element.</span>
+        <span class="c1"># &#39;SR&#39;: sample rate of the element</span>
+        <span class="c1"># These two values are added/updated upon validation of the durations</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="Element.addBluePrint">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.element.Element.addBluePrint">[docs]</a>
+    <span class="k">def</span> <span class="nf">addBluePrint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">blueprint</span><span class="p">:</span> <span class="n">BluePrint</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a blueprint to the element on the specified channel.</span>
+<span class="sd">        Overwrites whatever was there before.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">blueprint</span><span class="p">,</span> <span class="n">BluePrint</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Invalid blueprint given. Must be an instance&quot;</span>
+                <span class="s2">&quot; of the BluePrint class.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">[]</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="n">blueprint</span><span class="o">.</span><span class="n">_funlist</span><span class="p">,</span>
+            <span class="n">blueprint</span><span class="o">.</span><span class="n">_argslist</span><span class="p">,</span>
+            <span class="n">blueprint</span><span class="o">.</span><span class="n">_namelist</span><span class="p">,</span>
+            <span class="n">blueprint</span><span class="o">.</span><span class="n">_durslist</span><span class="p">,</span>
+        <span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Received empty BluePrint. Can not proceed.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># important: make a copy of the blueprint</span>
+        <span class="n">newprint</span> <span class="o">=</span> <span class="n">blueprint</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="s2">&quot;blueprint&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">newprint</span></div>
+
+
+<div class="viewcode-block" id="Element.addFlags">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.element.Element.addFlags">[docs]</a>
+    <span class="k">def</span> <span class="nf">addFlags</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">flags</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds flags for the specified channel.</span>
+<span class="sd">        List of 4 flags, each of which should be 0 or &quot;&quot; for &#39;No change&#39;, 1 or &quot;H&quot; for &#39;High&#39;,</span>
+<span class="sd">        2 or &quot;L&quot; for &#39;Low&#39;, 3 or &quot;T&quot; for &#39;Toggle&#39;, 4 or &quot;P&quot; for &#39;Pulse&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">flags</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Flags should be given as a sequence (e.g. a list or a tuple).&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;There should be 4 flags in the list.&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">cnt</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">flags</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;H&quot;</span><span class="p">,</span> <span class="s2">&quot;L&quot;</span><span class="p">,</span> <span class="s2">&quot;T&quot;</span><span class="p">,</span> <span class="s2">&quot;P&quot;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s1">&#39;Invalid flag at index </span><span class="si">{cnt}</span><span class="s1">. Allowed flags are 0 or &quot;&quot; (No change), &#39;</span>
+                    <span class="s1">&#39;1 or &quot;H&quot; (High), 2 or &quot;L&quot; (Low), 3 or &quot;T&quot; (Toggle), &#39;</span>
+                    <span class="s1">&#39;4 or &quot;P&quot; (Pulse).&#39;</span>
+                <span class="p">)</span>
+
+        <span class="c1"># replace flag aliases with integers</span>
+        <span class="n">flag_aliases</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;H&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;L&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s2">&quot;T&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="s2">&quot;P&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+            <span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="mi">2</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="mi">3</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="mi">4</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">flags_int</span> <span class="o">=</span> <span class="p">[</span><span class="n">flag_aliases</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">flags</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="s2">&quot;flags&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flags_int</span></div>
+
+
+<div class="viewcode-block" id="Element.addArray">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.element.Element.addArray">[docs]</a>
+    <span class="k">def</span> <span class="nf">addArray</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">waveform</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">SR</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add an array of voltage value to the element on the specified channel.</span>
+<span class="sd">        Overwrites whatever was there before. Markers can be specified via</span>
+<span class="sd">        the kwargs, i.e. the kwargs must specify arrays of markers. The names</span>
+<span class="sd">        can be &#39;m1&#39;, &#39;m2&#39;, &#39;m3&#39;, etc.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            channel: The channel number</span>
+<span class="sd">            waveform: The array of waveform values (V)</span>
+<span class="sd">            SR: The sample rate in Sa/s</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">waveform</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="s2">&quot;array&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="p">)</span> <span class="o">!=</span> <span class="n">N</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Length mismatch between waveform and &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;array </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">. Must be same length&quot;</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="s2">&quot;array&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">name</span><span class="p">:</span> <span class="n">array</span><span class="p">})</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="s2">&quot;array&quot;</span><span class="p">][</span><span class="s2">&quot;wfm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">waveform</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="s2">&quot;SR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SR</span></div>
+
+
+<div class="viewcode-block" id="Element.validateDurations">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.element.Element.validateDurations">[docs]</a>
+    <span class="k">def</span> <span class="nf">validateDurations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check that all channels have the same specified duration, number of</span>
+<span class="sd">        points and sample rate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># pick out the channel entries</span>
+        <span class="n">channels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">channels</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Empty Element, nothing assigned&quot;</span><span class="p">)</span>
+
+        <span class="c1"># First the sample rate</span>
+        <span class="n">SRs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;blueprint&quot;</span> <span class="ow">in</span> <span class="n">channel</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">SRs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">channel</span><span class="p">[</span><span class="s2">&quot;blueprint&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">SR</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s2">&quot;array&quot;</span> <span class="ow">in</span> <span class="n">channel</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">SR</span> <span class="o">=</span> <span class="n">channel</span><span class="p">[</span><span class="s2">&quot;SR&quot;</span><span class="p">]</span>
+                <span class="n">SRs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SR</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">SRs</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">SRs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">SRs</span><span class="p">):</span>
+            <span class="n">errmssglst</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="n">SRs</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ElementDurationError</span><span class="p">(</span>
+                <span class="s2">&quot;Different channels have different &quot;</span>
+                <span class="s2">&quot;SRs. (Channel, SR): &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">errmssglst</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Next the total time</span>
+        <span class="n">durations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;blueprint&quot;</span> <span class="ow">in</span> <span class="n">channel</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">durations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">channel</span><span class="p">[</span><span class="s2">&quot;blueprint&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">duration</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s2">&quot;array&quot;</span> <span class="ow">in</span> <span class="n">channel</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">channel</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">][</span><span class="s2">&quot;wfm&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="n">channel</span><span class="p">[</span><span class="s2">&quot;SR&quot;</span><span class="p">]</span>
+                <span class="n">durations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">length</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="kc">None</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">SRs</span><span class="p">:</span>
+            <span class="n">atol</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">SRs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">atol</span> <span class="o">=</span> <span class="mf">1e-9</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">durations</span><span class="p">,</span> <span class="n">durations</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">):</span>
+            <span class="n">errmssglst</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="n">durations</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ElementDurationError</span><span class="p">(</span>
+                <span class="s2">&quot;Different channels have different &quot;</span>
+                <span class="s2">&quot;durations. (Channel, duration): &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">errmssglst</span><span class="p">)</span><span class="si">}</span><span class="s2">s&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Finally the number of points</span>
+        <span class="c1"># (kind of redundant if sample rate and duration match?)</span>
+        <span class="n">npts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;blueprint&quot;</span> <span class="ow">in</span> <span class="n">channel</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">npts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">channel</span><span class="p">[</span><span class="s2">&quot;blueprint&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s2">&quot;array&quot;</span> <span class="ow">in</span> <span class="n">channel</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">channel</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">][</span><span class="s2">&quot;wfm&quot;</span><span class="p">])</span>
+                <span class="n">npts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">length</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">npts</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">npts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">npts</span><span class="p">):</span>
+            <span class="n">errmssglst</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="n">npts</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ElementDurationError</span><span class="p">(</span>
+                <span class="s2">&quot;Different channels have different &quot;</span>
+                <span class="s2">&quot;npts. (Channel, npts): &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">errmssglst</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># If these three tests pass, we equip the dictionary with convenient</span>
+        <span class="c1"># info used by Sequence</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">[</span><span class="s2">&quot;SR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SRs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">[</span><span class="s2">&quot;duration&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">durations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Element.getArrays">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.element.Element.getArrays">[docs]</a>
+    <span class="k">def</span> <span class="nf">getArrays</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">includetime</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return arrays of the element. Heavily used by the Sequence.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            includetime: Whether to include time arrays. They will have the key</span>
+<span class="sd">                &#39;time&#39;. Time should be included when plotting, otherwise not.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict:</span>
+<span class="sd">              Dictionary with channel numbers (ints) as keys and forged</span>
+<span class="sd">              blueprints as values. A forged blueprint is a dict with</span>
+<span class="sd">              the mandatory key &#39;wfm&#39; and optional keys &#39;m1&#39;, &#39;m2&#39;, &#39;m3&#39; (etc)</span>
+<span class="sd">              and &#39;time&#39;.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">outdict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">channel</span><span class="p">,</span> <span class="n">signal</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="s2">&quot;array&quot;</span> <span class="ow">in</span> <span class="n">signal</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">outdict</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">includetime</span> <span class="ow">and</span> <span class="s2">&quot;time&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">signal</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">signal</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">][</span><span class="s2">&quot;wfm&quot;</span><span class="p">])</span>
+                    <span class="n">dur</span> <span class="o">=</span> <span class="n">N</span> <span class="o">/</span> <span class="n">signal</span><span class="p">[</span><span class="s2">&quot;SR&quot;</span><span class="p">]</span>
+                    <span class="n">outdict</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dur</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s2">&quot;blueprint&quot;</span> <span class="ow">in</span> <span class="n">signal</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">bp</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[</span><span class="s2">&quot;blueprint&quot;</span><span class="p">]</span>
+                <span class="n">durs</span> <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">durations</span>
+                <span class="n">SR</span> <span class="o">=</span> <span class="n">bp</span><span class="o">.</span><span class="n">SR</span>
+                <span class="n">forged_bp</span> <span class="o">=</span> <span class="n">_subelementBuilder</span><span class="p">(</span><span class="n">bp</span><span class="p">,</span> <span class="n">SR</span><span class="p">,</span> <span class="n">durs</span><span class="p">)</span>
+                <span class="n">outdict</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span> <span class="o">=</span> <span class="n">forged_bp</span>
+                <span class="k">if</span> <span class="s2">&quot;flags&quot;</span> <span class="ow">in</span> <span class="n">signal</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">outdict</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="s2">&quot;flags&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[</span><span class="s2">&quot;flags&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">includetime</span><span class="p">:</span>
+                    <span class="n">outdict</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+                    <span class="n">outdict</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;newdurations&quot;</span><span class="p">)</span>
+                <span class="c1"># TODO: should the be a separate bool for newdurations?</span>
+
+        <span class="k">return</span> <span class="n">outdict</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">SR</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the sample rate, if well-defined. Else raises</span>
+<span class="sd">        an error about what went wrong.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Will either raise an error or set self._data[&#39;SR&#39;]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validateDurations</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">[</span><span class="s2">&quot;SR&quot;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the number of points of each channel if that number is</span>
+<span class="sd">        well-defined. Else an error is raised.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validateDurations</span><span class="p">()</span>
+
+        <span class="c1"># pick out what is on the channels</span>
+        <span class="n">channels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+
+        <span class="c1"># if validateDurations did not raise an error, all channels</span>
+        <span class="c1"># have the same number of points</span>
+        <span class="k">for</span> <span class="n">chan</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="s2">&quot;array&quot;</span> <span class="ow">in</span> <span class="n">chan</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">or</span> <span class="s2">&quot;blueprint&quot;</span> <span class="ow">in</span> <span class="n">chan</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Neither BluePrint nor array assigned to chan </span><span class="si">{</span><span class="n">chan</span><span class="si">}</span><span class="s2">!&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;blueprint&quot;</span> <span class="ow">in</span> <span class="n">chan</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">return</span> <span class="n">chan</span><span class="p">[</span><span class="s2">&quot;blueprint&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">points</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">chan</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">][</span><span class="s2">&quot;wfm&quot;</span><span class="p">])</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># this line is here to make mypy happy; this exception is</span>
+            <span class="c1"># already raised by validateDurations</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Empty Element, nothing assigned&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">duration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the duration in seconds of the element, if said duration is</span>
+<span class="sd">        well-defined. Else raises an error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Will either raise an error or set self._data[&#39;SR&#39;]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validateDurations</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">[</span><span class="s2">&quot;duration&quot;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">channels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The channels that has something on them</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">chans</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+        <span class="k">return</span> <span class="n">chans</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a dict describing the element.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">desc</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="s2">&quot;blueprint&quot;</span> <span class="ow">in</span> <span class="n">val</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">desc</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s2">&quot;blueprint&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">description</span>
+            <span class="k">elif</span> <span class="s2">&quot;array&quot;</span> <span class="ow">in</span> <span class="n">val</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">desc</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)]</span> <span class="o">=</span> <span class="s2">&quot;array&quot;</span>
+
+            <span class="k">if</span> <span class="s2">&quot;flags&quot;</span> <span class="ow">in</span> <span class="n">val</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">desc</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)][</span><span class="s2">&quot;flags&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s2">&quot;flags&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">desc</span>
+
+<div class="viewcode-block" id="Element.write_to_json">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.element.Element.write_to_json">[docs]</a>
+    <span class="k">def</span> <span class="nf">write_to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path_to_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Writes element to JSON file</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path_to_file: the path to the file to write to ex:</span>
+<span class="sd">            path_to_file/element.json</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path_to_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Element.element_from_description">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.element.Element.element_from_description">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">element_from_description</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">element_dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a blueprint from a description given as a dict</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            element_dict: a dict in the same form as returned by</span>
+<span class="sd">            Element.description</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">channels_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">element_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">elem</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">chan</span> <span class="ow">in</span> <span class="n">channels_list</span><span class="p">:</span>
+            <span class="n">bp_sum</span> <span class="o">=</span> <span class="n">BluePrint</span><span class="o">.</span><span class="n">blueprint_from_description</span><span class="p">(</span><span class="n">element_dict</span><span class="p">[</span><span class="n">chan</span><span class="p">])</span>
+            <span class="n">elem</span><span class="o">.</span><span class="n">addBluePrint</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">chan</span><span class="p">),</span> <span class="n">bp_sum</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">elem</span></div>
+
+
+<div class="viewcode-block" id="Element.init_from_json">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.element.Element.init_from_json">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">init_from_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path_to_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Element</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads Element from JSON file</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path_to_file: the path to the file to be read ex:</span>
+<span class="sd">            path_to_file/Element.json</span>
+<span class="sd">            This function is the inverse of write_to_json</span>
+<span class="sd">            The JSON file needs to be structured as if it was writen</span>
+<span class="sd">            by the function write_to_json</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path_to_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">data_loaded</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">element_from_description</span><span class="p">(</span><span class="n">data_loaded</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Element.changeArg">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.element.Element.changeArg">[docs]</a>
+    <span class="k">def</span> <span class="nf">changeArg</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">channel</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">arg</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+        <span class="n">replaceeverywhere</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Change the argument of a function of the blueprint on the specified</span>
+<span class="sd">        channel.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            channel: The channel where the blueprint sits.</span>
+<span class="sd">            name: The name of the segment in which to change an argument</span>
+<span class="sd">            arg: Either the position (int) or name (str) of</span>
+<span class="sd">                the argument to change</span>
+<span class="sd">            value: The new value of the argument</span>
+<span class="sd">            replaceeverywhere: If True, the same argument is overwritten</span>
+<span class="sd">                in ALL segments where the name matches. E.g. &#39;gaussian1&#39; will</span>
+<span class="sd">                match &#39;gaussian&#39;, &#39;gaussian2&#39;, etc. If False, only the segment</span>
+<span class="sd">                with exact name match gets a replacement.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the specified channel has no blueprint.</span>
+<span class="sd">            ValueError: If the argument can not be matched (either the argument</span>
+<span class="sd">                name does not match or the argument number is wrong).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">channel</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Nothing assigned to channel </span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;blueprint&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No blueprint on channel </span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="n">bp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="s2">&quot;blueprint&quot;</span><span class="p">]</span>
+
+        <span class="n">bp</span><span class="o">.</span><span class="n">changeArg</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">replaceeverywhere</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Element.changeDuration">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.element.Element.changeDuration">[docs]</a>
+    <span class="k">def</span> <span class="nf">changeDuration</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">channel</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">newdur</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+        <span class="n">replaceeverywhere</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Change the duration of a segment of the blueprint on the specified</span>
+<span class="sd">        channel</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            channel: The channel holding the blueprint in question</span>
+<span class="sd">            name): The name of the segment to modify</span>
+<span class="sd">            newdur: The new duration.</span>
+<span class="sd">            replaceeverywhere: If True, all segments</span>
+<span class="sd">                matching the base</span>
+<span class="sd">                name given will have their duration changed. If False, only the</span>
+<span class="sd">                segment with an exact name match will have its duration</span>
+<span class="sd">                changed. Default: False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">channel</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Nothing assigned to channel </span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;blueprint&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No blueprint on channel </span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="n">bp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="s2">&quot;blueprint&quot;</span><span class="p">]</span>
+
+        <span class="n">bp</span><span class="o">.</span><span class="n">changeDuration</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">newdur</span><span class="p">,</span> <span class="n">replaceeverywhere</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_applyDelays</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delays</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply delays to the channels of this element. This function is intended</span>
+<span class="sd">        to be used via a Sequence object. Note that this function changes</span>
+<span class="sd">        the element it is called on. Calling _applyDelays a second will apply</span>
+<span class="sd">        more delays on top of the first ones.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            delays: A list matching the channels of the Element. If there</span>
+<span class="sd">                are channels=[1, 3], then delays=[1e-3, 0] will delay channel</span>
+<span class="sd">                1 by 1 ms and channel 3 by nothing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">delays</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Incorrect number of delays specified.&quot;</span>
+                <span class="s2">&quot; Must match the number of channels.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">sum</span><span class="p">(</span><span class="n">d</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">delays</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">delays</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Negative delays not allowed.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># The strategy is:</span>
+        <span class="c1"># Add waituntil at the beginning, update all waituntils inside, add a</span>
+        <span class="c1"># zeros segment at the end.</span>
+        <span class="c1"># If already-forged arrays are found, simply append and prepend zeros</span>
+
+        <span class="n">SR</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SR</span>
+        <span class="n">maxdelay</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">delays</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">chanind</span><span class="p">,</span> <span class="n">chan</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">):</span>
+            <span class="n">delay</span> <span class="o">=</span> <span class="n">delays</span><span class="p">[</span><span class="n">chanind</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="s2">&quot;blueprint&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">chan</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">blueprint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">chan</span><span class="p">][</span><span class="s2">&quot;blueprint&quot;</span><span class="p">]</span>
+
+                <span class="c1"># update existing waituntils</span>
+                <span class="k">for</span> <span class="n">segpos</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">blueprint</span><span class="o">.</span><span class="n">_funlist</span><span class="p">)):</span>
+                    <span class="k">if</span> <span class="n">blueprint</span><span class="o">.</span><span class="n">_funlist</span><span class="p">[</span><span class="n">segpos</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;waituntil&quot;</span><span class="p">:</span>
+                        <span class="n">oldwait</span> <span class="o">=</span> <span class="n">blueprint</span><span class="o">.</span><span class="n">_argslist</span><span class="p">[</span><span class="n">segpos</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">blueprint</span><span class="o">.</span><span class="n">_argslist</span><span class="p">[</span><span class="n">segpos</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">oldwait</span> <span class="o">+</span> <span class="n">delay</span><span class="p">,)</span>
+                <span class="c1"># insert delay before the waveform</span>
+                <span class="k">if</span> <span class="n">delay</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">blueprint</span><span class="o">.</span><span class="n">insertSegment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;waituntil&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">delay</span><span class="p">,),</span> <span class="s2">&quot;waituntil&quot;</span><span class="p">)</span>
+                <span class="c1"># add zeros at the end</span>
+                <span class="k">if</span> <span class="n">maxdelay</span> <span class="o">-</span> <span class="n">delay</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">blueprint</span><span class="o">.</span><span class="n">insertSegment</span><span class="p">(</span>
+                        <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">PulseAtoms</span><span class="o">.</span><span class="n">ramp</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dur</span><span class="o">=</span><span class="n">maxdelay</span> <span class="o">-</span> <span class="n">delay</span>
+                    <span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">arrays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">chan</span><span class="p">][</span><span class="s2">&quot;array&quot;</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">arr</span> <span class="ow">in</span> <span class="n">arrays</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">pre_wait</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">delay</span> <span class="o">*</span> <span class="n">SR</span><span class="p">))</span>
+                    <span class="n">post_wait</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">int</span><span class="p">((</span><span class="n">maxdelay</span> <span class="o">-</span> <span class="n">delay</span><span class="p">)</span> <span class="o">*</span> <span class="n">SR</span><span class="p">))</span>
+                    <span class="n">arrays</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">pre_wait</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="n">post_wait</span><span class="p">))</span>
+
+<div class="viewcode-block" id="Element.copy">
+<a class="viewcode-back" href="../../api/generated/broadbean.html#broadbean.element.Element.copy">[docs]</a>
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a copy of the element</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new</span> <span class="o">=</span> <span class="n">Element</span><span class="p">()</span>
+        <span class="n">new</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span>
+        <span class="n">new</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Element</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_data</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_meta</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Microsoft Quantum.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
