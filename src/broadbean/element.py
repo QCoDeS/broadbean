@@ -64,9 +64,7 @@ class Element:
         self._data[channel] = {}
         self._data[channel]["blueprint"] = newprint
 
-    def addFlags(
-        self, channel: str | int, flags: Sequence[str | int]
-    ) -> None:
+    def addFlags(self, channel: str | int, flags: Sequence[str | int]) -> None:
         """
         Adds flags for the specified channel.
         List of 4 flags, each of which should be 0 or "" for 'No change', 1 or "H" for 'High',
