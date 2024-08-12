@@ -1,6 +1,6 @@
 # A little helper module for plotting of broadbean objects
 
-from typing import Union, cast
+from typing import cast
 
 import matplotlib.axes
 import matplotlib.pyplot as plt
@@ -10,7 +10,7 @@ from broadbean import BluePrint, Element, Sequence
 from broadbean.sequence import SequenceConsistencyError
 
 # The object we can/want to plot
-BBObject = Union[Sequence, BluePrint, Element]
+BBObject = Sequence | BluePrint | Element
 
 
 def getSIScalingAndPrefix(minmax: tuple[float, float]) -> tuple[float, str]:
