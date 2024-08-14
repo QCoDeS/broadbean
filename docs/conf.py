@@ -18,7 +18,6 @@
 #
 import os
 
-import sphinx_rtd_theme
 from packaging.version import parse
 
 import broadbean
@@ -106,8 +105,7 @@ todo_include_todos = True
 # documentation.
 #
 # html_theme_options = {}
-html_theme = "sphinx_rtd_theme"
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+html_theme = "furo"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
