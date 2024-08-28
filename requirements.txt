@@ -214,7 +214,7 @@ nbsphinx==0.9.5
     # via broadbean (pyproject.toml)
 nest-asyncio==1.6.0
     # via ipykernel
-notebook==7.2.1
+notebook==7.2.2
     # via jupyter
 notebook-shim==0.2.4
     # via
