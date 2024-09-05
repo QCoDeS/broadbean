@@ -333,7 +333,7 @@ schema==0.7.7
     # via broadbean (pyproject.toml)
 send2trash==1.8.3
     # via jupyter-server
-setuptools==74.0.0
+setuptools==74.1.1
     # via jupyterlab
 six==1.16.0
     # via
