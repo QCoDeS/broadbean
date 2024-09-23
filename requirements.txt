@@ -250,7 +250,7 @@ platformdirs==4.3.6
     # via jupyter-core
 pluggy==1.5.0
     # via pytest
-prometheus-client==0.20.0
+prometheus-client==0.21.0
     # via jupyter-server
 prompt-toolkit==3.0.47
     # via
