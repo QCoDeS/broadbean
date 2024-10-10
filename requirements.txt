@@ -38,7 +38,7 @@ certifi==2024.8.30
     #   requests
 cffi==1.17.1
     # via argon2-cffi-bindings
-charset-normalizer==3.3.2
+charset-normalizer==3.4.0
     # via requests
 colorama==0.4.6
     # via
