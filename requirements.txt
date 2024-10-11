@@ -57,7 +57,7 @@ coverage==7.6.2
     #   pytest-cov
 cycler==0.12.1
     # via matplotlib
-debugpy==1.8.6
+debugpy==1.8.7
     # via ipykernel
 decorator==5.1.1
     # via ipython
