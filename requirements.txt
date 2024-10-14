@@ -351,7 +351,7 @@ sortedcontainers==2.4.0
     # via hypothesis
 soupsieve==2.6
     # via beautifulsoup4
-sphinx==8.1.0
+sphinx==8.1.3
     # via
     #   broadbean (pyproject.toml)
     #   furo
