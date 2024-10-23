@@ -181,7 +181,7 @@ jupyterlab-widgets==3.0.13
     # via ipywidgets
 kiwisolver==1.4.7
     # via matplotlib
-markupsafe==3.0.1
+markupsafe==3.0.2
     # via
     #   jinja2
     #   nbconvert
