@@ -84,7 +84,7 @@ httpcore==1.0.6
     # via httpx
 httpx==0.27.2
     # via jupyterlab
-hypothesis==6.115.3
+hypothesis==6.115.5
     # via broadbean (pyproject.toml)
 idna==3.10
     # via
