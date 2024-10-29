@@ -303,7 +303,7 @@ pyzmq==26.2.0
     #   jupyter-console
     #   jupyter-server
     #   qtconsole
-qtconsole==5.6.0
+qtconsole==5.6.1
     # via jupyter
 qtpy==2.4.1
     # via qtconsole
