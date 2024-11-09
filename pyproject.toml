@@ -50,6 +50,7 @@ docs = [
     "furo",
     "nbsphinx",
     "sphinx-jsonschema",
+    "ipykernel",
 ]
 
 
