@@ -43,7 +43,6 @@ test = [
     "coverage[toml]>=6.2",
     "mypy>=0.960",
     "types-pytz>=2021.3.0",
-    "jupyter>=1.0.0",
     "hypothesis>=5.49.0",
 ]
 docs = [
@@ -51,6 +50,7 @@ docs = [
     "furo",
     "nbsphinx",
     "sphinx-jsonschema",
+    "ipykernel",
 ]
 
 
