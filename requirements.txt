@@ -49,7 +49,7 @@ docutils==0.21.2
     #   sphinx-jsonschema
 executing==2.1.0
     # via stack-data
-fastjsonschema==2.20.0
+fastjsonschema==2.21.0
     # via nbformat
 fonttools==4.55.0
     # via matplotlib
