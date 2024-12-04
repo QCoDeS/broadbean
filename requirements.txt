@@ -187,7 +187,7 @@ requests==2.32.3
     # via
     #   sphinx
     #   sphinx-jsonschema
-rpds-py==0.21.0
+rpds-py==0.22.0
     # via
     #   jsonschema
     #   referencing
