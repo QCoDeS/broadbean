@@ -4,7 +4,7 @@ import json
 import logging
 import warnings
 from copy import deepcopy
-from typing import cast
+from typing import Any, cast
 
 import numpy as np
 from schema import Optional, Or, Schema
@@ -844,7 +844,7 @@ class Sequence:
 
         return output
 
-    def _prepareForOutputting(self) -> list[dict[int, np.ndarray]]:
+    def _prepareForOutputting(self) -> list[dict[int, Any]]:
         """
         The preparser for numerical output. Applies delay and ripasso
         corrections.
