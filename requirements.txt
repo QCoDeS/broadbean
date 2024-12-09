@@ -193,7 +193,7 @@ rpds-py==0.22.3
     #   referencing
 schema==0.7.7
     # via broadbean (pyproject.toml)
-six==1.16.0
+six==1.17.0
     # via
     #   asttokens
     #   python-dateutil
