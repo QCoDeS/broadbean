@@ -17,7 +17,7 @@ beautifulsoup4==4.12.3
     #   nbconvert
 bleach==6.2.0
     # via nbconvert
-certifi==2024.8.30
+certifi==2024.12.14
     # via requests
 charset-normalizer==3.4.0
     # via requests
