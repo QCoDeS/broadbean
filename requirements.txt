@@ -69,7 +69,7 @@ ipython==8.30.0
     # via ipykernel
 jedi==0.19.2
     # via ipython
-jinja2==3.1.4
+jinja2==3.1.5
     # via
     #   nbconvert
     #   nbsphinx
