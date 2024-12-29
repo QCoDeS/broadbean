@@ -249,7 +249,7 @@ types-pytz==2024.2.0.20241221
     # via broadbean (pyproject.toml)
 typing-extensions==4.12.2
     # via mypy
-urllib3==2.2.3
+urllib3==2.3.0
     # via requests
 versioningit==3.1.2
     # via broadbean (pyproject.toml)
