@@ -111,7 +111,7 @@ mypy==1.14.0
     # via broadbean (pyproject.toml)
 mypy-extensions==1.0.0
     # via mypy
-nbclient==0.10.1
+nbclient==0.10.2
     # via nbconvert
 nbconvert==7.16.4
     # via nbsphinx
