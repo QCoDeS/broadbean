@@ -153,7 +153,7 @@ psutil==6.1.1
     # via ipykernel
 pure-eval==0.2.3
     # via stack-data
-pygments==2.19.0
+pygments==2.19.1
     # via
     #   furo
     #   ipython
