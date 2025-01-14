@@ -486,8 +486,7 @@ class Sequence:
             specchans = [None]
         if specchans.count(chans) != len(specchans):
             failmssg = (
-                "checkConsistency failed: different elements specify "
-                "different channels"
+                "checkConsistency failed: different elements specify different channels"
             )
             log.info(failmssg)
             if verbose:
@@ -1035,14 +1034,14 @@ class Sequence:
                         "Waveform voltages exceed channel range "
                         f"on channel {chan}"
                         f" sequence element {pos}."
-                        f" {wfm.max()} > {ampl/2}!"
+                        f" {wfm.max()} > {ampl / 2}!"
                     )
                 if wfm.min() < -ampl / 2:
                     raise ValueError(
                         "Waveform voltages exceed channel range "
                         f"on channel {chan}"
                         f" sequence element {pos}. "
-                        f"{wfm.min()} < {-ampl/2}!"
+                        f"{wfm.min()} < {-ampl / 2}!"
                     )
                 element[chan]["wfm"] = wfm
             elements[pos - 1] = element
@@ -1213,14 +1212,14 @@ class Sequence:
                         "Waveform voltages exceed channel range "
                         f"on channel {chan}"
                         f" sequence element {pos}."
-                        f" {wfm.max()} > {ampl/2+off}!"
+                        f" {wfm.max()} > {ampl / 2 + off}!"
                     )
                 if wfm.min() < -ampl / 2 + off:
                     raise ValueError(
                         "Waveform voltages exceed channel range "
                         f"on channel {chan}"
                         f" sequence element {pos}. "
-                        f"{wfm.min()} < {-ampl/2+off}!"
+                        f"{wfm.min()} < {-ampl / 2 + off}!"
                     )
                 wfm = rescaler(wfm, ampl, off)
                 element[chan]["wfm"] = wfm
