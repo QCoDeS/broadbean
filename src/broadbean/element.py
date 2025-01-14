@@ -46,8 +46,7 @@ class Element:
         """
         if not isinstance(blueprint, BluePrint):
             raise ValueError(
-                "Invalid blueprint given. Must be an instance"
-                " of the BluePrint class."
+                "Invalid blueprint given. Must be an instance of the BluePrint class."
             )
 
         if [] in [

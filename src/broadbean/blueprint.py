@@ -63,8 +63,7 @@ class BluePrint:
 
         if any(elem != lenlist[0] for elem in lenlist):
             raise ValueError(
-                "All input lists must be of same length. "
-                f"Received lengths: {lenlist}"
+                f"All input lists must be of same length. Received lengths: {lenlist}"
             )
         # Are the names valid names?
         for name in namelist:
@@ -173,7 +172,7 @@ class BluePrint:
                 if ii == 0:
                     lst[ind] = f"{un}"
                 else:
-                    lst[ind] = f"{un}{ii+1}"
+                    lst[ind] = f"{un}{ii + 1}"
 
         return lst
 
@@ -254,7 +253,7 @@ class BluePrint:
         no_segs = len(self._namelist)
 
         for sn in range(no_segs):
-            segkey = f"segment_{sn+1:02d}"
+            segkey = f"segment_{sn + 1:02d}"
             desc[segkey] = {}
             desc[segkey]["name"] = self._namelist[sn]
             if self._funlist[sn] == "waituntil":
