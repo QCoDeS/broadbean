@@ -65,7 +65,7 @@ iniconfig==2.0.0
     # via pytest
 ipykernel==6.29.5
     # via broadbean (pyproject.toml)
-ipython==8.32.0
+ipython==8.33.0
     # via ipykernel
 jedi==0.19.2
     # via ipython
