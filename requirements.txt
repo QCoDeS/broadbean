@@ -172,7 +172,7 @@ python-dateutil==2.9.0.post0
     # via
     #   jupyter-client
     #   matplotlib
-pywin32==308
+pywin32==309
     # via jupyter-core
 pyyaml==6.0.2
     # via sphinx-jsonschema
