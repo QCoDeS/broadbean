@@ -249,7 +249,7 @@ traitlets==5.14.3
     #   nbsphinx
 types-pytz==2025.2.0.20250326
     # via broadbean (pyproject.toml)
-typing-extensions==4.13.1
+typing-extensions==4.13.2
     # via mypy
 urllib3==2.3.0
     # via requests
