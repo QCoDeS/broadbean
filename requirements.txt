@@ -79,7 +79,7 @@ jsonpointer==3.0.0
     # via sphinx-jsonschema
 jsonschema==4.23.0
     # via nbformat
-jsonschema-specifications==2024.10.1
+jsonschema-specifications==2025.4.1
     # via jsonschema
 jupyter-client==8.6.3
     # via
