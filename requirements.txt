@@ -144,7 +144,7 @@ parso==0.8.4
     # via jedi
 pillow==11.2.1
     # via matplotlib
-platformdirs==4.3.7
+platformdirs==4.3.8
     # via jupyter-core
 pluggy==1.5.0
     # via pytest
