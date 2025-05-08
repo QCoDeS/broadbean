@@ -198,7 +198,7 @@ six==1.17.0
     # via
     #   asttokens
     #   python-dateutil
-snowballstemmer==2.2.0
+snowballstemmer==3.0.0.1
     # via sphinx
 sortedcontainers==2.4.0
     # via hypothesis
