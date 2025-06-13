@@ -166,7 +166,7 @@ pytest==8.4.0
     # via
     #   broadbean (pyproject.toml)
     #   pytest-cov
-pytest-cov==6.1.1
+pytest-cov==6.2.1
     # via broadbean (pyproject.toml)
 python-dateutil==2.9.0.post0
     # via
