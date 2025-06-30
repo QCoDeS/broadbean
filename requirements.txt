@@ -253,7 +253,7 @@ typing-extensions==4.14.0
     # via mypy
 urllib3==2.5.0
     # via requests
-versioningit==3.2.0
+versioningit==3.3.0
     # via broadbean (pyproject.toml)
 wcwidth==0.2.13
     # via prompt-toolkit
