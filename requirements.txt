@@ -19,7 +19,7 @@ bleach==6.2.0
     # via nbconvert
 certifi==2025.8.3
     # via requests
-charset-normalizer==3.4.2
+charset-normalizer==3.4.3
     # via requests
 colorama==0.4.6
     # via
