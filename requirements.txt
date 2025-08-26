@@ -140,7 +140,7 @@ packaging==25.0
     #   versioningit
 pandocfilters==1.5.1
     # via nbconvert
-parso==0.8.4
+parso==0.8.5
     # via jedi
 pillow==11.3.0
     # via matplotlib
