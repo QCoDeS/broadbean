@@ -176,7 +176,7 @@ pywin32==311
     # via jupyter-core
 pyyaml==6.0.2
     # via sphinx-jsonschema
-pyzmq==27.0.2
+pyzmq==27.1.0
     # via
     #   ipykernel
     #   jupyter-client
