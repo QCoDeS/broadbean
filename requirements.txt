@@ -102,7 +102,7 @@ markupsafe==3.0.3
     #   nbconvert
 matplotlib==3.10.7
     # via broadbean (pyproject.toml)
-matplotlib-inline==0.1.7
+matplotlib-inline==0.2.1
     # via
     #   ipykernel
     #   ipython
