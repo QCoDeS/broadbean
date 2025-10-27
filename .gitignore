@@ -119,6 +119,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.conda/
 
 # Spyder project settings
 .spyderproject
@@ -150,3 +151,6 @@ cython_debug/
 
 # Mac files
 .DS_Store
+
+bootstrap_requirements.txt
+environment.yml

@@ -1,8 +1,10 @@
 # This file is for defining the blueprint object
 
 import functools as ft
+import inspect
 import json
 import re
+import types
 import warnings
 from inspect import signature
 
@@ -265,6 +267,46 @@ class BluePrint:
             desc[segkey]["durations"] = self._durslist[sn]
             if desc[segkey]["function"] == "waituntil":
                 desc[segkey]["arguments"] = {"waittime": self._argslist[sn]}
+            elif desc[segkey]["function"] == "function PulseAtoms.arb_func":
+                # Special handling for arb_func serialization
+                func_obj, kwargs_dict = self._argslist[sn]
+                
+                # Serialize the function
+                if hasattr(func_obj, '__name__') and func_obj.__name__ != '<lambda>':
+                    # Regular function - store name and try to get source
+                    func_name = func_obj.__name__
+                    try:
+                        func_source = inspect.getsource(func_obj)
+                    except (OSError, TypeError):
+                        func_source = None
+                    desc[segkey]["arguments"] = {
+                        "func_type": "named_function",
+                        "func_name": func_name,
+                        "func_source": func_source,
+                        "kwargs": kwargs_dict
+                    }
+                else:
+                    # Lambda function - store source code
+                    try:
+                        func_source = inspect.getsource(func_obj)
+                        # Extract just the lambda part using regex
+                        import re
+                        # Match 'lambda' followed by parameters, colon, and expression
+                        # This handles nested parentheses and complex expressions
+                        lambda_match = re.search(r'lambda\s+[^:]*:\s*[^\n,;]+', func_source)
+                        if lambda_match:
+                            func_source = lambda_match.group(0).strip()
+                        else:
+                            func_source = "lambda t, **kwargs: 0"
+                    except (OSError, TypeError):
+                        # Fallback: create a generic lambda string
+                        func_source = "lambda t, **kwargs: 0"  # Default fallback
+                    
+                    desc[segkey]["arguments"] = {
+                        "func_type": "lambda",
+                        "func_source": func_source,
+                        "kwargs": kwargs_dict
+                    }
             else:
                 sig = signature(self._funlist[sn])
                 desc[segkey]["arguments"] = dict(
@@ -275,6 +317,7 @@ class BluePrint:
         desc["marker2_abs"] = self.marker2
         desc["marker1_rel"] = self._segmark1
         desc["marker2_rel"] = self._segmark2
+        desc["SR"] = self._SR
 
         return desc
 
@@ -313,6 +356,61 @@ class BluePrint:
                 arguments = blue_dict[seg]["arguments"].values()
                 arguments = (list(arguments)[0][0],)
                 bp_seg.insertSegment(i, "waituntil", arguments)
+            elif seg_dict["function"] == "function PulseAtoms.arb_func":
+                # Special handling for arb_func reconstruction
+                args_dict = blue_dict[seg]["arguments"]
+                
+                if args_dict.get("func_type") == "lambda":
+                    # Reconstruct lambda function
+                    func_source = args_dict["func_source"]
+                    try:
+                        # Create lambda function from source
+                        func_obj = eval(func_source)
+                    except (SyntaxError, NameError) as e:
+                        # Fallback: create a zero function
+                        print(f"Warning: Could not reconstruct lambda function '{func_source}'. Using zero function. Error: {e}")
+                        func_obj = lambda t, **kwargs: 0
+                    
+                    kwargs_dict = args_dict["kwargs"]
+                    arguments = (func_obj, kwargs_dict)
+                elif args_dict.get("func_type") == "named_function":
+                    # Reconstruct named function
+                    func_name = args_dict["func_name"]
+                    func_source = args_dict.get("func_source")
+                    kwargs_dict = args_dict["kwargs"]
+                    
+                    # Try to reconstruct from source first
+                    func_obj = None
+                    if func_source:
+                        try:
+                            # Execute the function source in a local namespace
+                            local_ns = {}
+                            exec(func_source, globals(), local_ns)
+                            if func_name in local_ns:
+                                func_obj = local_ns[func_name]
+                        except Exception as e:
+                            print(f"Warning: Could not reconstruct named function '{func_name}' from source. Error: {e}")
+                    
+                    # Fallback: try to find function in globals
+                    if func_obj is None:
+                        try:
+                            func_obj = globals()[func_name]
+                        except KeyError:
+                            print(f"Warning: Could not find function '{func_name}' in globals. Using zero function.")
+                            func_obj = lambda t, **kwargs: 0
+                    
+                    arguments = (func_obj, kwargs_dict)
+                else:
+                    # Legacy format or fallback
+                    arguments = tuple(blue_dict[seg]["arguments"].values())
+                
+                bp_seg.insertSegment(
+                    i,
+                    knowfunctions[seg_dict["function"]],
+                    arguments,
+                    name=re.sub(r"\d", "", seg_dict["name"]),
+                    dur=seg_dict["durations"],
+                )
             else:
                 arguments = tuple(blue_dict[seg]["arguments"].values())
                 bp_seg.insertSegment(
@@ -329,6 +427,8 @@ class BluePrint:
         listmarker2 = blue_dict["marker2_rel"]
         bp_sum._segmark1 = [tuple(mark) for mark in listmarker1]
         bp_sum._segmark2 = [tuple(mark) for mark in listmarker2]
+        if "SR" in blue_dict:
+            bp_sum._SR = blue_dict["SR"]
         return bp_sum
 
     @classmethod

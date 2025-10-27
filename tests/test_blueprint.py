@@ -409,6 +409,7 @@ def test_description(blueprint_nasty, blueprint_tophat):
     desc2 = blueprint_tophat.description
 
     exp_keys = [
+        "SR",
         "marker1_abs",
         "marker1_rel",
         "marker2_abs",
