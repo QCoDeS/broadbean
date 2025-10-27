@@ -270,9 +270,9 @@ class BluePrint:
             elif desc[segkey]["function"] == "function PulseAtoms.arb_func":
                 # Special handling for arb_func serialization
                 func_obj, kwargs_dict = self._argslist[sn]
-                
+
                 # Serialize the function
-                if hasattr(func_obj, '__name__') and func_obj.__name__ != '<lambda>':
+                if hasattr(func_obj, "__name__") and func_obj.__name__ != "<lambda>":
                     # Regular function - store name and try to get source
                     func_name = func_obj.__name__
                     try:
@@ -283,7 +283,7 @@ class BluePrint:
                         "func_type": "named_function",
                         "func_name": func_name,
                         "func_source": func_source,
-                        "kwargs": kwargs_dict
+                        "kwargs": kwargs_dict,
                     }
                 else:
                     # Lambda function - store source code
@@ -291,9 +291,12 @@ class BluePrint:
                         func_source = inspect.getsource(func_obj)
                         # Extract just the lambda part using regex
                         import re
+
                         # Match 'lambda' followed by parameters, colon, and expression
                         # This handles nested parentheses and complex expressions
-                        lambda_match = re.search(r'lambda\s+[^:]*:\s*[^\n,;]+', func_source)
+                        lambda_match = re.search(
+                            r"lambda\s+[^:]*:\s*[^\n,;]+", func_source
+                        )
                         if lambda_match:
                             func_source = lambda_match.group(0).strip()
                         else:
@@ -301,11 +304,11 @@ class BluePrint:
                     except (OSError, TypeError):
                         # Fallback: create a generic lambda string
                         func_source = "lambda t, **kwargs: 0"  # Default fallback
-                    
+
                     desc[segkey]["arguments"] = {
                         "func_type": "lambda",
                         "func_source": func_source,
-                        "kwargs": kwargs_dict
+                        "kwargs": kwargs_dict,
                     }
             else:
                 sig = signature(self._funlist[sn])
@@ -359,7 +362,7 @@ class BluePrint:
             elif seg_dict["function"] == "function PulseAtoms.arb_func":
                 # Special handling for arb_func reconstruction
                 args_dict = blue_dict[seg]["arguments"]
-                
+
                 if args_dict.get("func_type") == "lambda":
                     # Reconstruct lambda function
                     func_source = args_dict["func_source"]
@@ -368,9 +371,11 @@ class BluePrint:
                         func_obj = eval(func_source)
                     except (SyntaxError, NameError) as e:
                         # Fallback: create a zero function
-                        print(f"Warning: Could not reconstruct lambda function '{func_source}'. Using zero function. Error: {e}")
+                        print(
+                            f"Warning: Could not reconstruct lambda function '{func_source}'. Using zero function. Error: {e}"
+                        )
                         func_obj = lambda t, **kwargs: 0
-                    
+
                     kwargs_dict = args_dict["kwargs"]
                     arguments = (func_obj, kwargs_dict)
                 elif args_dict.get("func_type") == "named_function":
@@ -378,7 +383,7 @@ class BluePrint:
                     func_name = args_dict["func_name"]
                     func_source = args_dict.get("func_source")
                     kwargs_dict = args_dict["kwargs"]
-                    
+
                     # Try to reconstruct from source first
                     func_obj = None
                     if func_source:
@@ -389,21 +394,25 @@ class BluePrint:
                             if func_name in local_ns:
                                 func_obj = local_ns[func_name]
                         except Exception as e:
-                            print(f"Warning: Could not reconstruct named function '{func_name}' from source. Error: {e}")
-                    
+                            print(
+                                f"Warning: Could not reconstruct named function '{func_name}' from source. Error: {e}"
+                            )
+
                     # Fallback: try to find function in globals
                     if func_obj is None:
                         try:
                             func_obj = globals()[func_name]
                         except KeyError:
-                            print(f"Warning: Could not find function '{func_name}' in globals. Using zero function.")
+                            print(
+                                f"Warning: Could not find function '{func_name}' in globals. Using zero function."
+                            )
                             func_obj = lambda t, **kwargs: 0
-                    
+
                     arguments = (func_obj, kwargs_dict)
                 else:
                     # Legacy format or fallback
                     arguments = tuple(blue_dict[seg]["arguments"].values())
-                
+
                 bp_seg.insertSegment(
                     i,
                     knowfunctions[seg_dict["function"]],
