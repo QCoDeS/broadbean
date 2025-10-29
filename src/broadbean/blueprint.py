@@ -287,23 +287,29 @@ class BluePrint:
                     }
                 else:
                     # Lambda function - store source code
-                    try:
-                        func_source = inspect.getsource(func_obj)
-                        # Extract just the lambda part using regex
-                        import re
+                    # First check if the lambda has a __func_source__ attribute
+                    # (for dynamically created lambdas)
+                    if hasattr(func_obj, "__func_source__"):
+                        func_source = func_obj.__func_source__
+                    else:
+                        # Fall back to inspect.getsource() with regex parsing
+                        try:
+                            func_source = inspect.getsource(func_obj)
+                            # Extract just the lambda part using regex
+                            import re
 
-                        # Match 'lambda' followed by parameters, colon, and expression
-                        # This handles nested parentheses and complex expressions
-                        lambda_match = re.search(
-                            r"lambda\s+[^:]*:\s*[^\n,;]+", func_source
-                        )
-                        if lambda_match:
-                            func_source = lambda_match.group(0).strip()
-                        else:
-                            func_source = "lambda t, **kwargs: 0"
-                    except (OSError, TypeError):
-                        # Fallback: create a generic lambda string
-                        func_source = "lambda t, **kwargs: 0"  # Default fallback
+                            # Match 'lambda' followed by parameters, colon, and expression
+                            # This handles nested parentheses and complex expressions
+                            lambda_match = re.search(
+                                r"lambda\s+[^:]*:\s*[^\n,;]+", func_source
+                            )
+                            if lambda_match:
+                                func_source = lambda_match.group(0).strip()
+                            else:
+                                func_source = "lambda t, **kwargs: 0"
+                        except (OSError, TypeError):
+                            # Fallback: create a generic lambda string
+                            func_source = "lambda t, **kwargs: 0"  # Default fallback
 
                     desc[segkey]["arguments"] = {
                         "func_type": "lambda",

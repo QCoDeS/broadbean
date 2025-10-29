@@ -106,3 +106,58 @@ def test_arb_func_json_file_operations():
 
         if os.path.exists(json_file_path):
             os.unlink(json_file_path)
+
+
+def test_arb_func_dynamic_lambda_with_func_source():
+    """Test that dynamically created lambdas with __func_source__ attribute are properly serialized"""
+
+    bp = bb.BluePrint()
+    bp.setSR(1e9)
+
+    # Create a lambda function dynamically with __func_source__ attribute
+    lambda_str = "lambda t, ampl, freq: ampl * np.sin(2 * np.pi * freq * t)"
+    eval_globals = {"np": np}
+    lambda_func = eval(lambda_str, eval_globals)
+
+    # Store the source string as an attribute on the function itself
+    # This allows broadbean to retrieve it during JSON serialization
+    lambda_func.__func_source__ = lambda_str
+
+    kwargs = {"ampl": 1.5, "freq": 1e6}
+    bp.insertSegment(
+        0, bb.PulseAtoms.arb_func, (lambda_func, kwargs), dur=2e-6, name="custom_wave"
+    )
+
+    # Generate original waveform
+    elem_orig = bb.Element()
+    elem_orig.addBluePrint(1, bp)
+    arrays_orig = elem_orig.getArrays()
+
+    # Test description contains proper serialization
+    desc = bp.description
+    args = desc["segment_01"]["arguments"]
+
+    assert args["func_type"] == "lambda"
+    # The __func_source__ attribute should be used exactly as provided
+    assert args["func_source"] == lambda_str
+    assert args["kwargs"] == kwargs
+
+    # Test JSON round-trip
+    json_str = json.dumps(desc)
+    desc_restored = json.loads(json_str)
+    bp_restored = bb.BluePrint.blueprint_from_description(desc_restored)
+
+    # Generate restored waveform
+    elem_restored = bb.Element()
+    elem_restored.addBluePrint(1, bp_restored)
+    arrays_restored = elem_restored.getArrays()
+
+    # Verify waveforms match
+    assert np.allclose(arrays_orig[1]["wfm"], arrays_restored[1]["wfm"])
+
+    # Verify mathematical correctness at specific time point
+    time_test = 1.0e-6
+    expected = kwargs["ampl"] * np.sin(2 * np.pi * kwargs["freq"] * time_test)
+    actual_idx = int(time_test * bp.SR)
+    assert np.isclose(expected, arrays_orig[1]["wfm"][actual_idx], rtol=1e-3)
+    assert np.isclose(expected, arrays_restored[1]["wfm"][actual_idx], rtol=1e-3)
