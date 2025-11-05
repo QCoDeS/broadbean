@@ -468,3 +468,170 @@ def test_write_read_sequence(protosequence1, protosequence2, tmp_path):
         seq.write_to_json(os.path.join(d, "Seq.json"))
         readbackseq = Sequence.init_from_json(os.path.join(d, "Seq.json"))
         assert seq == readbackseq
+
+
+##################################################
+# Amplitude LUT Tests
+
+
+def test_setAmplitudeLUT():
+    """Test the setAmplitudeLUT method and its application in _prepareForOutputting"""
+
+    # Create a simple sequence with a known waveform
+    SR = 1e6
+
+    # Create a simple ramp blueprint
+    bp = bb.BluePrint()
+    bp.insertSegment(0, ramp, args=(-0.5, 0.5), name="test_ramp", dur=10e-6)
+    bp.setSR(SR)
+
+    # Create element and sequence
+    elem = bb.Element()
+    elem.addBluePrint(1, bp)
+
+    seq = Sequence()
+    seq.addElement(1, elem)
+    seq.setSR(SR)
+
+    # Set required channel parameters for _prepareForOutputting
+    seq.setChannelAmplitude(1, 2.0)  # 2V peak-to-peak
+    seq.setChannelOffset(1, 0.0)  # 0V offset
+
+    # Test that LUT is properly stored
+    lut_input = [-1.0, -0.5, 0.0, 0.5, 1.0]
+    lut_output = [-0.8, -0.3, 0.0, 0.4, 0.9]  # Non-linear mapping
+
+    seq.setAmplitudeLUT(1, lut_input, lut_output)
+
+    # Verify the LUT is stored correctly
+    expected_lut = {"LUT_input": lut_input, "LUT_output": lut_output}
+    assert seq._awgspecs["channel1_amplitude_LUT"] == expected_lut
+
+    # Test _prepareForOutputting applies the LUT
+    elements = seq._prepareForOutputting()
+
+    # Get the original waveform without LUT for comparison
+    seq_no_lut = Sequence()
+    seq_no_lut.addElement(1, elem)
+    seq_no_lut.setSR(SR)
+    seq_no_lut.setChannelAmplitude(1, 2.0)
+    seq_no_lut.setChannelOffset(1, 0.0)
+
+    elements_no_lut = seq_no_lut._prepareForOutputting()
+
+    # Verify that the LUT was applied
+    original_wfm = elements_no_lut[0][1]["wfm"]
+    lut_applied_wfm = elements[0][1]["wfm"]
+
+    # The waveforms should be different due to LUT application
+    assert not np.array_equal(original_wfm, lut_applied_wfm)
+
+    # Verify the LUT transformation is correct by checking specific points
+    # For a ramp from -0.5 to 0.5, we can verify the interpolation
+    expected_transformed = np.interp(original_wfm, lut_input, lut_output)
+    assert np.allclose(lut_applied_wfm, expected_transformed)
+
+    # Test edge cases: verify LUT works for boundary values
+    # The ramp goes from -0.5 to 0.4 (10 points, endpoint not included)
+    # so we should see the corresponding LUT output values at the boundaries
+    min_val = np.min(lut_applied_wfm)
+    max_val = np.max(lut_applied_wfm)
+
+    # Check that the min/max values are approximately what we expect from LUT
+    # Original ramp: -0.5 to 0.4 -> LUT maps -0.5 to -0.3, and 0.4 to 0.32
+    assert np.isclose(min_val, -0.3, rtol=1e-10)
+    assert np.isclose(max_val, 0.32, rtol=1e-10)
+
+
+def test_setAmplitudeLUT_multiple_channels():
+    """Test that amplitude LUT works correctly with multiple channels"""
+
+    SR = 1e6
+
+    # Create blueprints for two channels
+    bp1 = bb.BluePrint()
+    bp1.insertSegment(0, ramp, args=(-1.0, 1.0), name="ramp_channel_a", dur=5e-6)
+    bp1.setSR(SR)
+
+    bp2 = bb.BluePrint()
+    bp2.insertSegment(0, sine, args=(1e5, 0.5, 0, 0), name="sine_channel_b", dur=5e-6)
+    bp2.setSR(SR)
+
+    # Create element and sequence
+    elem = bb.Element()
+    elem.addBluePrint(1, bp1)
+    elem.addBluePrint(2, bp2)
+
+    seq = Sequence()
+    seq.addElement(1, elem)
+    seq.setSR(SR)
+
+    # Set channel parameters
+    seq.setChannelAmplitude(1, 2.0)
+    seq.setChannelOffset(1, 0.0)
+    seq.setChannelAmplitude(2, 1.0)
+    seq.setChannelOffset(2, 0.0)
+
+    # Set different LUTs for each channel
+    lut1_input = [-1.0, 0.0, 1.0]
+    lut1_output = [-0.5, 0.0, 0.8]  # Asymmetric compression
+
+    lut2_input = [-1.0, 0.0, 1.0]
+    lut2_output = [-1.2, 0.0, 1.2]  # Expansion
+
+    seq.setAmplitudeLUT(1, lut1_input, lut1_output)
+    seq.setAmplitudeLUT(2, lut2_input, lut2_output)
+
+    # Test _prepareForOutputting
+    elements = seq._prepareForOutputting()
+
+    # Verify both LUTs are applied correctly
+    wfm1 = elements[0][1]["wfm"]
+    wfm2 = elements[0][2]["wfm"]
+
+    # Channel 1 should have compressed range
+    assert np.max(wfm1) <= 0.8
+    assert np.min(wfm1) >= -0.5
+
+    # Channel 2 should have expanded range (beyond original sine amplitude)
+    # The original sine only goes from 0 to ~0.48, so with expansion LUT it should exceed that
+    original_max = 0.48  # Approximate max from our sine wave
+    assert np.max(wfm2) > original_max  # Should be expanded
+
+    # Verify LUT is actually applied by checking that values are different from input range
+    # The LUT should map values according to the interpolation table
+    assert (
+        np.min(wfm2) >= 0.0
+    )  # Should still be non-negative since original sine is non-negative
+
+
+def test_setAmplitudeLUT_no_lut():
+    """Test that _prepareForOutputting works correctly when no LUT is set"""
+
+    SR = 1e6
+
+    bp = bb.BluePrint()
+    bp.insertSegment(0, ramp, args=(0.0, 1.0), name="test_ramp", dur=5e-6)
+    bp.setSR(SR)
+
+    elem = bb.Element()
+    elem.addBluePrint(1, bp)
+
+    seq = Sequence()
+    seq.addElement(1, elem)
+    seq.setSR(SR)
+    seq.setChannelAmplitude(1, 2.0)
+    seq.setChannelOffset(1, 0.0)
+
+    # Don't set any LUT
+    elements = seq._prepareForOutputting()
+
+    # Should work without errors
+    assert len(elements) == 1
+    assert 1 in elements[0]
+    assert "wfm" in elements[0][1]
+
+    # Waveform should be the original ramp
+    wfm = elements[0][1]["wfm"]
+    assert np.min(wfm) >= 0.0
+    assert np.max(wfm) <= 1.0

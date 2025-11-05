@@ -198,3 +198,21 @@ def applyCustomTransferFunction(signal, SR, tf_freqs, tf_amp, invert=False):
     signal_filtered = np.real(signal_filtered)
 
     return signal_filtered
+
+
+def applyAmplitudeLUT(signal, lut):
+    """
+    Apply an amplitude LUT to the signal.
+
+    Args:
+        signal (np.array): The input signal. The signal is assumed to have
+            values in the range [-1, 1].
+        lut (np.array): The amplitude LUT. Should be a 1D array of length N,
+            where N is the number of entries in the LUT.
+
+    Returns:
+        np.array:
+            The signal after applying the amplitude LUT.
+    """
+
+    return np.interp(signal, lut["LUT_input"], lut["LUT_output"])

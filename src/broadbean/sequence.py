@@ -11,7 +11,7 @@ from schema import Optional, Or, Schema
 
 from broadbean.blueprint import BluePrint
 from broadbean.element import Element  # TODO: change import to element.py
-from broadbean.ripasso import applyInverseRCFilter
+from broadbean.ripasso import applyAmplitudeLUT, applyInverseRCFilter
 
 from .broadbean import (
     PulseAtoms,
@@ -383,6 +383,25 @@ class Sequence:
             "order": order,
             "f_cut": f_cut,
             "tau": tau,
+        }
+
+    def setAmplitudeLUT(
+        self, channel: int | str, lut_input: list[float], lut_output: list[float]
+    ) -> None:
+        """
+        Set an amplitude lookup table for a channel. This is used when making
+        output for .awg files. The LUT is applied after all other waveform
+        processing.
+
+        Args:
+            channel: The channel number/name
+            lut_input: The input levels for the LUT
+            lut_output: The output levels for the LUT
+        """
+
+        self._awgspecs[f"channel{channel}_amplitude_LUT"] = {
+            "LUT_input": lut_input,
+            "LUT_output": lut_output,
         }
 
     def addElement(self, position: int, element: Element) -> None:
@@ -837,9 +856,9 @@ class Sequence:
                             postfilter = applyInverseRCFilter(
                                 prefilter, self.SR, kind, f_cut, order, DCgain=1
                             )
-                            (
-                                output[pos1]["content"][pos2]["data"][channame]["wfm"]
-                            ) = postfilter
+                            (output[pos1]["content"][pos2]["data"][channame]["wfm"]) = (
+                                postfilter
+                            )
 
         return output
 
@@ -953,6 +972,15 @@ class Sequence:
                         prefilter, self.SR, kind, f_cut, order, DCgain=1
                     )
                     elements[pos][chan]["wfm"] = postfilter
+
+            # Apply amplitude LUT if present
+            lut_key = f"channel{chan}_amplitude_LUT"
+            if lut_key in self._awgspecs.keys():
+                lut = self._awgspecs[lut_key]
+                for pos in range(seqlen):
+                    elements[pos][chan]["wfm"] = applyAmplitudeLUT(
+                        elements[pos][chan]["wfm"], lut
+                    )
 
         return elements
 
