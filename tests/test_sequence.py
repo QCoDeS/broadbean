@@ -542,6 +542,28 @@ def test_setAmplitudeLUT():
     assert np.isclose(min_val, -0.3, rtol=1e-10)
     assert np.isclose(max_val, 0.32, rtol=1e-10)
 
+    # Test the forge() method with amplitude LUT
+    forged_output = seq.forge()
+
+    # Verify structure of forged output
+    assert 1 in forged_output  # Position 1 exists
+    assert forged_output[1]["type"] == "element"
+    assert "content" in forged_output[1]
+    assert 1 in forged_output[1]["content"]  # Sub-position 1 exists
+    assert "data" in forged_output[1]["content"][1]
+    assert 1 in forged_output[1]["content"][1]["data"]  # Channel 1 exists
+    assert "wfm" in forged_output[1]["content"][1]["data"][1]
+
+    # Extract the LUT-applied waveform from forge() output
+    forged_wfm = forged_output[1]["content"][1]["data"][1]["wfm"]
+
+    # The forged waveform should be identical to the _prepareForOutputting result
+    assert np.allclose(forged_wfm, lut_applied_wfm)
+
+    # Verify the LUT was applied correctly in forge() as well
+    expected_forged = np.interp(original_wfm, lut_input, lut_output)
+    assert np.allclose(forged_wfm, expected_forged)
+
 
 def test_setAmplitudeLUT_multiple_channels():
     """Test that amplitude LUT works correctly with multiple channels"""
@@ -604,6 +626,34 @@ def test_setAmplitudeLUT_multiple_channels():
         np.min(wfm2) >= 0.0
     )  # Should still be non-negative since original sine is non-negative
 
+    # Test the forge() method with multiple channel LUTs
+    forged_output = seq.forge()
+
+    # Verify structure of forged output for multiple channels
+    assert 1 in forged_output  # Position 1 exists
+    assert forged_output[1]["type"] == "element"
+    forged_data = forged_output[1]["content"][1]["data"]
+    assert 1 in forged_data  # Channel 1 exists
+    assert 2 in forged_data  # Channel 2 exists
+
+    # Extract the LUT-applied waveforms from forge() output
+    forged_wfm1 = forged_data[1]["wfm"]
+    forged_wfm2 = forged_data[2]["wfm"]
+
+    # The forged waveforms should be identical to the _prepareForOutputting results
+    assert np.allclose(forged_wfm1, wfm1)
+    assert np.allclose(forged_wfm2, wfm2)
+
+    # Verify the LUTs were applied correctly in forge() as well
+    # Channel 1 should have compressed range
+    assert np.max(forged_wfm1) <= 0.8
+    assert np.min(forged_wfm1) >= -0.5
+
+    # Channel 2 should have expanded range
+    original_max = 0.48  # Approximate max from our sine wave
+    assert np.max(forged_wfm2) > original_max  # Should be expanded
+    assert np.min(forged_wfm2) >= 0.0  # Should still be non-negative
+
 
 def test_setAmplitudeLUT_no_lut():
     """Test that _prepareForOutputting works correctly when no LUT is set"""
@@ -635,3 +685,25 @@ def test_setAmplitudeLUT_no_lut():
     wfm = elements[0][1]["wfm"]
     assert np.min(wfm) >= 0.0
     assert np.max(wfm) <= 1.0
+
+    # Test the forge() method when no LUT is set
+    forged_output = seq.forge()
+
+    # Verify structure of forged output
+    assert 1 in forged_output  # Position 1 exists
+    assert forged_output[1]["type"] == "element"
+    assert "content" in forged_output[1]
+    assert 1 in forged_output[1]["content"]  # Sub-position 1 exists
+    assert "data" in forged_output[1]["content"][1]
+    assert 1 in forged_output[1]["content"][1]["data"]  # Channel 1 exists
+    assert "wfm" in forged_output[1]["content"][1]["data"][1]
+
+    # Extract the waveform from forge() output
+    forged_wfm = forged_output[1]["content"][1]["data"][1]["wfm"]
+
+    # The forged waveform should be identical to the _prepareForOutputting result
+    assert np.allclose(forged_wfm, wfm)
+
+    # Waveform should still be the original ramp (no LUT applied)
+    assert np.min(forged_wfm) >= 0.0
+    assert np.max(forged_wfm) <= 1.0

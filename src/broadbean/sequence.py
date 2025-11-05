@@ -860,6 +860,19 @@ class Sequence:
                                 postfilter
                             )
 
+                        # Apply amplitude LUT if present
+                        lut_key = f"channel{channame}_amplitude_LUT"
+                        if lut_key in self._awgspecs.keys():
+                            lut = self._awgspecs[lut_key]
+                            output[pos1]["content"][pos2]["data"][channame]["wfm"] = (
+                                applyAmplitudeLUT(
+                                    output[pos1]["content"][pos2]["data"][channame][
+                                        "wfm"
+                                    ],
+                                    lut,
+                                )
+                            )
+
         return output
 
     def _prepareForOutputting(self) -> list[dict[int, Any]]:
