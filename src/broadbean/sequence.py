@@ -397,6 +397,11 @@ class Sequence:
             channel: The channel number/name
             lut_input: The input levels for the LUT
             lut_output: The output levels for the LUT
+
+        Example:
+            >>> lut_input = [-1.0, -0.5, 0.0, 0.5, 1.0]
+            >>> lut_output = [-0.8, -0.3, 0.0, 0.3, 0.8]
+            >>> seq.setAmplitudeLUT(1, lut_input, lut_output)
         """
 
         self._awgspecs[f"channel{channel}_amplitude_LUT"] = {
