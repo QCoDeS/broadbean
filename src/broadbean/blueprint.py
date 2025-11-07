@@ -379,7 +379,11 @@ class BluePrint:
                         print(
                             f"Warning: Could not reconstruct lambda function '{func_source}'. Using zero function. Error: {e}"
                         )
-                        func_obj = lambda t, **kwargs: 0
+
+                        def zero_function(t, **kwargs):
+                            return 0
+
+                        func_obj = zero_function
 
                     kwargs_dict = args_dict["kwargs"]
                     arguments = (func_obj, kwargs_dict)
@@ -411,7 +415,11 @@ class BluePrint:
                             print(
                                 f"Warning: Could not find function '{func_name}' in globals. Using zero function."
                             )
-                            func_obj = lambda t, **kwargs: 0
+
+                        def zero_function(t, **kwargs):
+                            return 0
+
+                        func_obj = zero_function
 
                     arguments = (func_obj, kwargs_dict)
                 else:
