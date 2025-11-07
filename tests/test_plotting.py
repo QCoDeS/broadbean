@@ -1,12 +1,10 @@
 # Test suite for the plotting module of the broadbean package
 
-import pytest
-
 import matplotlib
+import pytest
 
 matplotlib.use("Agg")  # Use non-interactive backend for tests
 import matplotlib.figure
-import numpy as np
 
 import broadbean as bb
 from broadbean.plotting import plotter

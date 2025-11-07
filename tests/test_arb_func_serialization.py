@@ -3,8 +3,8 @@ Test for arb_func serialization functionality in blueprint.py
 """
 
 import json
+
 import numpy as np
-import pytest
 
 import broadbean as bb
 
