@@ -4,7 +4,6 @@ import functools as ft
 import inspect
 import json
 import re
-import types
 import warnings
 from inspect import signature
 
