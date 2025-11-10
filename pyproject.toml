@@ -37,7 +37,7 @@ content-type = "text/markdown"
 
 [project.optional-dependencies]
 test = [
-    "pytest>=6.2.2",
+    "pytest>=9.0.0",
     "pytest-cov>=3.0.0",
     "coverage[toml]>=6.2",
     "mypy>=0.960",
@@ -53,9 +53,9 @@ docs = [
 ]
 
 
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "-ra -q"
+[tool.pytest]
+minversion = "9.0"
+addopts = ["-ra", "-q"]
 
 [tool.mypy]
 show_error_codes = true
