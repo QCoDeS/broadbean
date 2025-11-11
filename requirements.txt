@@ -247,7 +247,7 @@ traitlets==5.14.3
     #   nbconvert
     #   nbformat
     #   nbsphinx
-types-pytz==2025.2.0.20250809
+types-pytz==2025.2.0.20251108
     # via broadbean (pyproject.toml)
 typing-extensions==4.15.0
     # via mypy
