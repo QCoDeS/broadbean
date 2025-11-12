@@ -861,9 +861,9 @@ class Sequence:
                             postfilter = applyInverseRCFilter(
                                 prefilter, self.SR, kind, f_cut, order, DCgain=1
                             )
-                            (
-                                output[pos1]["content"][pos2]["data"][channame]["wfm"]
-                            ) = postfilter
+                            (output[pos1]["content"][pos2]["data"][channame]["wfm"]) = (
+                                postfilter
+                            )
 
                         # Apply amplitude LUT if present
                         lut_key = f"channel{channame}_amplitude_LUT"
@@ -1203,7 +1203,7 @@ class Sequence:
             flags_pos = []
             for pos in range(1, seqlen + 1):
                 if "flags" in elements[pos - 1][chan]:
-                    flags = elements[pos - 1][chan]["flags"].tolist()
+                    flags = elements[pos - 1][chan]["flags"]
                 else:
                     flags = [0, 0, 0, 0]
                 flags_pos.append(flags)
