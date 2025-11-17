@@ -2,7 +2,7 @@
 #    uv pip compile pyproject.toml --extra test --extra docs --output-file .\requirements.txt
 alabaster==1.0.0
     # via sphinx
-asttokens==3.0.0
+asttokens==3.0.1
     # via stack-data
 attrs==25.4.0
     # via
