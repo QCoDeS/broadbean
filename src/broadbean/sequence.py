@@ -861,9 +861,9 @@ class Sequence:
                             postfilter = applyInverseRCFilter(
                                 prefilter, self.SR, kind, f_cut, order, DCgain=1
                             )
-                            (output[pos1]["content"][pos2]["data"][channame]["wfm"]) = (
-                                postfilter
-                            )
+                            (
+                                output[pos1]["content"][pos2]["data"][channame]["wfm"]
+                            ) = postfilter
 
                         # Apply amplitude LUT if present
                         lut_key = f"channel{channame}_amplitude_LUT"
