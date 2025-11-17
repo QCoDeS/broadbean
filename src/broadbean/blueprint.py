@@ -82,9 +82,15 @@ class BluePrint:
         # Make special functions live in the funlist but transfer their names
         # to the namelist
         # Infer names from signature if not given, i.e. allow for '' names
+        # for ii, name in enumerate(namelist):
+        #     if isinstance(funlist[ii], str):
+        #         namelist[ii] = funlist[ii]
+        #     elif name == "":
+        #         namelist[ii] = funlist[ii].__name__
         for ii, name in enumerate(namelist):
             if isinstance(funlist[ii], str):
-                namelist[ii] = funlist[ii]
+                if name == "":
+                    namelist[ii] = funlist[ii]
             elif name == "":
                 namelist[ii] = funlist[ii].__name__
 
@@ -94,8 +100,8 @@ class BluePrint:
                 argslist[ii] = (args,)
         self._argslist = argslist
 
-        self._namelist = namelist
         namelist = self._make_names_unique(namelist)
+        self._namelist = namelist
 
         # initialise markers
         if marker1 is None:
@@ -363,7 +369,7 @@ class BluePrint:
             if seg_dict["function"] == "waituntil":
                 arguments = blue_dict[seg]["arguments"].values()
                 arguments = (list(arguments)[0][0],)
-                bp_seg.insertSegment(i, "waituntil", arguments)
+                bp_seg.insertSegment(i, "waituntil", arguments, name=seg_dict["name"])
             elif seg_dict["function"] == "function PulseAtoms.arb_func":
                 # Special handling for arb_func reconstruction
                 args_dict = blue_dict[seg]["arguments"]
@@ -786,7 +792,6 @@ class BluePrint:
 
         if pos < -1:
             raise ValueError("Position must be strictly larger than -1")
-
         if name is None or name == "":
             if func == "waituntil":
                 name = "waituntil"
@@ -796,7 +801,6 @@ class BluePrint:
             if len(name) > 0:
                 if name[-1].isdigit():
                     raise ValueError("Segment name must not end in a number")
-
         if pos == -1:
             self._namelist.append(name)
             self._namelist = self._make_names_unique(self._namelist)
