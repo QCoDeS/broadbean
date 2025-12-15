@@ -4,7 +4,7 @@ repos:
     rev: 'v0.14.8'
     hooks:
     # Run the linter
-    - id: ruff
+    - id: ruff-check
       types_or: [python, pyi, jupyter, toml]
       args: [ --fix, --exit-non-zero-on-fix ]
     # Run the formatter
