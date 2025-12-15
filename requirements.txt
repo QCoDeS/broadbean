@@ -52,7 +52,7 @@ executing==2.2.1
     # via stack-data
 fastjsonschema==2.21.2
     # via nbformat
-fonttools==4.61.0
+fonttools==4.61.1
     # via matplotlib
 furo==2025.9.25
     # via broadbean (pyproject.toml)
