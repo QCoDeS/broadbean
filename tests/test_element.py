@@ -92,7 +92,7 @@ def test_copy(blueprint_tophat):
 
 
 def test_addArray():
-    SR = 1e9
+    SR = int(1e9)
     N = 2500
 
     wfm = np.linspace(0, N / SR, N)

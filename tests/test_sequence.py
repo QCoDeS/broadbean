@@ -24,7 +24,7 @@ sine = bb.PulseAtoms.sine
 
 @pytest.fixture
 def protosequence1():
-    SR = 1e9
+    SR = int(1e9)
 
     th = bb.BluePrint()
     th.insertSegment(0, ramp, args=(0, 0), name="ramp", dur=10e-6)
@@ -69,7 +69,7 @@ def protosequence1():
 
 @pytest.fixture
 def protosequence2():
-    SR = 1e9
+    SR = int(1e9)
 
     saw = bb.BluePrint()
     saw.insertSegment(0, ramp, args=(0, 100e-3), dur=11e-6)
@@ -111,7 +111,7 @@ def protosequence2():
 
 @pytest.fixture
 def badseq_missing_pos():
-    SR = 1e9
+    SR = int(1e9)
 
     saw = bb.BluePrint()
     saw.insertSegment(0, ramp, args=(0, 100e-3), dur=11e-6)
@@ -152,7 +152,7 @@ def badseq_missing_pos():
 
 @pytest.fixture
 def squarepulse_baseelem():
-    SR = 1e6
+    SR = int(1e6)
 
     basebp = bb.BluePrint()
     basebp.insertSegment(0, ramp, (0, 0), dur=0.5e-4)
@@ -171,6 +171,8 @@ def squarepulse_baseelem():
 
 
 def test_generate_arbitrary_waveform():
+    SR = int(1e9)
+
     def two_sine(t, amp1, freq1, amp2, freq2, phase, off):
         return (
             amp1 * np.sin(2 * np.pi * freq1 * t)
@@ -180,7 +182,7 @@ def test_generate_arbitrary_waveform():
 
     params = {"amp1": 1, "freq1": 1e6, "amp2": 1, "freq2": 2e6, "phase": 0, "off": 0}
     bp_func = bb.BluePrint()
-    bp_func.setSR(1e9)
+    bp_func.setSR(SR)
     bp_func.insertSegment(0, bb.PulseAtoms.arb_func, (two_sine, params), dur=2000e-9)
     # create elements
     elem1 = bb.Element()

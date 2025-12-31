@@ -90,7 +90,7 @@ def test_too_short_durations_rejected(SR, ratio):
 
 
 def test_correct_periods():
-    SR = 1e9
+    SR = int(1e9)
     dur = 100e-9
     freqs = [100e6, 200e6, 500e6]
     periods = [int(SR / freq) for freq in freqs]
