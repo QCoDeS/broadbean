@@ -114,10 +114,7 @@ class BluePrint:
         else:
             self._segmark2 = segmentmarker2
 
-        if durslist is not None:
-            self._durslist = list(durslist)
-        else:
-            self._durslist = None
+        self._durslist = list(durslist)
 
         self._SR = SR
 
