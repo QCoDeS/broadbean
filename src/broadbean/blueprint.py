@@ -545,12 +545,12 @@ class BluePrint:
 
             self._durslist[position] = dur
 
-    def setSR(self, SR):
+    def setSR(self, SR: int):
         """
         Set the associated sample rate
 
         Args:
-            SR (Union[int, float]): The sample rate in Sa/s.
+            SR: The sample rate in Sa/s.
         """
         self._SR = SR
 
