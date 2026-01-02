@@ -98,7 +98,7 @@ jupyterlab-pygments==0.3.0
     # via nbconvert
 kiwisolver==1.4.9
     # via matplotlib
-librt==0.7.5
+librt==0.7.7
     # via mypy
 markupsafe==3.0.3
     # via
