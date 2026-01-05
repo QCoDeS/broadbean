@@ -349,7 +349,7 @@ def _plot_plotly(
     chans: list,
     seqlen: int,
     chanminmax: list[tuple[float, float]],
-) -> go.Figure:
+) -> "go.Figure":
     """
     Create a plotly plot of the forged sequence.
 
