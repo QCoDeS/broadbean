@@ -66,7 +66,7 @@ iniconfig==2.3.0
     # via pytest
 ipykernel==7.1.0
     # via broadbean (pyproject.toml)
-ipython==9.8.0
+ipython==9.9.0
     # via ipykernel
 ipython-pygments-lexers==1.1.1
     # via ipython
