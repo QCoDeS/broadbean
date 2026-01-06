@@ -1,23 +1,13 @@
 # A little helper module for plotting of broadbean objects
 
-from typing import TYPE_CHECKING, cast
+from typing import cast
 
 import matplotlib.axes
-import matplotlib.figure
 import matplotlib.pyplot as plt
 import numpy as np
 
 from broadbean import BluePrint, Element, Sequence
 from broadbean.sequence import SequenceConsistencyError
-
-try:
-    import plotly.graph_objects as go
-except ImportError:
-    print("Plotly not found, plotly plotting not available.")
-    go = None
-
-if TYPE_CHECKING:
-    import plotly.graph_objects as go
 
 # The object we can/want to plot
 BBObject = Sequence | BluePrint | Element
@@ -143,7 +133,7 @@ def _plot_matplotlib(
     chans: list,
     seqlen: int,
     chanminmax: list[tuple[float, float]],
-) -> matplotlib.figure.Figure:
+):
     """
     Create a matplotlib plot of the forged sequence.
 
@@ -349,7 +339,7 @@ def _plot_plotly(
     chans: list,
     seqlen: int,
     chanminmax: list[tuple[float, float]],
-) -> "go.Figure":
+):
     """
     Create a plotly plot of the forged sequence.
 
@@ -679,8 +669,9 @@ def _plot_plotly(
 def plotter(
     obj_to_plot: BBObject,
     backend: str = "matplotlib",
+    max_subsequences: int | None = None,
     **forger_kwargs,
-) -> matplotlib.figure.Figure | go.Figure:
+):
     """
     The one plot function to be called. Turns whatever it gets
     into a sequence, forges it, and plots that.
@@ -689,6 +680,8 @@ def plotter(
         obj_to_plot: The object to plot (Sequence, Element, or BluePrint)
         backend: The plotting backend to use. Either "matplotlib" or "plotly".
             Default is "matplotlib".
+        max_subsequences: If set, limits the number of subsequences plotted
+            to this number.
         **forger_kwargs: Additional keyword arguments passed to the forge method
 
     Returns:
@@ -716,6 +709,9 @@ def plotter(
     # Get the dimensions.
     chans = list(seq[1]["content"][1]["data"].keys())
     seqlen = len(seq.keys())
+
+    if max_subsequences is not None:
+        seqlen = min(seqlen, max_subsequences)
 
     def update_minmax(chanminmax, wfmdata, chanind):
         (thismin, thismax) = (wfmdata.min(), wfmdata.max())
