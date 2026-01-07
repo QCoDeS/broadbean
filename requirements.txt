@@ -261,7 +261,7 @@ typing-extensions==4.15.0
     #   beautifulsoup4
     #   mypy
     #   referencing
-urllib3==2.6.2
+urllib3==2.6.3
     # via requests
 versioningit==3.3.0
     # via broadbean (pyproject.toml)
