@@ -1,0 +1,46 @@
+name: Sync Fork
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs daily at midnight UTC
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Set up Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Add upstream and fetch
+        run: |
+          git remote add upstream https://github.com/QCoDeS/broadbean.git
+          git fetch upstream
+
+      - name: Merge upstream changes to main
+        run: |
+          git checkout main
+          git merge upstream/main
+
+      - name: Push main to origin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push origin main
+
+      - name: Merge upstream changes to customJSON
+        run: |
+          git checkout customJSON
+          git merge upstream/customJSON
+
+      - name: Push customJSON to origin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push origin customJSON
