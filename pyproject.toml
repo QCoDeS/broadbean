@@ -18,6 +18,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering",
 ]
 license = {text = "MIT"}
@@ -37,7 +38,7 @@ content-type = "text/markdown"
 
 [project.optional-dependencies]
 test = [
-    "pytest>=6.2.2",
+    "pytest>=9.0.0",
     "pytest-cov>=3.0.0",
     "coverage[toml]>=6.2",
     "mypy>=0.960",
@@ -56,9 +57,9 @@ plotly = [
 ]
 
 
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "-ra -q"
+[tool.pytest]
+minversion = "9.0"
+addopts = ["-ra", "-q"]
 
 [tool.mypy]
 show_error_codes = true
@@ -81,17 +82,12 @@ extend-include = ["*.ipynb"]
 
 [tool.ruff.lint]
 extend-select = ["UP", "ISC", "I"]
-# UP038 may result in slower code
-ignore = ["UP038"]
 
 [tool.ruff.lint.per-file-ignores]
 "*.ipynb" = ["E402"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["broadbean"]
-
-[tool.ruff.lint.pyupgrade]
-keep-runtime-typing = true
 
 [tool.setuptools.cmdclass]
 sdist = "versioningit.cmdclass.sdist"
