@@ -146,7 +146,7 @@ pandocfilters==1.5.1
     # via nbconvert
 parso==0.8.5
     # via jedi
-pathspec==1.0.1
+pathspec==1.0.2
     # via mypy
 pillow==12.1.0
     # via matplotlib
