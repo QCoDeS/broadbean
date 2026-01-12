@@ -129,7 +129,7 @@ nbsphinx==0.9.8
     # via broadbean (pyproject.toml)
 nest-asyncio==1.6.0
     # via ipykernel
-numpy==2.4.0
+numpy==2.4.1
     # via
     #   broadbean (pyproject.toml)
     #   contourpy
