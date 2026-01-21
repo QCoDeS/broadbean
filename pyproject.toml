@@ -52,6 +52,9 @@ docs = [
     "sphinx-jsonschema",
     "ipykernel",
 ]
+plotly = [
+    "plotly>=5.0.0",
+]
 
 
 [tool.pytest]
@@ -68,7 +71,8 @@ warn_redundant_casts = true
 [[tool.mypy.overrides]]
 module = [
     "matplotlib.*",
-    "schema"
+    "schema",
+    "plotly.*"
 ]
 ignore_missing_imports = true
 
@@ -90,7 +94,7 @@ sdist = "versioningit.cmdclass.sdist"
 build_py = "versioningit.cmdclass.build_py"
 
 [tool.versioningit]
-default-version = "0.0"
+default-version = "0.16.0"
 
 [tool.versioningit.format]
 distance = "{next_version}.dev{distance}+{branch}.{vcs}{rev}"
