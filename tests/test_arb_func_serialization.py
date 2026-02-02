@@ -5,12 +5,11 @@ Test for arb_func serialization functionality in blueprint.py
 import json
 import os
 import tempfile
-import pytest
 
 import numpy as np
+import pytest
 
 import broadbean as bb
-
 
 ##################################################
 # FIXTURES
