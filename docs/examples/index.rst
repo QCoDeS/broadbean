@@ -9,4 +9,5 @@ Broadbean Examples
     Making_output_for_Tektronix_AWG70000A.ipynb
     Example_Write_Read_JSON.ipynb
     Filter_compensation.ipynb
+    Amplitude_LUT_Example.ipynb
     Subsequences.ipynb
