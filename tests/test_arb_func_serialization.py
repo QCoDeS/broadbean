@@ -23,11 +23,12 @@ def blueprint_with_lambda():
     bp = bb.BluePrint()
     bp.setSR(1e9)
 
-    lambda_func = lambda t, ampl: ampl * t * t
-    kwargs = {"ampl": 2}
-
     bp.insertSegment(
-        0, bb.PulseAtoms.arb_func, (lambda_func, kwargs), dur=1e-6, name="test_lambda"
+        0,
+        bb.PulseAtoms.arb_func,
+        (lambda t, ampl: ampl * t * t, {"ampl": 2}),
+        dur=1e-6,
+        name="test_lambda",
     )
     return bp
 
