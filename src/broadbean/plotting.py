@@ -127,51 +127,26 @@ def _plot_summariser(seq: dict[int, dict]) -> dict[int, dict[str, np.ndarray]]:
     return output
 
 
-# the Grand Unified Plotter
-def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
+def _plot_matplotlib(
+    obj_to_plot: BBObject,
+    seq: dict[int, dict],
+    chans: list,
+    seqlen: int,
+    chanminmax: list[tuple[float, float]],
+):
     """
-    The one plot function to be called. Turns whatever it gets
-    into a sequence, forges it, and plots that.
+    Create a matplotlib plot of the forged sequence.
+
+    Args:
+        obj_to_plot: The original object being plotted
+        seq: The forged sequence
+        chans: List of channel names
+        seqlen: Number of sequence positions
+        chanminmax: List of (min, max) tuples for each channel
+
+    Returns:
+        The matplotlib Figure object
     """
-
-    # TODO: Take axes as input
-
-    # strategy:
-    # * Validate
-    # * Forge
-    # * Plot
-
-    _plot_object_validator(obj_to_plot)
-
-    seq = _plot_object_forger(obj_to_plot, **forger_kwargs)
-
-    # Get the dimensions.
-    chans = seq[1]["content"][1]["data"].keys()
-    seqlen = len(seq.keys())
-
-    def update_minmax(chanminmax, wfmdata, chanind):
-        (thismin, thismax) = (wfmdata.min(), wfmdata.max())
-        if thismin < chanminmax[chanind][0]:
-            chanminmax[chanind] = [thismin, chanminmax[chanind][1]]
-        if thismax > chanminmax[chanind][1]:
-            chanminmax[chanind] = [chanminmax[chanind][0], thismax]
-        return chanminmax
-
-    # Then figure out the figure scalings
-    minf: float = -np.inf
-    inf: float = np.inf
-    chanminmax: list[tuple[float, float]] = [(inf, minf)] * len(chans)
-    for chanind, chan in enumerate(chans):
-        for pos in range(1, seqlen + 1):
-            if seq[pos]["type"] == "element":
-                wfmdata = seq[pos]["content"][1]["data"][chan]["wfm"]
-                chanminmax = update_minmax(chanminmax, wfmdata, chanind)
-            elif seq[pos]["type"] == "subsequence":
-                for pos2 in seq[pos]["content"].keys():
-                    elem = seq[pos]["content"][pos2]["data"]
-                    wfmdata = elem[chan]["wfm"]
-                    chanminmax = update_minmax(chanminmax, wfmdata, chanind)
-
     fig, axs = plt.subplots(len(chans), seqlen, squeeze=False)
 
     # ...and do the plotting
@@ -342,15 +317,427 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
                 if seq_info["twait"] == 1:  # trigger wait
                     titlestring += "T "
                 if seq_info["nrep"] > 1:  # nreps
-                    titlestring += "\u21bb{} ".format(seq_info["nrep"])
+                    titlestring += "↻{} ".format(seq_info["nrep"])
                 if seq_info["nrep"] == 0:
-                    titlestring += "\u221e "
+                    titlestring += "∞ "
                 if seq_info["jump_input"] != 0:
                     if seq_info["jump_input"] == -1:
-                        titlestring += "E\u2192 "
+                        titlestring += "⚡ "
                     else:
-                        titlestring += "E{} ".format(seq_info["jump_input"])
+                        titlestring += "⚡{} ".format(seq_info["jump_input"])
                 if seq_info["goto"] > 0:
-                    titlestring += "\u21b1{}".format(seq_info["goto"])
+                    titlestring += "→{}".format(seq_info["goto"])
 
                 ax.set_title(titlestring)
+
+    return fig
+
+
+def _plot_plotly(
+    obj_to_plot: BBObject,
+    seq: dict[int, dict],
+    chans: list,
+    seqlen: int,
+    chanminmax: list[tuple[float, float]],
+):
+    """
+    Create a plotly plot of the forged sequence.
+
+    Args:
+        obj_to_plot: The original object being plotted
+        seq: The forged sequence
+        chans: List of channel names
+        seqlen: Number of sequence positions
+        chanminmax: List of (min, max) tuples for each channel
+
+    Returns:
+        The plotly Figure object
+    """
+    try:
+        from plotly import graph_objects as go
+        from plotly.subplots import make_subplots
+    except ImportError:
+        raise ImportError(
+            "plotly is required for the 'plotly' backend. "
+            "Install it with: pip install broadbean[plotly]"
+        )
+
+    # Create subplots
+    fig = make_subplots(
+        rows=len(chans),
+        cols=seqlen,
+        shared_yaxes="rows",
+        horizontal_spacing=0.0,
+        vertical_spacing=0.0,
+    )
+
+    # Convert RGB tuples to rgba strings
+    def rgba(rgb: tuple[float, float, float], alpha: float) -> str:
+        r, g, b = [int(c * 255) for c in rgb]
+        return f"rgba({r},{g},{b},{alpha})"
+
+    # ...and do the plotting
+    for chanind, chan in enumerate(chans):
+        # figure out the channel voltage scaling
+        # The entire channel shares a y-axis
+
+        minmax: tuple[float, float] = chanminmax[chanind]
+
+        (voltagescaling, voltageprefix) = getSIScalingAndPrefix(minmax)
+        voltageunit = voltageprefix + "V"
+
+        for pos in range(seqlen):
+            row = chanind + 1
+            col = pos + 1
+
+            if seq[pos + 1]["type"] == "element":
+                content = seq[pos + 1]["content"][1]["data"][chan]
+                wfm = content["wfm"]
+                m1 = content.get("m1", np.zeros_like(wfm))
+                m2 = content.get("m2", np.zeros_like(wfm))
+                time = content["time"]
+                newdurs = content.get("newdurations", [])
+
+            else:
+                arr_dict = _plot_summariser(seq[pos + 1]["content"])
+                wfm = arr_dict[chan]["wfm"]
+                newdurs = []
+                time = np.linspace(0, 1, 2)  # needed for timeexponent
+
+            # Figure out the axes' scaling
+            timeexponent = np.log10(time.max())
+            timeunit = "s"
+            timescaling: float = 1.0
+            if timeexponent < 0:
+                timeunit = "ms"
+                timescaling = 1e3
+            if timeexponent < -3:
+                timeunit = "micro s"
+                timescaling = 1e6
+            if timeexponent < -6:
+                timeunit = "ns"
+                timescaling = 1e9
+
+            # Calculate y-axis range
+            ymax = voltagescaling * chanminmax[chanind][1]
+            ymin = voltagescaling * chanminmax[chanind][0]
+            yrange = ymax - ymin
+            ylim_min = ymin - 0.05 * yrange
+            ylim_max = ymax + 0.2 * yrange
+
+            # Plot waveform for elements
+            if seq[pos + 1]["type"] == "element":
+                fig.add_trace(
+                    go.Scatter(
+                        x=timescaling * time,
+                        y=voltagescaling * wfm,
+                        mode="lines",
+                        line=dict(color=rgba((0.6, 0.4, 0.3), 0.4), width=3),
+                        showlegend=False,
+                        hoverinfo="skip",
+                    ),
+                    row=row,
+                    col=col,
+                )
+
+                # marker1 (red, on top)
+                y_m1 = ymax + 0.15 * yrange
+                marker_on_mask = m1 != 0
+                # Off state (background)
+                fig.add_trace(
+                    go.Scatter(
+                        x=timescaling * time,
+                        y=np.ones_like(m1) * y_m1,
+                        mode="lines",
+                        line=dict(color=rgba((0.6, 0.1, 0.1), 0.2), width=2),
+                        showlegend=False,
+                        hoverinfo="skip",
+                    ),
+                    row=row,
+                    col=col,
+                )
+                # On state
+                if marker_on_mask.any():
+                    fig.add_trace(
+                        go.Scatter(
+                            x=(timescaling * time)[marker_on_mask],
+                            y=(np.ones_like(m1) * y_m1)[marker_on_mask],
+                            mode="lines",
+                            line=dict(color=rgba((0.6, 0.1, 0.1), 0.6), width=2),
+                            showlegend=False,
+                            hoverinfo="skip",
+                        ),
+                        row=row,
+                        col=col,
+                    )
+
+                # marker 2 (blue, below the red)
+                y_m2 = ymax + 0.10 * yrange
+                marker_on_mask = m2 != 0
+                # Off state (background)
+                fig.add_trace(
+                    go.Scatter(
+                        x=timescaling * time,
+                        y=np.ones_like(m2) * y_m2,
+                        mode="lines",
+                        line=dict(color=rgba((0.1, 0.1, 0.6), 0.2), width=2),
+                        showlegend=False,
+                        hoverinfo="skip",
+                    ),
+                    row=row,
+                    col=col,
+                )
+                # On state
+                if marker_on_mask.any():
+                    fig.add_trace(
+                        go.Scatter(
+                            x=(timescaling * time)[marker_on_mask],
+                            y=(np.ones_like(m2) * y_m2)[marker_on_mask],
+                            mode="lines",
+                            line=dict(color=rgba((0.1, 0.1, 0.6), 0.6), width=2),
+                            showlegend=False,
+                            hoverinfo="skip",
+                        ),
+                        row=row,
+                        col=col,
+                    )
+
+                # time step lines
+                for dur in np.cumsum(newdurs):
+                    fig.add_trace(
+                        go.Scatter(
+                            x=[timescaling * dur, timescaling * dur],
+                            y=[ylim_min, ylim_max],
+                            mode="lines",
+                            line=dict(color=rgba((0.312, 0.2, 0.33), 0.3), width=1),
+                            showlegend=False,
+                            hoverinfo="skip",
+                        ),
+                        row=row,
+                        col=col,
+                    )
+
+            # If subsequence, plot lines indicating min and max value
+            if seq[pos + 1]["type"] == "subsequence":
+                # min:
+                fig.add_trace(
+                    go.Scatter(
+                        x=time,
+                        y=np.ones_like(time) * wfm[0],
+                        mode="lines",
+                        line=dict(color=rgba((0.12, 0.12, 0.12), 0.2), width=2),
+                        showlegend=False,
+                        hoverinfo="skip",
+                    ),
+                    row=row,
+                    col=col,
+                )
+                # max:
+                fig.add_trace(
+                    go.Scatter(
+                        x=time,
+                        y=np.ones_like(time) * wfm[1],
+                        mode="lines",
+                        line=dict(color=rgba((0.12, 0.12, 0.12), 0.2), width=2),
+                        showlegend=False,
+                        hoverinfo="skip",
+                    ),
+                    row=row,
+                    col=col,
+                )
+
+                # Add "SUBSEQ" annotation using paper coordinates
+                fig.add_annotation(
+                    text="SUBSEQ",
+                    xref="paper",
+                    yref="paper",
+                    x=(col - 0.5) / seqlen,  # Normalized x position
+                    y=1 - (row - 0.5) / len(chans),  # Normalized y position
+                    xanchor="center",
+                    yanchor="middle",
+                    showarrow=False,
+                    row=row,
+                    col=col,
+                )
+
+            # Update axes
+            xaxis_name = f"xaxis{(row - 1) * seqlen + col}"
+            yaxis_name = f"yaxis{(row - 1) * seqlen + col}"
+
+            # Y-axis configuration
+            fig.layout[yaxis_name].update(
+                range=[ylim_min, ylim_max],
+                showgrid=False,
+                zeroline=False,
+                showline=True,
+                linewidth=1,
+                linecolor="black",
+                mirror=True,
+            )
+
+            # X-axis configuration
+            fig.layout[xaxis_name].update(
+                showgrid=False,
+                zeroline=False,
+                showline=True,
+                linewidth=1,
+                linecolor="black",
+                mirror=True,
+            )
+
+            # Axis labels
+            if pos == 0:
+                fig.layout[yaxis_name].update(title=f"({voltageunit})")
+            else:
+                fig.layout[yaxis_name].update(showticklabels=False)
+
+            if chanind == len(chans) - 1:
+                if seq[pos + 1]["type"] == "subsequence":
+                    fig.layout[xaxis_name].update(
+                        title="Time N/A", showticklabels=False
+                    )
+                else:
+                    fig.layout[xaxis_name].update(title=f"({timeunit})")
+            else:
+                fig.layout[xaxis_name].update(showticklabels=False)
+
+            # Add channel label on the right for the last column
+            if pos == seqlen - 1 and not (isinstance(obj_to_plot, BluePrint)):
+                if isinstance(chan, int):
+                    chan_label = f"Ch. {chan}"
+                elif isinstance(chan, str):
+                    chan_label = chan
+                else:
+                    chan_label = str(chan)
+
+                fig.add_annotation(
+                    text=chan_label,
+                    xref="paper",
+                    yref="paper",
+                    x=1.02,
+                    y=1
+                    - (row - 0.5) / len(chans),  # Normalized y position for this row
+                    xanchor="left",
+                    yanchor="middle",
+                    showarrow=False,
+                    textangle=-90,
+                )
+
+            # display sequencer information as subplot title
+            if chanind == 0 and isinstance(obj_to_plot, Sequence):
+                seq_info = seq[pos + 1]["sequencing"]
+                titlestring = ""
+                if seq_info["twait"] == 1:  # trigger wait
+                    titlestring += "T "
+                if seq_info["nrep"] > 1:  # nreps
+                    titlestring += "↻{} ".format(seq_info["nrep"])
+                if seq_info["nrep"] == 0:
+                    titlestring += "∞ "
+                if seq_info["jump_input"] != 0:
+                    if seq_info["jump_input"] == -1:
+                        titlestring += "⚡ "
+                    else:
+                        titlestring += "⚡{} ".format(seq_info["jump_input"])
+                if seq_info["goto"] > 0:
+                    titlestring += "→{}".format(seq_info["goto"])
+
+                if titlestring.strip():
+                    # Add title annotation above this subplot
+                    fig.add_annotation(
+                        text=titlestring,
+                        xref="paper",
+                        yref="paper",
+                        x=(col - 0.5) / seqlen,  # Center of this column
+                        y=1.02,  # Just above the top
+                        xanchor="center",
+                        yanchor="bottom",
+                        showarrow=False,
+                    )
+
+    # Update overall layout
+    fig.update_layout(
+        plot_bgcolor="white",
+        paper_bgcolor="white",
+        margin=dict(l=50, r=50, t=30, b=50),
+        showlegend=False,
+    )
+
+    return fig
+
+
+# the Grand Unified Plotter
+def plotter(
+    obj_to_plot: BBObject,
+    backend: str = "matplotlib",
+    max_subsequences: int | None = None,
+    **forger_kwargs,
+):
+    """
+    The one plot function to be called. Turns whatever it gets
+    into a sequence, forges it, and plots that.
+
+    Args:
+        obj_to_plot: The object to plot (Sequence, Element, or BluePrint)
+        backend: The plotting backend to use. Either "matplotlib" or "plotly".
+            Default is "matplotlib".
+        max_subsequences: If set, limits the number of subsequences plotted
+            to this number.
+        **forger_kwargs: Additional keyword arguments passed to the forge method
+
+    Returns:
+        matplotlib.figure.Figure if backend is "matplotlib",
+        plotly.graph_objects.Figure if backend is "plotly"
+    """
+
+    # Validate backend parameter
+    if backend not in ("matplotlib", "plotly"):
+        raise ValueError(
+            f"Invalid backend '{backend}'. Must be either 'matplotlib' or 'plotly'."
+        )
+
+    # TODO: Take axes as input
+
+    # strategy:
+    # * Validate
+    # * Forge
+    # * Plot
+
+    _plot_object_validator(obj_to_plot)
+
+    seq = _plot_object_forger(obj_to_plot, **forger_kwargs)
+
+    # Get the dimensions.
+    chans = list(seq[1]["content"][1]["data"].keys())
+    seqlen = len(seq.keys())
+
+    if max_subsequences is not None:
+        seqlen = min(seqlen, max_subsequences)
+
+    def update_minmax(chanminmax, wfmdata, chanind):
+        (thismin, thismax) = (wfmdata.min(), wfmdata.max())
+        if thismin < chanminmax[chanind][0]:
+            chanminmax[chanind] = [thismin, chanminmax[chanind][1]]
+        if thismax > chanminmax[chanind][1]:
+            chanminmax[chanind] = [chanminmax[chanind][0], thismax]
+        return chanminmax
+
+    # Then figure out the figure scalings
+    minf: float = -np.inf
+    inf: float = np.inf
+    chanminmax: list[tuple[float, float]] = [(inf, minf)] * len(chans)
+    for chanind, chan in enumerate(chans):
+        for pos in range(1, seqlen + 1):
+            if seq[pos]["type"] == "element":
+                wfmdata = seq[pos]["content"][1]["data"][chan]["wfm"]
+                chanminmax = update_minmax(chanminmax, wfmdata, chanind)
+            elif seq[pos]["type"] == "subsequence":
+                for pos2 in seq[pos]["content"].keys():
+                    elem = seq[pos]["content"][pos2]["data"]
+                    wfmdata = elem[chan]["wfm"]
+                    chanminmax = update_minmax(chanminmax, wfmdata, chanind)
+
+    # Route to appropriate backend
+    if backend == "matplotlib":
+        return _plot_matplotlib(obj_to_plot, seq, chans, seqlen, chanminmax)
+    else:  # backend == "plotly"
+        return _plot_plotly(obj_to_plot, seq, chans, seqlen, chanminmax)
