@@ -10,7 +10,7 @@ attrs==25.4.0
     # via
     #   jsonschema
     #   referencing
-babel==2.17.0
+babel==2.18.0
     # via sphinx
 beautifulsoup4==4.14.3
     # via
@@ -66,7 +66,7 @@ iniconfig==2.3.0
     # via pytest
 ipykernel==7.1.0
     # via broadbean (pyproject.toml)
-ipython==9.9.0
+ipython==9.10.0
     # via ipykernel
 ipython-pygments-lexers==1.1.1
     # via ipython
@@ -129,7 +129,7 @@ nbsphinx==0.9.8
     # via broadbean (pyproject.toml)
 nest-asyncio==1.6.0
     # via ipykernel
-numpy==2.4.1
+numpy==2.4.2
     # via
     #   broadbean (pyproject.toml)
     #   contourpy
@@ -265,7 +265,7 @@ urllib3==2.6.3
     # via requests
 versioningit==3.3.0
     # via broadbean (pyproject.toml)
-wcwidth==0.5.2
+wcwidth==0.5.3
     # via prompt-toolkit
 webencodings==0.5.1
     # via
