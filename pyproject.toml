@@ -90,7 +90,7 @@ sdist = "versioningit.cmdclass.sdist"
 build_py = "versioningit.cmdclass.build_py"
 
 [tool.versioningit]
-default-version = "0.0"
+default-version = "0.16.0"
 
 [tool.versioningit.format]
 distance = "{next_version}.dev{distance}+{branch}.{vcs}{rev}"
