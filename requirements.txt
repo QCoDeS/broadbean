@@ -64,7 +64,7 @@ imagesize==1.4.1
     # via sphinx
 iniconfig==2.3.0
     # via pytest
-ipykernel==7.1.0
+ipykernel==7.2.0
     # via broadbean (pyproject.toml)
 ipython==9.10.0
     # via ipykernel
