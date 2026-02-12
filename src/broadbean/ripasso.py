@@ -19,7 +19,7 @@ class MissingFrequenciesError(Exception):
     pass
 
 
-def _rcFilter(SR, npts, f_cut, kind="HP", order=1, DCgain=0):
+def _rcFilter(SR: int, npts: int, f_cut: float, kind="HP", order=1, DCgain=0):
     """
     Nth order (RC circuit) filter
     made with frequencies matching the fft output
@@ -46,7 +46,9 @@ def _rcFilter(SR, npts, f_cut, kind="HP", order=1, DCgain=0):
     return tf**order
 
 
-def applyRCFilter(signal, SR, kind, f_cut, order, DCgain=0):
+def applyRCFilter(
+    signal: np.ndarray, SR: int, kind: str, f_cut: float, order: int, DCgain: float = 0
+):
     """
     Apply a simple RC-circuit filter
     to signal and return the filtered signal.
@@ -82,7 +84,9 @@ def applyRCFilter(signal, SR, kind, f_cut, order, DCgain=0):
     return output
 
 
-def applyInverseRCFilter(signal, SR, kind, f_cut, order, DCgain=1):
+def applyInverseRCFilter(
+    signal: np.ndarray, SR: int, kind: str, f_cut: float, order: int, DCgain: float = 1
+):
     """
     Apply the inverse of an RC-circuit filter to a signal and return the
     compensated signal.
@@ -127,7 +131,13 @@ def applyInverseRCFilter(signal, SR, kind, f_cut, order, DCgain=1):
     return output
 
 
-def applyCustomTransferFunction(signal, SR, tf_freqs, tf_amp, invert=False):
+def applyCustomTransferFunction(
+    signal: np.ndarray,
+    SR: int,
+    tf_freqs: np.ndarray,
+    tf_amp: np.ndarray,
+    invert: bool = False,
+):
     """
     Apply custom transfer function
 
@@ -207,7 +217,7 @@ class AmplitudeLUT(TypedDict):
     LUT_output: ArrayLike
 
 
-def applyAmplitudeLUT(signal, lut: AmplitudeLUT):
+def applyAmplitudeLUT(signal: np.ndarray, lut: AmplitudeLUT):
     """
     Apply an amplitude LUT to the signal.
 
