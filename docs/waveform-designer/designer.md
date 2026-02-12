@@ -1,6 +1,8 @@
 # Waveform Designer User Guide
 
-The Waveform Designer is a web-based interface for creating, editing, and managing waveform sequences for arbitrary waveform generators (AWGs). It integrates seamlessly with broadbean's pulse building capabilities.
+The Waveform Designer is a web-based interface for creating, editing, and managing waveform sequences for arbitrary waveform generators (AWGs) using the broadbean package. It integrates seamlessly with broadbean's pulse building capabilities. It creates a local SQLite database to manage waveforms and instrument configurations.
+
+It also provides an interface to directly upload and trigger waveforms from Tektronix AWG7000x Arbitrary Waveform Generators and capture traces from Tektronix DPO7200x oscilloscopes using the qcodes instrument drivers.
 
 ## Installation
 
