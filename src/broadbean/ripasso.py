@@ -6,9 +6,11 @@
 #
 
 import logging
+from typing import TypedDict
 
 import numpy as np
 from numpy.fft import fft, fftfreq, ifft
+from numpy.typing import ArrayLike
 
 log = logging.getLogger(__name__)
 
@@ -200,15 +202,20 @@ def applyCustomTransferFunction(signal, SR, tf_freqs, tf_amp, invert=False):
     return signal_filtered
 
 
-def applyAmplitudeLUT(signal, lut):
+class AmplitudeLUT(TypedDict):
+    LUT_input: ArrayLike
+    LUT_output: ArrayLike
+
+
+def applyAmplitudeLUT(signal, lut: AmplitudeLUT):
     """
     Apply an amplitude LUT to the signal.
 
     Args:
-        signal (np.array): The input signal. The signal is assumed to have
-            values in the range [-1, 1].
-        lut (np.array): The amplitude LUT. Should be a 1D array of length N,
-            where N is the number of entries in the LUT.
+        signal (np.array): The input signal.
+        lut (AmplitudeLUT): A lookup table for amplitude compensation. The LUT_input
+            field should contain the input values and
+            the LUT_output field should contain the corresponding output values.
 
     Returns:
         np.array:
