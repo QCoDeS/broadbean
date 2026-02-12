@@ -1,0 +1,553 @@
+/* Waveform Upload & Capture - Page-Specific Styles */
+/* Note: Common components (buttons, forms, etc.) are in common.css */
+
+/* Instrument Configuration Styles */
+.instrument-details {
+    margin-top: 10px;
+}
+
+.instrument-details .alert {
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+}
+
+.config-detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 0.8rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.config-detail-row:last-child {
+    border-bottom: none;
+}
+
+.config-detail-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.config-detail-value {
+    color: #666;
+}
+
+/* Override grid layout for upload page */
+.designer-main {
+    display: grid;
+    grid-template-columns: 300px 1fr 350px;
+    grid-template-areas: "library center controls";
+    gap: var(--spacing-xl);
+    height: calc(100vh - 80px);
+    overflow: visible;
+}
+
+/* Sequence Library Panel (Left) */
+.sequence-library {
+    grid-area: library;
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.sequence-library h3 {
+    margin-top: 0;
+    margin-bottom: var(--spacing-lg);
+    color: var(--color-dark);
+    font-size: var(--font-size-xl);
+    border-bottom: 2px solid var(--color-primary);
+    padding-bottom: 10px;
+}
+
+.sequence-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.sequence-card {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.sequence-card:hover {
+    background: var(--bg-hover);
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.sequence-card.selected {
+    background: #d4e6f7;
+    border-color: #2980b9;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+.sequence-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-xs);
+}
+
+.sequence-card-name {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-dark);
+    font-size: var(--font-size-base);
+    flex: 1;
+    word-break: break-word;
+}
+
+.sequence-download-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    color: var(--color-primary);
+    background: var(--bg-primary);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+    margin-left: var(--spacing-sm);
+}
+
+.sequence-download-btn:hover {
+    background: var(--color-primary);
+    color: white;
+}
+
+.sequence-download-btn i {
+    font-size: 0.75rem;
+}
+
+.sequence-card-info {
+    font-size: var(--font-size-sm);
+    color: var(--color-medium);
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2px;
+}
+
+.sequence-card-description {
+    font-size: 0.8rem;
+    color: var(--color-medium-light);
+    margin-top: var(--spacing-xs);
+    font-style: italic;
+}
+
+/* Center Panel - Sequence Preview and Scope Capture */
+.center-panel {
+    grid-area: center;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Sequence Preview Section */
+.sequence-preview-section {
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+    min-height: 550px;
+    overflow: visible;
+}
+
+.preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: 6px;
+    border-bottom: 1px solid #9b59b6;
+}
+
+.preview-header h3 {
+    margin: 0;
+    color: var(--color-dark);
+    font-size: var(--font-size-xl);
+}
+
+.preview-info {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.preview-plot {
+    flex: 1;
+    min-height: 450px;
+    height: 0;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    position: relative;
+    width: 100%;
+}
+
+/* Ensure Plotly plot fills the container properly */
+.preview-plot > div {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0;
+}
+
+.preview-plot .plotly {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.preview-plot .js-plotly-plot {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.preview-plot .plot-container {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.preview-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Scope Capture Section */
+.capture-section {
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+    min-height: 600px;
+    overflow: visible;
+}
+
+.capture-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--color-primary);
+}
+
+.capture-header h3 {
+    margin: 0;
+    color: var(--color-dark);
+    font-size: var(--font-size-xl);
+}
+
+.capture-info {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.capture-plot {
+    flex: 1;
+    min-height: 500px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* Ensure Plotly plot fills the container properly */
+.capture-plot > div {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0;
+}
+
+.capture-plot .plotly {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.capture-plot .js-plotly-plot {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.capture-plot .plot-container {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.plot-placeholder {
+    text-align: center;
+    color: var(--color-medium-light);
+    padding: 40px;
+}
+
+.plot-placeholder i {
+    font-size: 4rem;
+    margin-bottom: var(--spacing-xl);
+    opacity: 0.5;
+}
+
+.plot-placeholder p {
+    font-size: 1.1rem;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.capture-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border-color);
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+}
+
+.stat-label {
+    font-size: var(--font-size-xs);
+    color: var(--color-medium);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    margin-bottom: 0;
+}
+
+.stat-item span:last-child {
+    font-size: var(--font-size-base);
+    color: var(--color-dark);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Control Panel (Right) */
+.control-panel {
+    grid-area: controls;
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+
+.control-panel h3 {
+    margin-top: 0;
+    margin-bottom: var(--spacing-lg);
+    color: var(--color-dark);
+    font-size: var(--font-size-xl);
+    border-bottom: 2px solid var(--color-primary);
+    padding-bottom: 10px;
+}
+
+.control-section {
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--border-color-light);
+}
+
+.control-section:last-child {
+    border-bottom: none;
+}
+
+.control-section h4 {
+    font-size: var(--font-size-lg);
+    color: var(--color-dark-secondary);
+    margin-bottom: 10px;
+    font-weight: var(--font-weight-semibold);
+}
+
+.selected-display {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    min-height: 60px;
+}
+
+.selected-display p {
+    margin: 0;
+    color: var(--color-medium);
+    font-size: 0.9rem;
+}
+
+.selected-display.has-selection {
+    background: #d4e6f7;
+    border-color: var(--color-primary);
+}
+
+.selected-display .sequence-name {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-dark);
+    margin-bottom: var(--spacing-xs);
+    font-size: var(--font-size-lg);
+}
+
+.selected-display .sequence-details {
+    font-size: var(--font-size-sm);
+    color: var(--color-medium);
+}
+
+/* Form elements use common.css */
+.form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.form-label {
+    font-size: 0.9rem;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-dark-secondary);
+    margin-bottom: 6px;
+}
+
+.form-select {
+    font-size: 0.9rem;
+}
+
+#upload-trigger-btn {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    padding: var(--spacing-md);
+}
+
+#upload-trigger-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+#operation-status {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+#operation-message {
+    font-weight: var(--font-weight-medium);
+}
+
+.help-list {
+    font-size: 0.9rem;
+    color: var(--color-dark-secondary);
+    padding-left: var(--spacing-xl);
+    margin: 0;
+}
+
+.help-list li {
+    margin-bottom: var(--spacing-sm);
+}
+
+.help-list ul {
+    margin-top: 6px;
+    padding-left: var(--spacing-xl);
+    font-size: var(--font-size-sm);
+}
+
+.help-list ul li {
+    margin-bottom: var(--spacing-xs);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1400px) {
+    .designer-main {
+        grid-template-columns: 280px 1fr 320px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .designer-main {
+        grid-template-columns: 250px 1fr 300px;
+    }
+    
+    .sequence-card {
+        padding: 10px;
+    }
+    
+    .control-panel {
+        padding: var(--spacing-lg);
+    }
+}
+
+/* Jump To Section Styling */
+.jump-to-section {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    background-color: var(--bg-secondary);
+}
+
+.jump-to-section .form-label {
+    font-size: 0.9rem;
+    font-weight: var(--font-weight-semibold);
+    color: #495057;
+    margin-bottom: var(--spacing-sm);
+}
+
+.jump-to-section .input-group input {
+    border-right: none;
+}
+
+.jump-to-section .input-group button {
+    border-left: none;
+}
+
+.jump-to-section .input-group input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    border-color: #86b7fe;
+}
+
+.jump-to-section .input-group button:hover:not(:disabled) {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+@media (max-width: 992px) {
+    .designer-main {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "library"
+            "controls"
+            "center";
+        height: auto;
+    }
+    
+    .sequence-library,
+    .control-panel {
+        max-height: 300px;
+    }
+}

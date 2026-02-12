@@ -1,0 +1,239 @@
+{% extends "waveform_designer/base.html" %}
+{% load static %}
+
+{% block title %}Waveform Designer{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'waveform_designer/css/designer.css' %}">
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        height: 100vh;
+    }
+    
+    .main-content {
+        display: flex !important;
+        flex-direction: column !important;
+        height: calc(100vh - 120px) !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="designer-container" style="height: 100%; display: flex; flex-direction: column;">
+
+    <!-- Main Content Area -->
+    <div class="designer-main" style="flex: 1; overflow: hidden;">
+        <!-- Elements Library Panel -->
+        <aside class="elements-panel">
+            <h3>Elements Library</h3>
+            <div class="library-controls mb-3">
+                <button id="refresh-elements-btn" class="btn btn-sm btn-outline-primary w-100">
+                    <i class="fas fa-sync"></i> Refresh Elements
+                </button>
+            </div>
+            <div id="elements-library" class="element-grid">
+                <!-- Saved waveform elements will be loaded here -->
+            </div>
+        </aside>
+
+        <!-- Segment Library Panel -->
+        <aside class="segment-library">
+            <h3>Segment Library</h3>
+            <div id="segment-types" class="segment-grid">
+                <!-- Segment types will be loaded here -->
+            </div>
+        </aside>
+
+        <!-- Center Panel with Timeline and Preview -->
+        <main class="center-panel">
+            <!-- Timeline Cards -->
+            <section class="timeline-section">
+                <div class="timeline-header">
+                    <h3>Timeline</h3>
+                    <div class="timeline-controls">
+                        <button id="add-channel-btn" class="btn btn-success btn-sm" title="Add Channel">
+                            <i class="fas fa-plus"></i> Channel
+                        </button>
+                        <button id="save-btn" class="btn btn-sm btn-success ms-2">
+                            <i class="fas fa-save"></i> Save
+                        </button>
+                        <button id="clear-btn" class="btn btn-sm btn-secondary ms-1">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                    </div>
+                </div>
+                <div class="channel-timeline-container">
+                    <div id="channel-timeline" class="channel-timeline">
+                        <div class="timeline-placeholder">
+                            <i class="fas fa-wave-square"></i>
+                            <p>Drag segments from the library to create your waveform</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Preview Panel -->
+            <section class="preview-section">
+                <div class="preview-header">
+                    <h3>Waveform Preview <span id="sample-count-badge" class="badge bg-secondary ms-2" title="Number of samples">0 samples</span></h3>
+                    <div class="preview-controls">
+                        <button id="refresh-preview-btn" class="btn btn-sm btn-primary">
+                            <i class="fas fa-sync-alt"></i> Refresh Preview
+                        </button>
+                    </div>
+                </div>
+                <div id="preview-plot" class="preview-plot"></div>
+                <div id="preview-stats" class="preview-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Duration:</span>
+                        <span id="stat-duration">0 μs</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Points:</span>
+                        <span id="stat-points">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Peak:</span>
+                        <span id="stat-peak">0 V</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Properties Inspector Panel -->
+        <aside class="properties-panel">
+            
+            <!-- Global Settings -->
+            <div class="global-settings">
+                <h4>Global Settings</h4>
+                <div class="control-group">
+                    <label for="sample-rate">Sample Rate (Hz):</label>
+                    <input type="number" id="sample-rate" value="{{ default_sample_rate|floatformat:'0' }}" step="1000000">
+                </div>
+                <div class="control-group">
+                    <label for="time-units">Time Unit:</label>
+                    <select id="time-units">
+                        <option value="ns">ns</option>
+                        <option value="us" selected>μs</option>
+                        <option value="ms">ms</option>
+                        <option value="s">s</option>
+                    </select>
+                </div>
+            </div>
+            <h3>Properties Inspector</h3>
+            
+            <!-- Segment Properties -->
+            <div id="properties-content" class="properties-content">
+                <p class="no-selection">Select a segment to edit its properties</p>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loading-overlay" class="loading-overlay" style="display: none;">
+    <div class="spinner"></div>
+    <p>Generating preview...</p>
+</div>
+
+<!-- Save Waveform Modal -->
+<div id="save-waveform-modal" class="custom-modal" style="display: none;">
+    <div class="custom-modal-backdrop"></div>
+    <div class="custom-modal-dialog">
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h5 class="custom-modal-title">
+                    <i class="fas fa-save"></i> Save Waveform Element
+                </h5>
+                <button type="button" class="custom-modal-close" id="save-modal-close">&times;</button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="form-group mb-3">
+                    <label for="save-element-name" class="form-label">Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="save-element-name" placeholder="Enter element name" required>
+                    <div class="invalid-feedback" id="save-name-error">Please enter a name for the element.</div>
+                </div>
+                <div class="form-group">
+                    <label for="save-element-description" class="form-label">Description</label>
+                    <textarea class="form-control" id="save-element-description" rows="3" placeholder="Enter optional description"></textarea>
+                </div>
+            </div>
+            <div class="custom-modal-footer">
+                <button type="button" class="custom-modal-btn custom-modal-btn-secondary" id="save-modal-cancel">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="custom-modal-btn custom-modal-btn-primary" id="save-modal-save">
+                    <i class="fas fa-save"></i> Save Element
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Duration Warning Modal -->
+<div id="duration-warning-modal" class="custom-modal" style="display: none;">
+    <div class="custom-modal-backdrop"></div>
+    <div class="custom-modal-dialog">
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h5 class="custom-modal-title">
+                    <i class="fas fa-exclamation-triangle"></i> Duration Too Short
+                </h5>
+                <button type="button" class="custom-modal-close" id="duration-modal-close">&times;</button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="warning-content">
+                    <div class="warning-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="warning-text">
+                        <h6>Invalid Duration Detected</h6>
+                        <p>The duration you entered is too short for the current sample rate.</p>
+                        
+                        <div class="warning-details">
+                            <div><strong>Minimum Duration:</strong> <span id="modal-min-duration"></span></div>
+                            <div><strong>Your Input:</strong> <span id="modal-input-duration"></span></div>
+                            <div><strong>Sample Rate:</strong> <span id="modal-sample-rate"></span></div>
+                        </div>
+                        
+                        <p class="warning-note">
+                            <i class="fas fa-info-circle"></i>
+                            The duration will be automatically set to the minimum value.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="custom-modal-footer">
+                <button type="button" class="custom-modal-btn custom-modal-btn-warning" id="duration-warning-ok">
+                    <i class="fas fa-check"></i> OK, Set to Minimum
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Pass settings to JavaScript -->
+<script>
+    window.waveformDesignerSettings = {
+        defaultSampleRate: {{ default_sample_rate|safe }}
+    };
+</script>
+
+<!-- JavaScript -->
+<script src="{% static 'waveform_designer/js/common-utils.js' %}"></script>
+<script src="{% static 'waveform_designer/js/modal-utils.js' %}"></script>
+<script src="{% static 'waveform_designer/js/drag-reorder-utils.js' %}"></script>
+<script src="{% static 'waveform_designer/js/timeline-cards.js' %}"></script>
+<script src="{% static 'waveform_designer/js/segment-library.js' %}"></script>
+<script src="{% static 'waveform_designer/js/elements-library-designer.js' %}"></script>
+<script src="{% static 'waveform_designer/js/properties-panel.js' %}"></script>
+<script src="{% static 'waveform_designer/js/preview-panel.js' %}"></script>
+<script src="{% static 'waveform_designer/js/waveform-designer.js' %}"></script>
+{% endblock %}

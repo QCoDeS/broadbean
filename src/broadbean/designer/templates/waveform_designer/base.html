@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Waveform Designer{% endblock %}</title>
+    
+    {% load static %}
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'waveform_designer/favicon.ico' %}">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{% static 'waveform_designer/css/bootstrap.min.css' %}">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="{% static 'waveform_designer/css/fontawesome/all.min.css' %}">
+    
+    <!-- Common CSS -->
+    <link rel="stylesheet" href="{% static 'waveform_designer/css/common.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+    
+    <style>
+        :root {
+            --primary-color: #0078d4;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+        }
+        
+        .nav-link.active {
+            font-weight: 600;
+            border-bottom: 2px solid var(--primary-color);
+        }
+        
+        .main-content {
+            padding: 20px;
+        }
+        
+        .card {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: none;
+            border-radius: 8px;
+        }
+        
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #005a9e;
+            border-color: #005a9e;
+        }
+        
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .loading-overlay.hidden {
+            display: none;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm" style="border-bottom: 5px solid #2c3e50;">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'waveform_designer:designer' %}">
+                <i class="fas fa-wave-square me-2"></i>Waveform Designer
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'designer' %}active{% endif %}" 
+                           href="{% url 'waveform_designer:designer' %}">
+                            <i class="fas fa-pencil-alt me-1"></i>Designer
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'sequencer' %}active{% endif %}" 
+                           href="{% url 'waveform_designer:sequencer' %}">
+                            <i class="fas fa-list-ol me-1"></i>Sequencer
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'parametric_generator' %}active{% endif %}" 
+                           href="{% url 'waveform_designer:parametric_generator' %}">
+                            <i class="fas fa-sliders-h me-1"></i>Parametric
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'upload' %}active{% endif %}" 
+                           href="{% url 'waveform_designer:upload' %}">
+                            <i class="fas fa-upload me-1"></i>Upload & Capture
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'instruments' %}active{% endif %}" 
+                           href="{% url 'waveform_designer:instruments' %}">
+                            <i class="fas fa-cogs me-1"></i>Instruments
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+    </div>
+    
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Bootstrap JS -->
+    <script src="{% static 'waveform_designer/js/bootstrap.bundle.min.js' %}"></script>
+    <!-- Plotly -->
+    <script src="{% static 'waveform_designer/js/plotly-2.24.1.min.js' %}"></script>
+    
+    <script>
+        // Utility functions available globally
+        window.WaveformDesigner = {
+            showLoading: function() {
+                document.getElementById('loadingOverlay').classList.remove('hidden');
+            },
+            
+            hideLoading: function() {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            },
+            
+            showToast: function(message, type = 'info') {
+                const container = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = `toast align-items-center text-white bg-${type} border-0`;
+                toast.setAttribute('role', 'alert');
+                toast.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">${message}</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                `;
+                container.appendChild(toast);
+                const bsToast = new bootstrap.Toast(toast, { delay: 5000 });
+                bsToast.show();
+                toast.addEventListener('hidden.bs.toast', () => toast.remove());
+            },
+            
+            // CSRF token for AJAX requests
+            getCsrfToken: function() {
+                return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+            },
+            
+            // API helper
+            api: async function(url, options = {}) {
+                const defaultOptions = {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken()
+                    }
+                };
+                const mergedOptions = { ...defaultOptions, ...options };
+                if (options.headers) {
+                    mergedOptions.headers = { ...defaultOptions.headers, ...options.headers };
+                }
+                
+                try {
+                    const response = await fetch(url, mergedOptions);
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.error || 'An error occurred');
+                    }
+                    return data;
+                } catch (error) {
+                    console.error('API Error:', error);
+                    throw error;
+                }
+            },
+            
+            // Format duration for display
+            formatDuration: function(seconds) {
+                if (seconds < 1e-9) return (seconds * 1e12).toFixed(2) + ' ps';
+                if (seconds < 1e-6) return (seconds * 1e9).toFixed(2) + ' ns';
+                if (seconds < 1e-3) return (seconds * 1e6).toFixed(2) + ' μs';
+                if (seconds < 1) return (seconds * 1e3).toFixed(2) + ' ms';
+                return seconds.toFixed(4) + ' s';
+            },
+            
+            // Format frequency for display
+            formatFrequency: function(hz) {
+                if (hz >= 1e9) return (hz / 1e9).toFixed(2) + ' GHz';
+                if (hz >= 1e6) return (hz / 1e6).toFixed(2) + ' MHz';
+                if (hz >= 1e3) return (hz / 1e3).toFixed(2) + ' kHz';
+                return hz.toFixed(2) + ' Hz';
+            }
+        };
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

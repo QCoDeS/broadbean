@@ -52,6 +52,28 @@ docs = [
     "sphinx-jsonschema",
     "ipykernel",
 ]
+designer = [
+    "django>=4.2",
+    "pyyaml",
+]
+hardware = [
+    "qcodes",
+    "pyvisa",
+]
+
+[project.scripts]
+broadbean-designer = "broadbean.designer:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"broadbean.designer" = [
+    "templates/**/*",
+    "static/**/*",
+    "migrations/*.py",
+    "*.csv",
+]
 
 
 [tool.pytest]

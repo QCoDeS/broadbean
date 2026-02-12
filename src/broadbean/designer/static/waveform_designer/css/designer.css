@@ -1,0 +1,977 @@
+/* Waveform Designer - Page-Specific Styles */
+/* Note: Common components (buttons, modals, forms, cards, etc.) are in common.css */
+
+/* Base styles removed - now in common.css */
+
+.designer-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* Header */
+.designer-header {
+    background: var(--color-dark);
+    color: var(--color-white);
+    padding: var(--spacing-lg) var(--spacing-xl);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+    z-index: var(--z-dropdown);
+}
+
+.designer-header h1 {
+    margin: 0;
+    font-size: var(--font-size-2xl);
+    font-weight: 300;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
+
+.edit-mode-indicator {
+    background: rgba(241, 196, 15, 0.2);
+    border: 1px solid #f1c40f;
+    border-radius: var(--radius-md);
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: 0.9rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-warning);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.edit-mode-indicator i {
+    font-size: 0.8rem;
+}
+
+.header-controls {
+    display: flex;
+    gap: 10px;
+}
+
+/* Main Layout */
+.designer-main {
+    display: grid;
+    grid-template-columns: 250px 250px 1fr 300px;
+    grid-template-rows: 1fr;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Elements Library Panel */
+.elements-panel {
+    background: var(--bg-primary);
+    border-right: 1px solid var(--border-color-dark);
+    padding: var(--spacing-xl);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.elements-panel h3 {
+    margin: 0 0 var(--spacing-lg) 0;
+    font-size: var(--font-size-lg);
+    color: var(--color-dark);
+    flex-shrink: 0;
+}
+
+/* Segment Library Panel */
+.segment-library {
+    background: var(--bg-primary);
+    border-right: 1px solid var(--border-color-dark);
+    padding: var(--spacing-xl);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.segment-library h3 {
+    margin: 0 0 var(--spacing-lg) 0;
+    font-size: var(--font-size-lg);
+    color: var(--color-dark);
+    flex-shrink: 0;
+}
+
+.segment-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.segment-item {
+    background: var(--bg-primary);
+    border: 2px solid var(--color-light);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-md);
+    cursor: grab;
+    transition: all var(--transition-fast);
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.segment-item:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.segment-item:active {
+    cursor: grabbing;
+}
+
+.segment-item.dragging {
+    opacity: 0.5;
+}
+
+.segment-item-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.segment-icon {
+    width: 40px;
+    height: 30px;
+    border-radius: var(--radius-md);
+    position: relative;
+    flex-shrink: 0;
+}
+
+.segment-name {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-dark);
+    font-size: 13px;
+    flex: 1;
+}
+
+.segment-description {
+    font-size: 11px;
+    color: var(--color-medium);
+    line-height: 1.3;
+    padding-left: 48px;
+}
+
+/* Library Controls */
+.library-controls {
+    border-top: 1px solid var(--color-light);
+    padding-top: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
+}
+
+.library-controls h4 {
+    margin: 0 0 var(--spacing-lg) 0;
+    font-size: 0.9rem;
+    color: var(--color-dark);
+}
+
+.control-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.control-group label {
+    display: block;
+    font-size: var(--font-size-xs);
+    color: var(--color-dark-secondary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.control-group input,
+.control-group select {
+    width: 100%;
+    padding: 6px var(--spacing-sm);
+    border: 1px solid var(--border-color-dark);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-xs);
+}
+
+/* Elements Library Section */
+.elements-library-section {
+    margin-top: 30px;
+    border-top: 1px solid #eee;
+    padding-top: var(--spacing-xl);
+}
+
+.elements-library-section h3 {
+    margin: 0 0 var(--spacing-lg) 0;
+    font-size: var(--font-size-lg);
+    color: var(--color-dark);
+}
+
+.element-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    max-height: none;
+    padding-right: 3px;
+}
+
+/* Element cards use unified .library-card from common.css */
+.element-card-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: center;
+}
+
+.element-card-actions .btn {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Center Panel */
+.center-panel {
+    display: flex;
+    flex-direction: column;
+    background: #fafafa;
+    overflow: hidden;
+}
+
+/* Timeline Section */
+.timeline-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid var(--border-color-dark);
+    background: var(--bg-primary);
+}
+
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-bottom: 1px solid var(--color-light);
+}
+
+.timeline-header h3 {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    color: var(--color-dark);
+}
+
+.timeline-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.timeline-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: var(--bg-secondary);
+}
+
+#timeline-canvas {
+    display: block;
+    cursor: crosshair;
+    background: var(--bg-primary);
+}
+
+.timeline-ruler {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background: var(--color-light);
+    border-bottom: 1px solid var(--border-color-dark);
+    pointer-events: none;
+}
+
+.drop-zone {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: var(--color-medium-light);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.drop-zone.hidden {
+    display: none;
+}
+
+/* Preview Section */
+.preview-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-primary);
+}
+
+.preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-bottom: 1px solid var(--color-light);
+}
+
+.preview-header h3 {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    color: var(--color-dark);
+}
+
+.preview-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    font-size: var(--font-size-xs);
+}
+
+.preview-controls label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    cursor: pointer;
+}
+
+.preview-plot {
+    flex: 1;
+    min-height: 300px;
+}
+
+.preview-stats {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px var(--spacing-xl);
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--color-light);
+    font-size: var(--font-size-xs);
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-label {
+    color: var(--color-medium);
+    display: block;
+    margin-bottom: 2px;
+}
+
+.stat-item span:last-child {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-dark);
+}
+
+/* Properties Panel */
+.properties-panel {
+    background: var(--bg-primary);
+    border-left: 1px solid var(--border-color-dark);
+    padding: var(--spacing-xl);
+    overflow-y: auto;
+}
+
+.properties-panel h3 {
+    margin: 0 0 var(--spacing-lg) 0;
+    font-size: var(--font-size-lg);
+    color: var(--color-dark);
+}
+
+.properties-content {
+    margin-bottom: 30px;
+}
+
+.no-selection {
+    color: var(--color-medium-light);
+    font-style: italic;
+    text-align: center;
+    padding: 40px var(--spacing-xl);
+}
+
+.property-form {
+    display: grid;
+    gap: var(--spacing-lg);
+}
+
+.property-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.property-group label {
+    font-size: var(--font-size-xs);
+    color: var(--color-dark-secondary);
+    font-weight: var(--font-weight-medium);
+}
+
+.property-group input,
+.property-group select {
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color-dark);
+    border-radius: var(--radius-md);
+    font-size: 13px;
+}
+
+.property-group input:focus,
+.property-group select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+/* Segment List */
+.segment-list-container {
+    border-top: 1px solid var(--color-light);
+    padding-top: var(--spacing-xl);
+}
+
+.segment-list-container h4 {
+    margin: 0 0 var(--spacing-lg) 0;
+    font-size: 0.9rem;
+    color: var(--color-dark);
+}
+
+.segment-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.segment-list-item {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border-left: 4px solid transparent;
+}
+
+.segment-list-item:hover {
+    background: var(--bg-hover);
+}
+
+.segment-list-item.active {
+    background: var(--color-primary-light);
+    border-left-color: var(--color-primary);
+}
+
+.segment-list-item .segment-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    margin-right: var(--spacing-sm);
+}
+
+.segment-list-item .segment-info {
+    flex: 1;
+    font-size: var(--font-size-xs);
+}
+
+.segment-list-item .segment-duration {
+    font-size: 11px;
+    color: var(--color-medium);
+}
+
+.segment-list-item .segment-remove {
+    background: none;
+    border: none;
+    color: var(--color-danger);
+    cursor: pointer;
+    padding: 2px;
+    margin-left: var(--spacing-sm);
+    border-radius: 2px;
+}
+
+.segment-list-item .segment-remove:hover {
+    background: var(--color-danger-light);
+}
+
+/* Old Modal styles removed - now in common.css */
+
+/* Timeline Segment Styles */
+.timeline-segment {
+    position: absolute;
+    border-radius: var(--radius-md);
+    border: 2px solid rgba(255,255,255,0.3);
+    cursor: move;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-white);
+    font-size: 11px;
+    font-weight: var(--font-weight-medium);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.timeline-segment:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-md);
+}
+
+.timeline-segment.selected {
+    border-color: var(--color-white);
+    box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+.timeline-segment.dragging {
+    z-index: 10;
+    transform: scale(1.05);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Multi-Channel Timeline Styles */
+.channel-row {
+    position: relative;
+    border-bottom: 1px solid var(--color-light);
+    background: var(--bg-primary);
+}
+
+.channel-row:last-child {
+    border-bottom: none;
+}
+
+.channel-label {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 120px;
+    height: 100%;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--color-light);
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-dark);
+    z-index: 10;
+}
+
+.channel-label .channel-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: var(--spacing-sm);
+    flex-shrink: 0;
+}
+
+.channel-label .channel-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.channel-controls {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: var(--spacing-xs);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.channel-row:hover .channel-controls {
+    opacity: 1;
+}
+
+.channel-control-btn {
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: rgba(52, 73, 94, 0.1);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--color-dark-secondary);
+    transition: all var(--transition-fast);
+}
+
+.channel-control-btn:hover {
+    background: rgba(52, 73, 94, 0.2);
+    transform: scale(1.1);
+}
+
+.channel-control-btn.delete {
+    color: var(--color-danger);
+}
+
+.channel-control-btn.delete:hover {
+    background: rgba(231, 76, 60, 0.1);
+    color: var(--color-danger-dark);
+}
+
+.channel-timeline-area {
+    margin-left: 120px;
+    position: relative;
+    min-height: 80px;
+}
+
+/* Add Channel Button Styles */
+#add-channel-btn {
+    margin-right: 10px;
+}
+
+#add-channel-btn i {
+    margin-right: var(--spacing-xs);
+}
+
+/* Channel Drop Zones */
+.channel-drop-zone {
+    position: absolute;
+    background: rgba(52, 152, 219, 0.1);
+    border: 2px dashed var(--color-primary);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--color-primary);
+    pointer-events: none;
+    z-index: 5;
+}
+
+.channel-drop-zone.active {
+    background: rgba(52, 152, 219, 0.2);
+    border-style: solid;
+}
+
+/* Multi-channel Timeline Container - uses common scrollbar styles */
+.timeline-container.multi-channel {
+    overflow-y: auto;
+    max-height: 400px;
+}
+
+/* Channel Timeline Styles (Card-based) */
+.channel-timeline-container {
+    background: var(--bg-secondary);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-xl);
+    min-height: 300px;
+    padding: var(--spacing-lg);
+    overflow-y: auto;
+    max-height: 400px;
+}
+
+.channel-timeline {
+    min-height: 270px;
+}
+
+.timeline-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 270px;
+    color: #adb5bd;
+    text-align: center;
+}
+
+.timeline-placeholder i {
+    font-size: 48px;
+    margin-bottom: var(--spacing-md);
+    opacity: 0.5;
+}
+
+.timeline-placeholder p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.channel-timeline.has-content .timeline-placeholder {
+    display: none;
+}
+
+/* Channel Row Styles */
+.channel-row {
+    background: var(--bg-primary);
+    border: 1px solid #e0e0e0;
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    transition: all var(--transition-fast);
+}
+
+.channel-row:last-child {
+    margin-bottom: 0;
+}
+
+.channel-row.drag-over {
+    border-color: var(--color-warning);
+    background: #fef9e7;
+}
+
+.channel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 2px solid var(--color-light);
+}
+
+.channel-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.channel-color-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.channel-name {
+    font-weight: var(--font-weight-semibold);
+    font-size: 14px;
+    color: var(--color-dark);
+}
+
+.channel-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.channel-action-btn {
+    background: none;
+    border: none;
+    color: var(--color-medium);
+    cursor: pointer;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+    font-size: var(--font-size-xs);
+}
+
+.channel-action-btn:hover {
+    background: var(--bg-hover);
+    color: var(--color-dark);
+}
+
+.channel-action-btn.delete:hover {
+    background: var(--color-danger);
+    color: var(--color-white);
+}
+
+/* Segment Cards Container - uses common scrollbar styles */
+.channel-segments {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: var(--spacing-lg);
+    min-height: 60px;
+    align-items: flex-start;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 10px;
+    scroll-behavior: smooth;
+}
+
+.channel-segments.empty {
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    justify-content: center;
+    align-items: center;
+    color: #adb5bd;
+    font-size: var(--font-size-xs);
+}
+
+.channel-segments.empty::before {
+    content: 'Drop segments here';
+}
+
+/* Segment Card Styles - extends common.css .card */
+.segment-card {
+    background: var(--bg-primary);
+    border: 2px solid #e0e0e0;
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-md);
+    min-width: 150px;
+    max-width: 200px;
+    cursor: grab;
+    transition: all var(--transition-fast);
+    user-select: none;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.segment-card:hover {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.segment-card:active {
+    cursor: grabbing;
+    transform: scale(0.98);
+}
+
+.segment-card.selected {
+    border-color: var(--color-success-dark);
+    background: var(--color-success-light);
+    box-shadow: 0 2px 8px rgba(46, 204, 113, 0.3);
+}
+
+.segment-card.dragging {
+    opacity: 0.5;
+}
+
+.segment-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-sm);
+}
+
+.segment-card-title {
+    font-weight: var(--font-weight-semibold);
+    font-size: 13px;
+    color: var(--color-dark);
+    margin: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.segment-card-icon {
+    font-size: 14px;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+.segment-card-actions {
+    display: flex;
+    gap: var(--spacing-xs);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.segment-card:hover .segment-card-actions {
+    opacity: 1;
+}
+
+.segment-action-btn {
+    background: none;
+    border: none;
+    color: var(--color-medium);
+    cursor: pointer;
+    padding: 2px var(--spacing-xs);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    font-size: 11px;
+}
+
+.segment-action-btn:hover {
+    background: var(--bg-hover);
+    color: var(--color-dark);
+}
+
+.segment-action-btn.delete:hover {
+    background: var(--color-danger);
+    color: var(--color-white);
+}
+
+.segment-card-body {
+    font-size: 11px;
+    color: var(--color-medium);
+}
+
+.segment-detail {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: var(--spacing-xs);
+}
+
+.segment-detail:last-child {
+    margin-bottom: 0;
+}
+
+.segment-detail i {
+    width: 14px;
+    flex-shrink: 0;
+}
+
+.segment-detail-value {
+    color: var(--color-dark);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Segment Type Colors */
+.segment-card[data-type="ramp"] .segment-card-icon {
+    color: var(--color-primary);
+}
+
+.segment-card[data-type="sine"] .segment-card-icon {
+    color: var(--color-danger);
+}
+
+.segment-card[data-type="square"] .segment-card-icon {
+    color: var(--color-warning);
+}
+
+.segment-card[data-type="gaussian"] .segment-card-icon {
+    color: #9b59b6;
+}
+
+.segment-card[data-type="exponential"] .segment-card-icon {
+    color: var(--color-success-dark);
+}
+
+.segment-card[data-type="custom"] .segment-card-icon {
+    color: var(--color-dark-secondary);
+}
+
+/* Responsive Design */
+@media (max-width: 1400px) {
+    .designer-main {
+        grid-template-columns: 200px 200px 1fr 280px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .designer-main {
+        grid-template-columns: 180px 180px 1fr 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    .designer-main {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto;
+    }
+    
+    .elements-panel,
+    .segment-library,
+    .properties-panel {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .segment-card {
+        min-width: 120px;
+        max-width: 150px;
+    }
+}

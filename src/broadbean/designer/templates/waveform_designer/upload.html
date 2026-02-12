@@ -1,0 +1,258 @@
+{% extends "waveform_designer/base.html" %}
+{% load static %}
+
+{% block title %}Waveform Upload & Capture{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'waveform_designer/css/designer.css' %}">
+<link rel="stylesheet" href="{% static 'waveform_designer/css/upload.css' %}">
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        height: 100vh;
+    }
+    
+    .main-content {
+        display: flex !important;
+        flex-direction: column !important;
+        height: calc(100vh - 120px) !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="designer-container" style="height: 100%; display: flex; flex-direction: column;">
+
+    <!-- Main Content Area -->
+    <div class="designer-main" style="flex: 1; overflow: hidden;">
+        <!-- Sequence Library Panel -->
+        <aside class="sequence-library">
+            <h3>Sequence Library</h3>
+            <div class="library-controls mb-3">
+                <button id="refresh-sequences-btn" class="btn btn-sm btn-outline-primary w-100">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+            </div>
+            <div id="sequence-library" class="sequence-grid">
+                <!-- Saved waveform sequences will be loaded here -->
+            </div>
+        </aside>
+
+        <!-- Center Panel with Sequence Preview and Scope Capture Display -->
+        <main class="center-panel">
+            <!-- Sequence Preview Section -->
+            <section class="sequence-preview-section">
+                <div class="preview-header">
+                    <h3>Sequence Preview</h3>
+                    <div class="preview-info">
+                        <span class="badge bg-secondary" id="preview-status" style="font-size: 0.9rem; padding: 0.5em 0.8em;">No sequence</span>
+                        <div class="max-seq-control ms-2" style="display: inline-flex; align-items: center;">
+                            <label for="max-subsequences" class="small me-1" style="white-space: nowrap;">Max shown:</label>
+                            <input type="number" id="max-subsequences" class="form-control form-control-sm" 
+                                   value="10" min="1" max="100" style="width: 60px;">
+                        </div>
+                    </div>
+                </div>
+                <div id="sequence-preview-plot" class="preview-plot">
+                    <div class="plot-placeholder">
+                        <i class="fas fa-chart-line"></i>
+                        <p>Select a sequence to preview the waveforms</p>
+                    </div>
+                </div>
+                <div id="preview-stats" class="preview-stats" style="display: none;">
+                    <div class="stat-item">
+                        <span class="stat-label">Positions:</span>
+                        <span id="stat-preview-positions">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Duration:</span>
+                        <span id="stat-preview-duration">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Sample Rate:</span>
+                        <span id="stat-preview-rate">-</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Scope Capture Display -->
+            <section class="capture-section">
+                <div class="capture-header">
+                    <h3>Scope Capture</h3>
+                    <div class="capture-info">
+                        <span class="badge bg-secondary" id="capture-status">No capture</span>
+                    </div>
+                </div>
+                <div id="scope-capture-plot" class="capture-plot">
+                    <div class="plot-placeholder">
+                        <i class="fas fa-wave-square"></i>
+                        <p>Select a sequence, then click "Upload & Trigger" to capture waveforms</p>
+                    </div>
+                </div>
+                <div id="capture-stats" class="capture-stats" style="display: none;">
+                    <div class="stat-item">
+                        <span class="stat-label">Time Unit:</span>
+                        <span id="stat-time-unit">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Channels:</span>
+                        <span id="stat-channels">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Points:</span>
+                        <span id="stat-points">-</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Control Panel -->
+        <aside class="control-panel">
+            <h3>Controls</h3>
+            
+            <!-- Selected Sequence Display -->
+            <div class="control-section">
+                <h4>Selected Sequence</h4>
+                <div id="selected-sequence-display" class="selected-display">
+                    <p class="text-muted">No sequence selected</p>
+                </div>
+            </div>
+
+            <!-- Instrument Configuration Selection -->
+            <div class="control-section">
+                <h4>Instrument Configuration</h4>
+                
+                <!-- AWG Selection -->
+                <div class="form-group mb-2">
+                    <label for="awg-config-select" class="form-label small">
+                        <i class="fas fa-broadcast-tower"></i> AWG Configuration
+                    </label>
+                    <select id="awg-config-select" class="form-select form-select-sm">
+                        <option value="">Select AWG config...</option>
+                    </select>
+                </div>
+                
+                <!-- Scope Selection -->
+                <div class="form-group mb-2">
+                    <label for="scope-config-select" class="form-label small">
+                        <i class="fas fa-desktop"></i> Scope Configuration
+                    </label>
+                    <select id="scope-config-select" class="form-select form-select-sm">
+                        <option value="">Select Scope config...</option>
+                    </select>
+                </div>
+                
+                <div id="instrument-config-details" class="instrument-details small mt-2">
+                    <!-- Config details will be shown here -->
+                </div>
+                <div class="mt-2">
+                    <a href="{% url 'waveform_designer:instruments' %}" class="btn btn-sm btn-outline-secondary w-100">
+                        <i class="fas fa-cogs"></i> Manage Configurations
+                    </a>
+                </div>
+            </div>
+
+            <!-- LUT Calibration Selection -->
+            <div class="control-section" id="lut-section">
+                <h4>LUT Calibration</h4>
+                <p class="text-muted small mb-2">
+                    Apply amplitude calibration per-channel (optional)
+                </p>
+                
+                <!-- Channel 1 LUT -->
+                <div class="form-group mb-2">
+                    <label for="lut-ch1-select" class="form-label small">Channel 1 LUT</label>
+                    <select id="lut-ch1-select" class="form-select form-select-sm">
+                        <option value="">None</option>
+                    </select>
+                </div>
+                
+                <!-- Channel 2 LUT -->
+                <div class="form-group mb-2">
+                    <label for="lut-ch2-select" class="form-label small">Channel 2 LUT</label>
+                    <select id="lut-ch2-select" class="form-select form-select-sm">
+                        <option value="">None</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="control-section">
+                <h4>Actions</h4>
+                <button id="upload-sequence-btn" class="btn btn-success w-100 mb-2" disabled>
+                    <i class="fas fa-upload"></i> Upload to AWG
+                </button>
+                <button id="trigger-capture-btn" class="btn btn-primary w-100 mb-2" disabled>
+                    <i class="fas fa-play"></i> Trigger & Capture
+                </button>
+                
+                <!-- Jump To Section -->
+                <div class="jump-to-section mb-2">
+                    <label for="jump-to-index" class="form-label">Jump to Segment:</label>
+                    <div class="input-group">
+                        <input type="number" id="jump-to-index" class="form-control" 
+                               placeholder="Segment #" min="1" disabled>
+                        <button id="jump-to-btn" class="btn btn-outline-primary" disabled>
+                            <i class="fas fa-location-arrow"></i> Jump To
+                        </button>
+                    </div>
+                </div>
+                
+                <button id="disconnect-btn" class="btn btn-warning w-100 mb-2" disabled>
+                    <i class="fas fa-unlink"></i> Disconnect Instruments
+                </button>
+                <div id="operation-status" class="alert alert-info" style="display: none;">
+                    <div class="d-flex align-items-center">
+                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span id="operation-message">Processing...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="control-section">
+                <h4>Instructions</h4>
+                <ol class="help-list">
+                    <li>Select a sequence from the library</li>
+                    <li>Click "Upload to AWG" to upload the sequence</li>
+                    <li>After successful upload, you can:
+                        <ul>
+                            <li><strong>Trigger & Capture:</strong> Run from current position</li>
+                            <li><strong>Jump To:</strong> Enter segment number and jump to specific segment</li>
+                        </ul>
+                    </li>
+                    <li>Both actions will:
+                        <ul>
+                            <li>Arm the scope</li>
+                            <li>Trigger the AWG (from current or specified position)</li>
+                            <li>Capture and display waveforms</li>
+                        </ul>
+                    </li>
+                    <li>You can trigger/jump multiple times without re-uploading</li>
+                    <li>Click "Disconnect Instruments" to reset when finished</li>
+                </ol>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loading-overlay" class="loading-overlay" style="display: none;">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- JavaScript -->
+<script src="{% static 'waveform_designer/js/common-utils.js' %}"></script>
+<script src="{% static 'waveform_designer/js/modal-utils.js' %}"></script>
+<script src="{% static 'waveform_designer/js/upload-sequence-preview.js' %}"></script>
+<script src="{% static 'waveform_designer/js/upload.js' %}"></script>
+{% endblock %}
