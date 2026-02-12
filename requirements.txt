@@ -31,7 +31,7 @@ comm==0.2.3
     # via ipykernel
 contourpy==1.3.3
     # via matplotlib
-coverage==7.13.2
+coverage==7.13.4
     # via
     #   broadbean (pyproject.toml)
     #   pytest-cov
@@ -56,7 +56,7 @@ fonttools==4.61.1
     # via matplotlib
 furo==2025.12.19
     # via broadbean (pyproject.toml)
-hypothesis==6.151.4
+hypothesis==6.151.6
     # via broadbean (pyproject.toml)
 idna==3.11
     # via requests
@@ -64,7 +64,7 @@ imagesize==1.4.1
     # via sphinx
 iniconfig==2.3.0
     # via pytest
-ipykernel==7.1.0
+ipykernel==7.2.0
     # via broadbean (pyproject.toml)
 ipython==9.10.0
     # via ipykernel
@@ -144,11 +144,11 @@ packaging==26.0
     #   versioningit
 pandocfilters==1.5.1
     # via nbconvert
-parso==0.8.5
+parso==0.8.6
     # via jedi
 pathspec==1.0.4
     # via mypy
-pillow==12.1.0
+pillow==12.1.1
     # via matplotlib
 platformdirs==4.5.1
     # via jupyter-core
@@ -265,7 +265,7 @@ urllib3==2.6.3
     # via requests
 versioningit==3.3.0
     # via broadbean (pyproject.toml)
-wcwidth==0.5.3
+wcwidth==0.6.0
     # via prompt-toolkit
 webencodings==0.5.1
     # via
