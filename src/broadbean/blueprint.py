@@ -3,6 +3,7 @@
 import functools as ft
 import inspect
 import json
+import logging
 import re
 import warnings
 from inspect import signature
@@ -82,11 +83,6 @@ class BluePrint:
         # Make special functions live in the funlist but transfer their names
         # to the namelist
         # Infer names from signature if not given, i.e. allow for '' names
-        # for ii, name in enumerate(namelist):
-        #     if isinstance(funlist[ii], str):
-        #         namelist[ii] = funlist[ii]
-        #     elif name == "":
-        #         namelist[ii] = funlist[ii].__name__
         for ii, name in enumerate(namelist):
             if isinstance(funlist[ii], str):
                 if name == "":
@@ -301,8 +297,6 @@ class BluePrint:
                         try:
                             func_source = inspect.getsource(func_obj)
                             # Extract just the lambda part using regex
-                            import re
-
                             # Match 'lambda' followed by parameters, colon, and expression
                             # This handles nested parentheses and complex expressions
                             lambda_match = re.search(
@@ -311,10 +305,10 @@ class BluePrint:
                             if lambda_match:
                                 func_source = lambda_match.group(0).strip()
                             else:
-                                func_source = "lambda t, **kwargs: 0"
+                                func_source = None
                         except (OSError, TypeError):
                             # Fallback: create a generic lambda string
-                            func_source = "lambda t, **kwargs: 0"  # Default fallback
+                            func_source = None
 
                     desc[segkey]["arguments"] = {
                         "func_type": "lambda",
@@ -382,8 +376,8 @@ class BluePrint:
                         func_obj = eval(func_source)
                     except (SyntaxError, NameError) as e:
                         # Fallback: create a zero function
-                        print(
-                            f"Warning: Could not reconstruct lambda function '{func_source}'. Using zero function. Error: {e}"
+                        logging.warning(
+                            f"Could not reconstruct lambda function '{func_source}'. Using zero function. Error: {e}"
                         )
 
                         def zero_function(t, **kwargs):
@@ -409,8 +403,8 @@ class BluePrint:
                             if func_name in local_ns:
                                 func_obj = local_ns[func_name]
                         except Exception as e:
-                            print(
-                                f"Warning: Could not reconstruct named function '{func_name}' from source. Error: {e}"
+                            logging.warning(
+                                f"Could not reconstruct named function '{func_name}' from source. Error: {e}"
                             )
 
                     # Fallback: try to find function in globals
@@ -418,8 +412,8 @@ class BluePrint:
                         try:
                             func_obj = globals()[func_name]
                         except KeyError:
-                            print(
-                                f"Warning: Could not find function '{func_name}' in globals. Using zero function."
+                            logging.warning(
+                                f"Could not find function '{func_name}' in globals. Using zero function."
                             )
 
                         def zero_function(t, **kwargs):
