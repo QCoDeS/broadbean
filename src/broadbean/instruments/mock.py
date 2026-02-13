@@ -7,13 +7,12 @@ requiring real hardware.
 
 import logging
 import time
-from typing import Tuple
 
 import numpy as np
 
 from broadbean.instruments.base.awg import ArbitraryWaveformGenerator
-from broadbean.instruments.base.scope import Scope
 from broadbean.instruments.base.mock_state import mock_state
+from broadbean.instruments.base.scope import Scope
 from broadbean.instruments.registry import InstrumentRegistry
 
 logger = logging.getLogger(__name__)
@@ -155,11 +154,11 @@ class MockScope(Scope):
 
         return default
 
-    def timebase(self) -> Tuple[str, np.ndarray]:
+    def timebase(self) -> tuple[str, np.ndarray]:
         """Get the current timebase setting of the scope.
 
         Returns:
-            Tuple of (time_unit: str, time_axis: np.ndarray)
+            tuple of (time_unit: str, time_axis: np.ndarray)
         """
         # Try to get time axis from mock_state first (from AWG waveform data)
         if mock_state.time_axis is not None:
@@ -183,14 +182,14 @@ class MockScope(Scope):
         time.sleep(0.1)
         logger.debug("Mock scope armed for single acquisition")
 
-    def download(self) -> Tuple:
+    def download(self) -> tuple:
         """Download acquired waveforms from the mock scope.
 
         Returns waveform data from mock_state if available,
         otherwise generates synthetic data.
 
         Returns:
-            Tuple of numpy arrays, one per channel.
+            tuple of numpy arrays, one per channel.
         """
         return mock_state.get_scope_data()
 
