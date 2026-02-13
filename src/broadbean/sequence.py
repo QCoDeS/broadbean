@@ -4,7 +4,7 @@ import json
 import logging
 import warnings
 from copy import deepcopy
-from typing import Any, TypedDict, cast
+from typing import TypedDict, cast
 
 import numpy as np
 from schema import Optional, Or, Schema
