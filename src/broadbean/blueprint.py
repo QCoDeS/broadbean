@@ -11,6 +11,7 @@ from inspect import signature
 import numpy as np
 
 from .broadbean import PulseAtoms
+from .func_serialization import deserialize_function, serialize_function
 
 
 class SegmentDurationError(Exception):
@@ -271,50 +272,9 @@ class BluePrint:
             elif desc[segkey]["function"] == "function PulseAtoms.arb_func":
                 # Special handling for arb_func serialization
                 func_obj, kwargs_dict = self._argslist[sn]
-
-                # Serialize the function
-                if hasattr(func_obj, "__name__") and func_obj.__name__ != "<lambda>":
-                    # Regular function - store name and try to get source
-                    func_name = func_obj.__name__
-                    try:
-                        func_source = inspect.getsource(func_obj)
-                    except (OSError, TypeError):
-                        func_source = None
-                    desc[segkey]["arguments"] = {
-                        "func_type": "named_function",
-                        "func_name": func_name,
-                        "func_source": func_source,
-                        "kwargs": kwargs_dict,
-                    }
-                else:
-                    # Lambda function - store source code
-                    # First check if the lambda has a __func_source__ attribute
-                    # (for dynamically created lambdas)
-                    if hasattr(func_obj, "__func_source__"):
-                        func_source = func_obj.__func_source__
-                    else:
-                        # Fall back to inspect.getsource() with regex parsing
-                        try:
-                            func_source = inspect.getsource(func_obj)
-                            # Extract just the lambda part using regex
-                            # Match 'lambda' followed by parameters, colon, and expression
-                            # This handles nested parentheses and complex expressions
-                            lambda_match = re.search(
-                                r"lambda\s+[^:]*:\s*[^\n,;]+", func_source
-                            )
-                            if lambda_match:
-                                func_source = lambda_match.group(0).strip()
-                            else:
-                                func_source = None
-                        except (OSError, TypeError):
-                            # Fallback: create a generic lambda string
-                            func_source = None
-
-                    desc[segkey]["arguments"] = {
-                        "func_type": "lambda",
-                        "func_source": func_source,
-                        "kwargs": kwargs_dict,
-                    }
+                serialized = serialize_function(func_obj)
+                serialized["kwargs"] = kwargs_dict
+                desc[segkey]["arguments"] = serialized
             else:
                 sig = signature(self._funlist[sn])
                 desc[segkey]["arguments"] = dict(
@@ -367,60 +327,10 @@ class BluePrint:
             elif seg_dict["function"] == "function PulseAtoms.arb_func":
                 # Special handling for arb_func reconstruction
                 args_dict = blue_dict[seg]["arguments"]
+                kwargs_dict = args_dict["kwargs"]
 
-                if args_dict.get("func_type") == "lambda":
-                    # Reconstruct lambda function
-                    func_source = args_dict["func_source"]
-                    try:
-                        # Create lambda function from source
-                        func_obj = eval(func_source)
-                    except (SyntaxError, NameError) as e:
-                        # Fallback: create a zero function
-                        logging.warning(
-                            f"Could not reconstruct lambda function '{func_source}'. Using zero function. Error: {e}"
-                        )
-
-                        def zero_function(t, **kwargs):
-                            return 0
-
-                        func_obj = zero_function
-
-                    kwargs_dict = args_dict["kwargs"]
-                    arguments = (func_obj, kwargs_dict)
-                elif args_dict.get("func_type") == "named_function":
-                    # Reconstruct named function
-                    func_name = args_dict["func_name"]
-                    func_source = args_dict.get("func_source")
-                    kwargs_dict = args_dict["kwargs"]
-
-                    # Try to reconstruct from source first
-                    func_obj = None
-                    if func_source:
-                        try:
-                            # Execute the function source in a local namespace
-                            local_ns = {}
-                            exec(func_source, globals(), local_ns)
-                            if func_name in local_ns:
-                                func_obj = local_ns[func_name]
-                        except Exception as e:
-                            logging.warning(
-                                f"Could not reconstruct named function '{func_name}' from source. Error: {e}"
-                            )
-
-                    # Fallback: try to find function in globals
-                    if func_obj is None:
-                        try:
-                            func_obj = globals()[func_name]
-                        except KeyError:
-                            logging.warning(
-                                f"Could not find function '{func_name}' in globals. Using zero function."
-                            )
-
-                        def zero_function(t, **kwargs):
-                            return 0
-
-                        func_obj = zero_function
-
+                if args_dict.get("func_type") in ("lambda", "named_function"):
+                    func_obj = deserialize_function(args_dict)
                     arguments = (func_obj, kwargs_dict)
                 else:
                     # Legacy format or fallback
