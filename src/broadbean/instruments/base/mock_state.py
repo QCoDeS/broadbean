@@ -5,13 +5,14 @@ while maintaining compatibility with their abstract base classes.
 """
 
 import logging
-from typing import Optional, Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
+
 import numpy as np
 
 if TYPE_CHECKING:
-    from broadbean.sequence import Sequence
-    from broadbean.instruments.base.scope import Scope
     from broadbean.instruments.base.awg import ArbitraryWaveformGenerator
+    from broadbean.instruments.base.scope import Scope
+    from broadbean.sequence import Sequence
 
 logger = logging.getLogger(__name__)
 
@@ -26,15 +27,15 @@ class MockInstrumentState:
     """
 
     def __init__(self):
-        self.waveform_data: Optional[Tuple[np.ndarray, ...]] = None
-        self.time_axis: Optional[np.ndarray] = None
+        self.waveform_data: tuple[np.ndarray, ...] | None = None
+        self.time_axis: np.ndarray | None = None
         self.sample_rate: float = 25e9
         self.triggered: bool = False
-        self.sequence_data: Optional[dict] = None
+        self.sequence_data: dict | None = None
         self.current_element: int = 1
         self.max_elements: int = 1
-        self.awg_instance: Optional["ArbitraryWaveformGenerator"] = None
-        self.scope_instance: Optional["Scope"] = None
+        self.awg_instance: ArbitraryWaveformGenerator | None = None
+        self.scope_instance: Scope | None = None
 
     def set_sequence_and_forge(self, sequence: "Sequence"):
         """
@@ -153,7 +154,7 @@ class MockInstrumentState:
         else:
             logger.warning("Mock state: No sequence data available for jump")
 
-    def get_scope_data(self) -> Tuple[np.ndarray, np.ndarray]:
+    def get_scope_data(self) -> tuple[np.ndarray, np.ndarray]:
         """
         Get waveform data for scope download.
 
@@ -178,7 +179,7 @@ class MockInstrumentState:
             return self._generate_synthetic_data()
 
     @staticmethod
-    def _generate_synthetic_data() -> Tuple[np.ndarray, np.ndarray]:
+    def _generate_synthetic_data() -> tuple[np.ndarray, np.ndarray]:
         """Generate synthetic data as fallback."""
         points = 1000
         time_step = 1e-9
@@ -195,7 +196,7 @@ class MockInstrumentState:
 
     def get_instruments(
         self,
-    ) -> Tuple[Optional["ArbitraryWaveformGenerator"], Optional["Scope"]]:
+    ) -> tuple[Optional["ArbitraryWaveformGenerator"], Optional["Scope"]]:
         """Get stored AWG and Scope instances."""
         return self.awg_instance, self.scope_instance
 

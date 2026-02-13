@@ -8,7 +8,7 @@ class ElementsLibraryDesigner {
         this.elements = [];
         this.container = document.getElementById('elements-library');
         this.refreshBtn = document.getElementById('refresh-elements-btn');
-        
+
         this.init();
     }
 
@@ -172,12 +172,12 @@ class ElementsLibraryDesigner {
 
         } catch (error) {
             console.error('Failed to load element to timeline:', error);
-            
+
             // Ensure loading state is cleared on error
             if (window.waveformDesigner) {
                 window.waveformDesigner.finishElementLoading(false);
             }
-            
+
             this.hideLoadingOverlay();
             this.showErrorMessage('Failed to load element: ' + error.message);
         }
@@ -205,11 +205,11 @@ class ElementsLibraryDesigner {
                 ...data
             }));
         }
-        
+
         for (const channelData of channels) {
             console.log(`\n--- Processing channel: ${channelData.name} ---`);
             console.log('Channel data:', channelData);
-            
+
             // Add channel to timeline if not exists
             let channel = timeline.channels.find(c => c.name === channelData.name);
             if (!channel) {
@@ -230,16 +230,16 @@ class ElementsLibraryDesigner {
                     console.log('  - Duration:', segmentData.duration);
                     console.log('  - Parameters from DB:', segmentData.parameters);
                     console.log('  - Amplitude from DB:', segmentData.amplitude);
-                    
+
                     // Add segment to channel
                     const segment = timeline.addSegmentToChannel(segmentData.type, channel.id);
                     if (segment) {
                         console.log('  Created segment with ID:', segment.id);
                         console.log('  Initial default parameters:', JSON.stringify(segment.parameters));
-                        
+
                         // Update segment properties
                         this.updateSegmentProperties(segment, segmentData);
-                        
+
                         // Check what's in the timeline's segments array
                         const timelineSegment = timeline.segments.find(s => s.id === segment.id);
                         console.log('  After updateSegmentProperties:');
@@ -265,7 +265,7 @@ class ElementsLibraryDesigner {
 
         // Re-render timeline
         timeline.render();
-        
+
         console.log('=== END LOADING ELEMENT ===\n');
     }
 
@@ -325,7 +325,7 @@ class ElementsLibraryDesigner {
         // Find the next available suffix
         let suffixIndex = timeline.segments.length; // Start from total count
         let newName = `${baseType}_${indexToLetters(suffixIndex)}`;
-        
+
         while (existingNames.includes(newName)) {
             suffixIndex++;
             newName = `${baseType}_${indexToLetters(suffixIndex)}`;
@@ -337,7 +337,7 @@ class ElementsLibraryDesigner {
     updateSegmentProperties(segment, segmentData) {
         console.log('Updating segment properties for:', segment.type, 'with data:', segmentData);
         console.log('Initial segment state:', segment);
-        
+
         // Get time unit conversion info from properties panel (if available)
         const getTimeConversion = () => {
             if (window.propertiesPanel && typeof window.propertiesPanel.getTimeScaleInfo === 'function') {
@@ -346,15 +346,15 @@ class ElementsLibraryDesigner {
             // Default to microseconds if properties panel not available
             return { factor: 1e6, symbol: 'μs' };
         };
-        
+
         // Note: All time values from DB are in seconds, no conversion needed when loading
         // The properties panel handles conversion for display
-        
+
         // Update basic properties
         if (segmentData.duration !== undefined) {
             segment.duration = segmentData.duration;
         }
-        
+
         // Handle amplitude specially for ramp segments
         if (segment.type === 'ramp') {
             // For ramp segments, don't set amplitude directly - use start/end amplitudes
@@ -362,7 +362,7 @@ class ElementsLibraryDesigner {
         } else if (segmentData.amplitude !== undefined) {
             segment.amplitude = segmentData.amplitude;
         }
-        
+
         // Handle name with uniqueness check
         if (segmentData.name !== undefined) {
             const uniqueName = this.generateUniqueName(segmentData.name, segment.id);
@@ -373,7 +373,7 @@ class ElementsLibraryDesigner {
         // Update parameters - replace defaults with saved parameters
         if (segmentData.parameters) {
             console.log('Setting parameters:', segmentData.parameters, 'replacing existing:', segment.parameters);
-            
+
             // Replace parameters completely for loaded elements
             // Note: All time values from DB are in seconds, stored as-is
             // The properties panel handles conversion to display units
@@ -394,7 +394,7 @@ class ElementsLibraryDesigner {
         }
 
         console.log('Final updated segment:', segment);
-        
+
         // Persist changes back to the timeline
         if (window.waveformDesigner && window.waveformDesigner.timeline) {
             window.waveformDesigner.timeline.updateSegment(segment.id, {
@@ -520,12 +520,12 @@ class ElementsLibraryDesigner {
 
         } catch (error) {
             console.error('Failed to load element for editing:', error);
-            
+
             // Ensure loading state is cleared on error
             if (window.waveformDesigner) {
                 window.waveformDesigner.finishElementLoading(false);
             }
-            
+
             this.hideLoadingOverlay();
             this.showErrorMessage('Failed to load element for editing: ' + error.message);
         }
@@ -541,12 +541,12 @@ class ElementsLibraryDesigner {
             'Channels': element.num_channels.toString(),
             'Sample Rate': CommonUtils.formatSampleRate(element.sample_rate)
         };
-        
+
         const confirmed = await ModalUtils.showConfirm(
             `Are you sure you want to delete the waveform element "${element.name}"?\n\nThis action cannot be undone.`,
             'Delete Waveform Element'
         );
-        
+
         if (confirmed) {
             await this.deleteElement(element);
         }
@@ -592,7 +592,7 @@ class ElementsLibraryDesigner {
             .split('; ')
             .find(row => row.startsWith('csrftoken='))
             ?.split('=')[1];
-        
+
         return cookieValue || '';
     }
 }

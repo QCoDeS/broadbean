@@ -9,8 +9,8 @@ This package provides:
 
 from broadbean.instruments.registry import (
     AWGDriver,
-    ScopeDriver,
     InstrumentRegistry,
+    ScopeDriver,
 )
 
 __all__ = [

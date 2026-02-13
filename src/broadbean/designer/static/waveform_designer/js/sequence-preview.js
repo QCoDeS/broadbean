@@ -10,7 +10,7 @@ class SequencePreview {
         this.statsContainer = document.getElementById('sequence-stats');
         this.currentSequence = [];
         this.isPreviewStale = false;
-        
+
         this.init();
     }
 
@@ -65,7 +65,7 @@ class SequencePreview {
                 <p class="empty-state-text">Add elements to the timeline to see the preview</p>
             </div>
         `;
-        
+
         if (this.statusBadge) {
             this.statusBadge.textContent = 'No sequence';
             this.statusBadge.className = 'badge bg-secondary';
@@ -80,7 +80,7 @@ class SequencePreview {
             this.statusBadge.textContent = 'Click "Update Preview" to refresh';
             this.statusBadge.className = 'badge bg-warning';
         }
-        
+
         // If no plot exists yet, show a placeholder
         if (!this.plotDiv.querySelector('.plotly') && !this.plotDiv.querySelector('.empty-state')) {
             this.plotDiv.innerHTML = `
@@ -209,11 +209,11 @@ class SequencePreview {
         try {
             // Parse and display Plotly plot
             const plotData = JSON.parse(plotJson);
-            
+
             // Fix trace data format before rendering (decode numpy arrays)
             const fixedTraces = plotData.data.map(trace => {
                 const fixedTrace = { ...trace };
-                
+
                 // Convert numpy array objects to JavaScript arrays
                 if (trace.x && typeof trace.x === 'object' && trace.x.bdata && trace.x.dtype) {
                     try {
@@ -223,17 +223,17 @@ class SequencePreview {
                         for (let i = 0; i < binaryString.length; i++) {
                             bytes[i] = binaryString.charCodeAt(i);
                         }
-                        
+
                         // Convert bytes to float64 array
                         const float64Array = new Float64Array(bytes.buffer);
                         fixedTrace.x = Array.from(float64Array);
-                        
+
                     } catch (error) {
                         console.error('Failed to decode x data:', error);
                         fixedTrace.x = [];
                     }
                 }
-                
+
                 if (trace.y && typeof trace.y === 'object' && trace.y.bdata && trace.y.dtype) {
                     try {
                         // Decode base64 binary data for numpy arrays
@@ -242,20 +242,20 @@ class SequencePreview {
                         for (let i = 0; i < binaryString.length; i++) {
                             bytes[i] = binaryString.charCodeAt(i);
                         }
-                        
+
                         // Convert bytes to float64 array
                         const float64Array = new Float64Array(bytes.buffer);
                         fixedTrace.y = Array.from(float64Array);
-                        
+
                     } catch (error) {
                         console.error('Failed to decode y data:', error);
                         fixedTrace.y = [];
                     }
                 }
-                
+
                 return fixedTrace;
             });
-            
+
             // Clear container
             this.plotDiv.innerHTML = '';
 

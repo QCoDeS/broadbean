@@ -1,6 +1,7 @@
 """URL configuration for waveform_designer app."""
 
 from django.urls import path
+
 from . import views
 
 app_name = "waveform_designer"

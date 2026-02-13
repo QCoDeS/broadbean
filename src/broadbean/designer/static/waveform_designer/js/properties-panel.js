@@ -9,10 +9,10 @@ class PropertiesPanel {
         this.segmentLibrary = null;
         this.timeline = null;
         this.sampleRate = window.waveformDesignerSettings?.defaultSampleRate || 25e9; // Default from settings
-        
+
         this.propertiesContent = document.getElementById('properties-content');
         this.sampleRateInput = document.getElementById('sample-rate');
-        
+
         this.bindEvents();
         this.setupGlobalSettings();
     }
@@ -59,7 +59,7 @@ class PropertiesPanel {
         if (this.sampleRateInput) {
             // Set initial value
             this.sampleRateInput.value = this.sampleRate;
-            
+
             // Bind event listeners for sample rate changes
             this.sampleRateInput.addEventListener('change', (e) => {
                 this.updateGlobalSampleRate(e.target.value);
@@ -92,7 +92,7 @@ class PropertiesPanel {
             this.currentTimeUnits = timeScaleSelect.value;
         }
 
-        
+
         // Update the global reference for cross-component access
         window.propertiesPanel = this;
     }
@@ -102,7 +102,7 @@ class PropertiesPanel {
         if (isNaN(parsedValue) || parsedValue <= 0) return;
 
         this.sampleRate = parsedValue;
-        
+
         // Notify other components about the sample rate change
         window.dispatchEvent(new CustomEvent('settingChanged', {
             detail: { setting: 'sampleRate', value: this.sampleRate }
@@ -137,19 +137,19 @@ class PropertiesPanel {
     handleSegmentSelection(segment) {
         // Validate selection state and prevent conflicts during element loading
         const isLoadingElement = window.waveformDesigner?.isLoadingElement || false;
-        
+
         // Queue selection events during bulk loading
         if (isLoadingElement) {
             this.pendingSelection = segment;
             return;
         }
-        
+
         // Process any pending selection from bulk loading
         if (this.pendingSelection) {
             segment = this.pendingSelection;
             this.pendingSelection = null;
         }
-        
+
         // Update selection
         this.selectSegment(segment);
     }
@@ -191,13 +191,13 @@ class PropertiesPanel {
 
         // Name field - always shown first
         form.appendChild(this.createPropertyGroup('Name', 'name', segment.name, 'text'));
-        
+
         // Common properties - Duration is shown for all segments except waituntil
         if (segment.type !== 'waituntil') {
             const durationConfig = this.getParameterConfig('duration');
             form.appendChild(this.createPropertyGroup(durationConfig.label, 'duration', segment.duration, durationConfig.type, durationConfig.unit, durationConfig.step));
         }
-        
+
         // Only show amplitude for non-ramp, non-custom, and non-waituntil segments
         // (ramp uses start and stop, custom uses parameters, waituntil doesn't need amplitude)
         if (segment.type !== 'ramp' && segment.type !== 'custom' && segment.type !== 'waituntil') {
@@ -247,7 +247,7 @@ class PropertiesPanel {
         if (type === 'select') {
             input = document.createElement('select');
             const config = this.getParameterConfig(property);
-            
+
             // Add options based on property type
             if (property === 'type' && config.options) {
                 // For exponential type dropdown
@@ -302,8 +302,8 @@ class PropertiesPanel {
 
     formatNumberValue(value, property) {
         // Format values for display based on property type and current scales
-        if (property === 'duration' || property === 'rise_time' || property === 'fall_time' || 
-            property === 'width' || property === 'center' || property === 'time_constant' || 
+        if (property === 'duration' || property === 'rise_time' || property === 'fall_time' ||
+            property === 'width' || property === 'center' || property === 'time_constant' ||
             property === 'absolute_time') {
             const timeInfo = this.getTimeScaleInfo();
             return (value * timeInfo.factor).toFixed(3); // Convert to current time scale
@@ -320,13 +320,13 @@ class PropertiesPanel {
         if (!this.selectedSegment || !this.timeline) return;
 
         let parsedValue = value;
-        
+
         if (type === 'number') {
             parsedValue = parseFloat(value);
             if (isNaN(parsedValue)) return;
 
             // Convert back to base units using current scales
-            if (property === 'duration' || property === 'rise_time' || property === 'fall_time' || 
+            if (property === 'duration' || property === 'rise_time' || property === 'fall_time' ||
                 property === 'width' || property === 'center' || property === 'time_constant' ||
                 property === 'absolute_time' || property.endsWith('_delay') || property.endsWith('_duration')) {
                 const timeInfo = this.getTimeScaleInfo();
@@ -345,17 +345,17 @@ class PropertiesPanel {
                     const minDurationMicroseconds = minDuration * 1e6;
                     const inputDurationMicroseconds = parsedValue * 1e6;
                     const sampleRateGHz = this.sampleRate / 1e9;
-                    
+
                     // Show the Bootstrap modal instead of alert
                     this.showDurationWarningModal(
-                        inputDurationMicroseconds, 
-                        minDurationMicroseconds, 
+                        inputDurationMicroseconds,
+                        minDurationMicroseconds,
                         sampleRateGHz,
                         event.target
                     );
-                    
+
                     parsedValue = minDuration;
-                    
+
                     // Update the input field to show the corrected value
                     const input = event.target;
                     if (input) {
@@ -416,7 +416,7 @@ class PropertiesPanel {
         if (delay + duration > segmentDuration) {
             const timeInfo = this.getTimeScaleInfo();
             const maxValue = Math.max(0, segmentDuration - otherValue);
-            
+
             // Show warning and limit the value
             this.showMarkerWarningModal(
                 markerName,
@@ -425,7 +425,7 @@ class PropertiesPanel {
                 (maxValue * timeInfo.factor).toFixed(3),
                 timeInfo.symbol
             );
-            
+
             return maxValue;
         }
 
@@ -453,7 +453,7 @@ class PropertiesPanel {
 
         // Create marker controls
         const timeInfo = this.getTimeScaleInfo();
-        
+
         // Marker 1
         const marker1Group = this.createMarkerGroup('Marker 1', 'marker1', segment.markers.marker1, timeInfo);
         section.appendChild(marker1Group);
@@ -479,17 +479,17 @@ class PropertiesPanel {
         // Delay input
         const delayGroup = document.createElement('div');
         delayGroup.style.cssText = 'margin-bottom: 8px;';
-        
+
         const delayLabel = document.createElement('label');
         delayLabel.textContent = `Delay (${timeInfo.symbol}):`;
         delayLabel.style.cssText = 'display: block; font-size: 0.8rem; color: #6c757d; margin-bottom: 3px;';
-        
+
         const delayInput = document.createElement('input');
         delayInput.type = 'number';
         delayInput.step = 0.001;
         delayInput.value = (markerData.delay * timeInfo.factor).toFixed(3);
         delayInput.style.cssText = 'width: 100%; padding: 4px 8px; border: 1px solid #ced4da; border-radius: 3px; font-size: 0.8rem;';
-        
+
         delayInput.addEventListener('change', (e) => {
             this.updateSegmentProperty(`${markerName}_delay`, e.target.value, 'number');
         });
@@ -505,17 +505,17 @@ class PropertiesPanel {
 
         // Duration input
         const durationGroup = document.createElement('div');
-        
+
         const durationLabel = document.createElement('label');
         durationLabel.textContent = `Duration (${timeInfo.symbol}):`;
         durationLabel.style.cssText = 'display: block; font-size: 0.8rem; color: #6c757d; margin-bottom: 3px;';
-        
+
         const durationInput = document.createElement('input');
         durationInput.type = 'number';
         durationInput.step = 0.001;
         durationInput.value = (markerData.duration * timeInfo.factor).toFixed(3);
         durationInput.style.cssText = 'width: 100%; padding: 4px 8px; border: 1px solid #ced4da; border-radius: 3px; font-size: 0.8rem;';
-        
+
         durationInput.addEventListener('change', (e) => {
             this.updateSegmentProperty(`${markerName}_duration`, e.target.value, 'number');
         });
@@ -552,7 +552,7 @@ class PropertiesPanel {
     getParameterConfig(param) {
         // Get current time scale info for dynamic units
         const timeInfo = this.getTimeScaleInfo();
-        
+
         const configs = {
             'start': { label: 'Start Amplitude', type: 'number', unit: 'V', step: 0.1 },
             'stop': { label: 'Stop Amplitude', type: 'number', unit: 'V', step: 0.1 },
@@ -572,17 +572,17 @@ class PropertiesPanel {
             ]},
             'expression': { label: 'Expression', type: 'text', unit: '', step: 1 }
         };
-        
+
         // Also update duration to use dynamic time units
         if (param === 'duration') {
             return { label: 'Duration', type: 'number', unit: timeInfo.symbol, step: timeInfo.factor > 1e6 ? 0.001 : 0.01 };
         }
-        
+
         // Use fixed amplitude units (V)
         if (param === 'amplitude') {
             return { label: 'Amplitude', type: 'number', unit: 'V', step: 0.001 };
         }
-        
+
         return configs[param] || { label: param, type: 'number', unit: '', step: 0.001 };
     }
 
@@ -612,17 +612,17 @@ class PropertiesPanel {
         combinedTextarea.placeholder = 't, amp, tau: amp * exp(-t / tau), {"amp": 2, "tau": 0.33}';
         combinedTextarea.rows = 3;
         combinedTextarea.style.cssText = 'width: 100%; font-family: monospace; font-size: 0.85rem;';
-        
+
         // Only validate on blur (losing focus)
         combinedTextarea.addEventListener('blur', (e) => {
             this.updateCombinedCustomField(e.target.value);
         });
-        
+
         // Handle keyboard events
         combinedTextarea.addEventListener('keydown', (e) => {
             // Stop propagation for all keys to prevent global shortcuts from interfering
             e.stopPropagation();
-            
+
             // Validate on Enter key (but not Shift+Enter for multi-line)
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault(); // Prevent newline

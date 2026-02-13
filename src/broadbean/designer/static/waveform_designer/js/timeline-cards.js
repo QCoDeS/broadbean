@@ -21,13 +21,13 @@ class TimelineCards {
         this.channels = [];
         this.segments = [];
         this.selectedSegment = null;
-        
+
         // Counter to ensure unique IDs during bulk operations
         this.idCounter = 0;
-        
+
         // Drag reorder managers for each channel (initialized when channels are rendered)
         this.dragReorderManagers = new Map();
-        
+
         this.initializeDefaultChannel();
         this.render();
         this.setupEventListeners();
@@ -44,18 +44,18 @@ class TimelineCards {
         const channelId = `channel_${Date.now()}`;
         const channelNumber = this.channels.length + 1;
         const defaultName = name || `Channel ${channelNumber}`;
-        
+
         const channel = {
             id: channelId,
             name: defaultName,
             color: this.getChannelColor(channelNumber),
             segments: []
         };
-        
+
         this.channels.push(channel);
         this.render();
         this.notifyChannelAdded(channel);
-        
+
         return channel;
     }
 
@@ -70,7 +70,7 @@ class TimelineCards {
                     this.segments.splice(segIndex, 1);
                 }
             });
-            
+
             this.channels.splice(index, 1);
             this.render();
             this.notifyChannelRemoved(channelId);
@@ -104,7 +104,7 @@ class TimelineCards {
             // For normal operations, use simple timestamp
             id = Date.now().toString();
         }
-        
+
         const sampleRate = this.getSampleRate();
         const minDuration = 1 / sampleRate;
         const defaultDuration = Math.max(1e-6, minDuration);
@@ -130,13 +130,13 @@ class TimelineCards {
 
         channel.segments.push(segment);
         this.segments.push(segment);
-        
+
         // Auto-select the newly added segment (unless loading an element in bulk)
         if (!isLoadingElement) {
             this.selectSegment(segment);
             this.render();
         }
-        
+
         this.notifySegmentAdded(segment);
 
         return segment;
@@ -172,19 +172,19 @@ class TimelineCards {
         if (this.selectedSegment && this.selectedSegment.id === segment?.id) {
             return; // Already selected
         }
-        
+
         // Clear previous selection
         this.selectedSegment = null;
-        
+
         // Set new selection
         this.selectedSegment = segment;
-        
+
         // Only render if not in bulk loading mode
         const isLoadingElement = window.waveformDesigner?.isLoadingElement || false;
         if (!isLoadingElement) {
             this.render();
         }
-        
+
         this.notifySegmentSelected(segment);
     }
 
@@ -294,7 +294,7 @@ class TimelineCards {
 
         // Setup drag and drop for channel
         this.setupChannelDragDrop(segmentsContainer, channel.id);
-        
+
         // Setup drag-to-reorder for segments within the channel
         this.setupSegmentReordering(segmentsContainer, channel.id);
     }
@@ -371,7 +371,7 @@ class TimelineCards {
         }
 
         const icon = this.getSegmentIcon(segment.type);
-        
+
         // For waituntil segments, show absolute_time instead of duration
         let timeDisplay;
         if (segment.type === 'waituntil') {
@@ -581,7 +581,7 @@ class TimelineCards {
             const extendedHeight = rect.height + 40;
             indicator.style.height = `${extendedHeight}px`;
             indicator.style.top = `${rect.top - containerRect.top + container.scrollTop - 20}px`;
-            
+
             if (position === 'before') {
                 indicator.style.left = `${rect.left - containerRect.left + container.scrollLeft - halfGap - 2}px`;
             } else {
@@ -589,7 +589,7 @@ class TimelineCards {
             }
 
             indicator.style.display = 'block';
-            
+
             if (!indicator.parentNode) {
                 container.style.position = 'relative';
                 container.appendChild(indicator);
@@ -605,7 +605,7 @@ class TimelineCards {
         container.addEventListener('dragover', (e) => {
             // Check if this is a reorder drag (custom data type set by DragReorderManager)
             const isReorderDrag = e.dataTransfer.types.includes('application/x-segment-reorder');
-            
+
             if (isReorderDrag) {
                 return; // Let the reorder manager handle it
             }
@@ -618,14 +618,14 @@ class TimelineCards {
 
             // Find the card under the cursor
             const card = e.target.closest('.segment-card');
-            
+
             if (card) {
                 // Calculate drop position
                 const rect = card.getBoundingClientRect();
                 const midPoint = rect.left + rect.width / 2;
                 dropPosition = e.clientX < midPoint ? 'before' : 'after';
                 dropTargetCard = card;
-                
+
                 showLibraryDropIndicator(card, dropPosition);
             } else {
                 // No card under cursor, will add to end
@@ -649,16 +649,16 @@ class TimelineCards {
             e.stopPropagation();
             container.closest('.channel-row').classList.remove('drag-over');
             hideLibraryDropIndicator();
-            
+
             const segmentType = e.dataTransfer.getData('text/plain');
-            
+
             // Check if this is from the library (not an internal segment drag)
             if (segmentType && !this.segments.find(s => s.id === segmentType)) {
                 console.log('Dropping segment type:', segmentType, 'into channel:', channelId);
-                
+
                 // Add segment at the appropriate position
                 const segment = this.addSegmentToChannelAtPosition(segmentType, channelId, dropTargetCard, dropPosition);
-                
+
                 // Reset drop tracking
                 dropPosition = null;
                 dropTargetCard = null;
@@ -682,7 +682,7 @@ class TimelineCards {
         } else {
             id = Date.now().toString();
         }
-        
+
         const sampleRate = this.getSampleRate();
         const minDuration = 1 / sampleRate;
         const defaultDuration = Math.max(1e-6, minDuration);
@@ -712,7 +712,7 @@ class TimelineCards {
         if (targetCard && position) {
             const targetSegmentId = targetCard.dataset.segmentId;
             const targetIndex = channel.segments.findIndex(s => s.id === targetSegmentId);
-            
+
             if (targetIndex !== -1) {
                 insertIndex = position === 'before' ? targetIndex : targetIndex + 1;
             }
@@ -721,13 +721,13 @@ class TimelineCards {
         // Insert segment at the calculated position
         channel.segments.splice(insertIndex, 0, segment);
         this.segments.push(segment);
-        
+
         // Auto-select the newly added segment
         if (!isLoadingElement) {
             this.selectSegment(segment);
             this.render();
         }
-        
+
         this.notifySegmentAdded(segment);
 
         return segment;

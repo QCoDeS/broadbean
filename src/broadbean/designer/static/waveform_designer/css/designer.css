@@ -962,14 +962,14 @@
         grid-template-columns: 1fr;
         grid-template-rows: auto auto auto auto;
     }
-    
+
     .elements-panel,
     .segment-library,
     .properties-panel {
         max-height: 200px;
         overflow-y: auto;
     }
-    
+
     .segment-card {
         min-width: 120px;
         max-width: 150px;

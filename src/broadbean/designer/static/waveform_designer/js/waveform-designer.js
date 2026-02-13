@@ -9,17 +9,17 @@ class WaveformDesigner {
         this.segmentLibrary = null;
         this.propertiesPanel = null;
         this.previewPanel = null;
-        
+
         // Centralized selection management
         this.selectedSegment = null;
         this.isLoadingElement = false;
-        
+
         // Edit mode management
         this.editingElementId = null;
         this.originalElementData = null;
-        
+
         this.isInitialized = false;
-        
+
         this.init();
     }
 
@@ -28,10 +28,10 @@ class WaveformDesigner {
             await this.initializeComponents();
             this.bindGlobalEvents();
             this.setupHeaderControls();
-            
+
             this.isInitialized = true;
             console.log('Waveform Designer initialized successfully');
-            
+
         } catch (error) {
             console.error('Failed to initialize Waveform Designer:', error);
             this.showError('Failed to initialize application');
@@ -45,15 +45,15 @@ class WaveformDesigner {
         this.elementsLibrary = new ElementsLibraryDesigner();
         this.propertiesPanel = new PropertiesPanel();
         this.previewPanel = new PreviewPanel();
-        
+
         // Set up cross-references
         this.propertiesPanel.setReferences(this.timeline, this.segmentLibrary);
         this.previewPanel.setReferences(this.timeline);
-        
+
         // Set global reference for cross-component access
         window.propertiesPanel = this.propertiesPanel;
         window.waveformDesigner = this;
-        
+
         // Wait for segment library to load
         await this.waitForSegmentLibrary();
     }
@@ -61,12 +61,12 @@ class WaveformDesigner {
     async waitForSegmentLibrary() {
         let attempts = 0;
         const maxAttempts = 50; // 5 seconds max
-        
+
         while (attempts < maxAttempts && this.segmentLibrary.segmentTypes.length === 0) {
             await new Promise(resolve => setTimeout(resolve, 100));
             attempts++;
         }
-        
+
         if (this.segmentLibrary.segmentTypes.length === 0) {
             throw new Error('Failed to load segment types');
         }
@@ -105,13 +105,13 @@ class WaveformDesigner {
 
         // Update centralized selection state
         this.selectedSegment = segment;
-        
+
         // Ensure timeline selection is in sync
         if (this.timeline && this.timeline.selectedSegment !== segment) {
             this.timeline.selectedSegment = segment;
             this.timeline.render();
         }
-        
+
         // Ensure properties panel is in sync
         if (this.propertiesPanel && this.propertiesPanel.selectedSegment !== segment) {
             this.propertiesPanel.selectedSegment = segment;
@@ -122,7 +122,7 @@ class WaveformDesigner {
     selectSegment(segment) {
         // Public method for external components to trigger selection
         this.handleSegmentSelection(segment);
-        
+
         // Dispatch event for any other listeners
         window.dispatchEvent(new CustomEvent('segmentSelected', { detail: segment }));
     }
@@ -130,7 +130,7 @@ class WaveformDesigner {
     startElementLoading() {
         this.isLoadingElement = true;
         this.selectedSegment = null;
-        
+
         // Reset ID counter for consistent unique ID generation during bulk loading
         if (this.timeline) {
             this.timeline.idCounter = 0;
@@ -139,12 +139,12 @@ class WaveformDesigner {
 
     finishElementLoading(selectFirstSegment = true) {
         this.isLoadingElement = false;
-        
+
         // Force re-render timeline to ensure proper visual state
         if (this.timeline) {
             this.timeline.forceRender();
         }
-        
+
         // Process any pending selection events
         if (this.propertiesPanel && this.propertiesPanel.pendingSelection) {
             const pendingSegment = this.propertiesPanel.pendingSelection;
@@ -155,7 +155,7 @@ class WaveformDesigner {
             const firstSegment = this.timeline.segments[0];
             this.selectSegment(firstSegment);
         }
-        
+
     }
 
     // Edit mode management methods
@@ -190,9 +190,9 @@ class WaveformDesigner {
             // Update header to show edit mode
             if (header) {
                 header.innerHTML = `
-                    Waveform Designer 
+                    Waveform Designer
                     <span class="edit-mode-indicator">
-                        <i class="fas fa-edit"></i> 
+                        <i class="fas fa-edit"></i>
                         Editing: ${this.originalElementData.name}
                     </span>
                 `;
@@ -270,38 +270,38 @@ class WaveformDesigner {
      */
     isUserTyping() {
         const activeElement = document.activeElement;
-        
+
         // Check for input elements
         if (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA') {
             return true;
         }
-        
+
         // Check for contenteditable elements
         if (activeElement.contentEditable === 'true') {
             return true;
         }
-        
+
         // Check if we're in a modal dialog
         if (activeElement.closest('.modal')) {
             return true;
         }
-        
+
         // Check for specific input types that should be protected
-        if (activeElement.type === 'text' || 
-            activeElement.type === 'email' || 
-            activeElement.type === 'password' || 
+        if (activeElement.type === 'text' ||
+            activeElement.type === 'email' ||
+            activeElement.type === 'password' ||
             activeElement.type === 'number' ||
             activeElement.type === 'search') {
             return true;
         }
-        
+
         return false;
     }
 
     handleResize() {
         // Re-render timeline cards
         this.timeline?.render();
-        
+
         // Resize Plotly plot
         if (this.previewPanel?.plotDiv) {
             Plotly.Plots.resize(this.previewPanel.plotDiv);
@@ -346,7 +346,7 @@ class WaveformDesigner {
             const channels = this.timeline?.channels || [];
 
             // Check if there's any data to save
-            if (channels.length === 0 || 
+            if (channels.length === 0 ||
                 !channels.some(ch => ch.segments && ch.segments.length > 0)) {
                 this.showError('No waveform data to save. Add segments first.');
                 return;
@@ -374,7 +374,7 @@ class WaveformDesigner {
 
             // Configure modal for edit vs create mode
             const isEditMode = this.isInEditMode();
-            
+
             if (isEditMode && this.originalElementData) {
                 // Pre-populate with existing data for edit mode
                 nameInput.value = this.originalElementData.name;
@@ -484,9 +484,9 @@ class WaveformDesigner {
                     duration: seg.duration,
                     amplitude: seg.amplitude,
                     parameters: seg.parameters || {},
-                    markers: seg.markers || { 
-                        marker1: { delay: 0, duration: 0 }, 
-                        marker2: { delay: 0, duration: 0 } 
+                    markers: seg.markers || {
+                        marker1: { delay: 0, duration: 0 },
+                        marker2: { delay: 0, duration: 0 }
                     }
                 }))
             })),
@@ -498,7 +498,7 @@ class WaveformDesigner {
 
         try {
             let url, method;
-            
+
             if (isEditMode) {
                 // Update existing element
                 url = `/api/waveform/update/${this.editingElementId}/`;
@@ -526,10 +526,10 @@ class WaveformDesigner {
                 throw new Error(result.error || `${isEditMode ? 'Update' : 'Save'} failed: ${response.status}`);
             }
 
-            const successMessage = isEditMode ? 
+            const successMessage = isEditMode ?
                 `Waveform element "${result.name}" updated successfully!` :
                 `Waveform element "${result.name}" saved successfully!`;
-            
+
             this.showMessage(successMessage);
 
             // Exit edit mode after successful update
@@ -555,7 +555,7 @@ class WaveformDesigner {
             const segments = this.timeline?.getSegments() || [];
 
             // Check if there's any data to export
-            if (channels.length === 0 || 
+            if (channels.length === 0 ||
                 !channels.some(ch => ch.segments && ch.segments.length > 0)) {
                 this.showError('No waveform data to export. Add segments first.');
                 return;
@@ -580,9 +580,9 @@ class WaveformDesigner {
                         duration: seg.duration,
                         amplitude: seg.amplitude,
                         parameters: seg.parameters || {},
-                        markers: seg.markers || { 
-                            marker1: { delay: 0, duration: 0 }, 
-                            marker2: { delay: 0, duration: 0 } 
+                        markers: seg.markers || {
+                            marker1: { delay: 0, duration: 0 },
+                            marker2: { delay: 0, duration: 0 }
                         }
                     }))
                 })),

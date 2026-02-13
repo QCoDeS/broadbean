@@ -8,7 +8,7 @@ class ElementLibrary {
         this.elements = [];
         this.container = document.getElementById('element-library');
         this.refreshBtn = document.getElementById('refresh-elements-btn');
-        
+
         this.init();
     }
 

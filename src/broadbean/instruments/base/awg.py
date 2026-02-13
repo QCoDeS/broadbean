@@ -57,7 +57,7 @@ class ArbitraryWaveformGenerator(ABC):
         if not json_path.exists():
             raise FileNotFoundError(f"JSON file not found: {json_path}")
 
-        with open(json_path, "r") as f:
+        with open(json_path) as f:
             sequence_data = json.load(f)
 
         # Use filename as name if not provided

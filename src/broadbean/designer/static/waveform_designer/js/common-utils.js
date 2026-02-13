@@ -13,7 +13,7 @@ class CommonUtils {
         if (duration === null || duration === undefined) {
             return 'N/A';
         }
-        
+
         if (duration < 1e-6) {
             return `${(duration * 1e9).toFixed(2)} ns`;
         } else if (duration < 1e-3) {
@@ -34,7 +34,7 @@ class CommonUtils {
         if (rate === null || rate === undefined) {
             return 'N/A';
         }
-        
+
         if (rate >= 1e9) {
             return `${(rate / 1e9).toFixed(2)} GHz`;
         } else if (rate >= 1e6) {
@@ -71,13 +71,13 @@ class CommonUtils {
         const emptyState = document.createElement('div');
         emptyState.className = 'empty-state';
         emptyState.style.cssText = 'padding: 40px 20px; text-align: center; color: #95a5a6;';
-        
+
         emptyState.innerHTML = `
             <i class="fas ${icon}" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.3;"></i>
             <p class="empty-state-title" style="font-size: 1.1rem; font-weight: 500; margin-bottom: 8px; color: #7f8c8d;">${CommonUtils.escapeHtml(title)}</p>
             ${message ? `<p class="empty-state-text" style="font-size: 0.9rem; color: #95a5a6;">${CommonUtils.escapeHtml(message)}</p>` : ''}
         `;
-        
+
         return emptyState;
     }
 
@@ -88,7 +88,7 @@ class CommonUtils {
      */
     static showError(message, container = null) {
         console.error('Error:', message);
-        
+
         if (container) {
             const errorDiv = document.createElement('div');
             errorDiv.className = 'alert alert-danger';
@@ -252,9 +252,9 @@ class CommonUtils {
             animation: slideDown 0.3s ease-out;
         `;
         notification.textContent = message;
-        
+
         document.body.appendChild(notification);
-        
+
         setTimeout(() => {
             if (notification.parentNode) {
                 notification.style.animation = 'slideUp 0.3s ease-out';

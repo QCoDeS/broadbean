@@ -2,7 +2,9 @@
 
 import json
 import logging
+
 import numpy as np
+
 from broadbean.blueprint import BluePrint
 from broadbean.broadbean import PulseAtoms
 from broadbean.element import Element
@@ -11,8 +13,8 @@ from broadbean.sequence import Sequence
 from ..models import WaveformElement
 from ..utils import (
     index_to_letters,
-    rewrite_lambda_for_numpy,
     parse_element_data_to_ui_format,
+    rewrite_lambda_for_numpy,
 )
 
 logger = logging.getLogger(__name__)
@@ -275,12 +277,17 @@ def _get_instruments(awg_config_id, scope_config_id):
     Returns:
         Tuple of (awg, scope) instrument instances
     """
-    global _awg_instance, _scope_instance, _active_awg_config_id, _active_scope_config_id
+    global \
+        _awg_instance, \
+        _scope_instance, \
+        _active_awg_config_id, \
+        _active_scope_config_id
 
     # Import here to avoid circular imports
-    from ..models import AWGStationConfig, ScopeStationConfig
     from broadbean.interface.awg import AWGFactory
     from broadbean.interface.scope import ScopeFactory
+
+    from ..models import AWGStationConfig, ScopeStationConfig
 
     # If we already have instruments for these configs, return them
     if (
@@ -336,7 +343,11 @@ def _get_instruments(awg_config_id, scope_config_id):
 
 def reset_instrument_instances():
     """Reset global instrument instances. Used by disconnect_instruments."""
-    global _awg_instance, _scope_instance, _active_awg_config_id, _active_scope_config_id
+    global \
+        _awg_instance, \
+        _scope_instance, \
+        _active_awg_config_id, \
+        _active_scope_config_id
     _awg_instance = None
     _scope_instance = None
     _active_awg_config_id = None

@@ -6,8 +6,8 @@ for various hardware vendors.
 
 # Import implementations to trigger registration with InstrumentRegistry
 from broadbean.instruments.scope.tektronix import (
-    TektronixDPO70000,
     TektronixDPO7200,
+    TektronixDPO70000,
 )
 
 __all__ = [

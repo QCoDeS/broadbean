@@ -1,7 +1,8 @@
 """Admin configuration for waveform designer models."""
 
 from django.contrib import admin
-from .models import WaveformElement, WaveformSequence, SequenceElement
+
+from .models import SequenceElement, WaveformElement, WaveformSequence
 
 
 @admin.register(WaveformElement)
