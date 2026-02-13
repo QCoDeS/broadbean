@@ -52,8 +52,12 @@ docs = [
     "sphinx-jsonschema",
     "ipykernel",
 ]
+plotly = [
+    "plotly>=5.0.0",
+]
 designer = [
     "django>=4.2",
+    "plotly>=5.0.0",
     "pyyaml",
 ]
 hardware = [
@@ -75,7 +79,6 @@ where = ["src"]
     "*.csv",
 ]
 
-
 [tool.pytest]
 minversion = "9.0"
 addopts = ["-ra", "-q"]
@@ -90,7 +93,8 @@ warn_redundant_casts = true
 [[tool.mypy.overrides]]
 module = [
     "matplotlib.*",
-    "schema"
+    "schema",
+    "plotly.*",
 ]
 ignore_missing_imports = true
 
