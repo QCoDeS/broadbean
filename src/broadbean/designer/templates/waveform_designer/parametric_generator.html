@@ -1,0 +1,188 @@
+{% extends "waveform_designer/base.html" %}
+{% load static %}
+
+{% block title %}Parametric Sequence Generator{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'waveform_designer/css/parametric-generator.css' %}?v=2">
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        height: 100vh;
+    }
+
+    .main-content {
+        display: flex !important;
+        flex-direction: column !important;
+        height: calc(100vh - 60px) !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="parametric-container">
+
+    <!-- Main Content Area -->
+    <div class="parametric-main">
+        <!-- Element Loader Panel -->
+        <aside class="element-loader-panel">
+            <h3>Load Element</h3>
+            <div class="element-library" id="element-library">
+                <div class="empty-state">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading elements...</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center Panel -->
+        <main class="center-content">
+            <!-- Segment Selector Section -->
+            <section class="segment-selector-section">
+                <h3>Select Segments & Parameters</h3>
+                <div id="segment-selector">
+                    <div class="no-element-loaded">
+                        <i class="fas fa-arrow-left"></i>
+                        <p>Load an element to configure parameter sweeps</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sweep Configuration Section -->
+            <section class="sweep-config-section">
+                <h3>Parameter Sweep Configuration</h3>
+                <div id="sweep-config">
+                    <div class="empty-state">
+                        Select segment parameters above to configure sweeps
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Right Panel -->
+        <aside class="right-panel">
+            <!-- Loop Configuration -->
+            <div class="panel-section">
+                <h4><i class="fas fa-sync"></i> Loop Configuration</h4>
+                <div class="control-group">
+                    <label for="num-loops">Number of Loops:</label>
+                    <select id="num-loops">
+                        <option value="1" selected>1 Loop</option>
+                        <option value="2">2 Loops</option>
+                        <option value="3">3 Loops</option>
+                        <option value="4">4 Loops</option>
+                    </select>
+                </div>
+                <div id="loop-config">
+                    <!-- Loop iteration inputs will be added here -->
+                </div>
+                <div class="total-elements-display">
+                    Total Elements: <strong id="total-elements">0</strong>
+                </div>
+            </div>
+
+            <!-- Sequence Element Settings -->
+            <div class="panel-section">
+                <h4><i class="fas fa-cog"></i> Sequence Element Settings</h4>
+                <p class="settings-description">These settings will apply to all generated elements</p>
+
+                <div class="control-group">
+                    <label for="global-trigger-input">Trigger Input</label>
+                    <select id="global-trigger-input" class="form-control">
+                        <option value="0">Continue</option>
+                        <option value="1" selected>Trigger A</option>
+                        <option value="2">Trigger B</option>
+                        <option value="3">Internal Clock</option>
+                    </select>
+                    <small class="form-help-text">Hardware trigger input for all elements</small>
+                </div>
+
+                <div class="control-group">
+                    <label for="global-repetitions">Number of Repetitions</label>
+                    <input type="number" id="global-repetitions" class="form-control"
+                           value="1" min="1" max="65536" step="1">
+                    <small class="form-help-text">Repetitions per element (1-65536)</small>
+                </div>
+
+                <div id="global-flags-container" style="display: none;">
+                    <div class="element-flags-card">
+                        <div class="flags-card-header">
+                            <i class="fas fa-flag"></i>
+                            <span>Element Flags</span>
+                        </div>
+                        <div class="flags-card-body" id="global-flags-body">
+                            <!-- Flags will be dynamically generated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="panel-section">
+                <h4><i class="fas fa-cog"></i> Actions</h4>
+                <button id="generate-btn" class="btn btn-success btn-generate" disabled>
+                    <i class="fas fa-magic"></i> Generate & Save
+                </button>
+            </div>
+
+            <!-- Status Info -->
+            <div class="panel-section" id="status-section" style="display: none;">
+                <h4><i class="fas fa-chart-bar"></i> Status</h4>
+                <div id="status-info">
+                    <!-- Status information will be displayed here -->
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loading-overlay" class="loading-overlay" style="display: none;">
+    <div class="spinner"></div>
+    <p id="loading-message">Processing...</p>
+</div>
+
+<!-- Save Sequence Modal -->
+<div id="save-sequence-modal" class="custom-modal" style="display: none;">
+    <div class="custom-modal-backdrop"></div>
+    <div class="custom-modal-dialog">
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h5 class="custom-modal-title">
+                    <i class="fas fa-save"></i> Save Parametric Sequence
+                </h5>
+            </div>
+            <div class="custom-modal-body">
+                <div class="form-group mb-3">
+                    <label for="modal-sequence-name" class="form-label">Sequence Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="modal-sequence-name" placeholder="Enter sequence name" required>
+                    <div class="invalid-feedback" id="modal-name-error" style="display: none;">Please enter a name for the sequence.</div>
+                </div>
+                <div class="form-group">
+                    <label for="modal-sequence-description" class="form-label">Description</label>
+                    <textarea class="form-control" id="modal-sequence-description" rows="3" placeholder="Enter optional description"></textarea>
+                </div>
+            </div>
+            <div class="custom-modal-footer">
+                <button type="button" class="custom-modal-btn custom-modal-btn-secondary" id="save-modal-cancel">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="custom-modal-btn custom-modal-btn-primary" id="save-modal-save">
+                    <i class="fas fa-magic"></i> Generate & Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- JavaScript (with cache bust) -->
+<script src="{% static 'waveform_designer/js/common-utils.js' %}?v=2"></script>
+<script src="{% static 'waveform_designer/js/modal-utils.js' %}?v=2"></script>
+<script src="{% static 'waveform_designer/js/parametric-generator.js' %}?v=2"></script>
+{% endblock %}
