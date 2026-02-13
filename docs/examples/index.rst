@@ -11,4 +11,4 @@ Broadbean Examples
     Filter_compensation.ipynb
     Amplitude_LUT_Example.ipynb
     Subsequences.ipynb
-    Plotting_Examples.ipynb
+    PlottingS_Examples.ipynb
