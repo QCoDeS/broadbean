@@ -4,7 +4,7 @@ import json
 import logging
 import warnings
 from copy import deepcopy
-from typing import Any, cast
+from typing import Any, TypedDict, cast
 
 import numpy as np
 from schema import Optional, Or, Schema
@@ -20,6 +20,21 @@ from .broadbean import (
 )
 
 log = logging.getLogger(__name__)
+
+
+class ChannelArrays(TypedDict, total=False):
+    """Arrays for a single channel in a forged element."""
+
+    wfm: np.ndarray
+    m1: np.ndarray
+    m2: np.ndarray
+    time: np.ndarray
+    flags: list[int]  # List of 4 integers representing the flags for each point
+
+
+# A forged element: channel identifier -> channel arrays
+ForgedElement = dict[int | str, ChannelArrays]
+
 
 fs_schema = Schema(
     {
@@ -725,7 +740,7 @@ class Sequence:
         return elem
 
     @staticmethod
-    def _plotSummary(seq: dict[int, dict]) -> dict[int, dict[str, np.ndarray]]:
+    def _plotSummary(seq: dict[int, dict]) -> ForgedElement:
         """
         Return a plotting summary of a subsequence.
 
@@ -738,7 +753,7 @@ class Sequence:
             are just two points, np.array([min, max])
         """
 
-        output = {}
+        output: ForgedElement = {}
 
         # we assume correctness, all postions specify the same channels
         chans = seq[1]["data"].keys()
@@ -880,7 +895,7 @@ class Sequence:
 
         return output
 
-    def _prepareForOutputting(self) -> list[dict[int, Any]]:
+    def _prepareForOutputting(self) -> list[ForgedElement]:
         """
         The preparser for numerical output. Applies delay and ripasso
         corrections.
@@ -1030,8 +1045,7 @@ class Sequence:
                 go_to, wfms, amplitudes, seqname)
         """
 
-        # most of the footwork is done by the following function
-        elements = self._prepareForOutputting()
+        elements: list[ForgedElement] = self._prepareForOutputting()
         # _prepareForOutputting asserts that channel amplitudes and
         # full sequencing is specified
         seqlen = len(elements)
@@ -1203,7 +1217,7 @@ class Sequence:
             flags_pos = []
             for pos in range(1, seqlen + 1):
                 if "flags" in elements[pos - 1][chan]:
-                    flags = elements[pos - 1][chan]["flags"].tolist()
+                    flags = elements[pos - 1][chan]["flags"]
                 else:
                     flags = [0, 0, 0, 0]
                 flags_pos.append(flags)
