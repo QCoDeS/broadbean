@@ -545,7 +545,7 @@ const InstrumentsManager = {
         document.getElementById('horizontal-scale').value = params['horizontal.scale']?.initial_value || 100e-9;
         document.getElementById('horizontal-record-length').value = params['horizontal.record_length']?.initial_value || 5000;
         document.getElementById('horizontal-sample-rate').value = params['horizontal.sample_rate']?.initial_value || 2.5e9;
-        
+
         // Set mode and update scale field state accordingly
         const mode = params['horizontal.mode']?.initial_value || 'auto';
         document.getElementById('horizontal-mode').value = mode;
@@ -570,7 +570,7 @@ const InstrumentsManager = {
         // Convert trigger type to lowercase as qcodes expects lowercase values
         const triggerType = document.getElementById('trigger-type').value.toLowerCase();
         const horizontalMode = document.getElementById('horizontal-mode').value;
-        
+
         // Build parameters based on mode
         // In manual mode, scale is determined by sample_rate and record_length, so we don't include scale
         // In auto mode, we include scale but not record_length
@@ -583,19 +583,19 @@ const InstrumentsManager = {
             'horizontal.position': { initial_value: parseFloat(document.getElementById('horizontal-position').value) },
             'horizontal.sample_rate': { initial_value: parseFloat(document.getElementById('horizontal-sample-rate').value) }
         };
-        
+
         if (horizontalMode === 'manual') {
             // In manual mode, include record_length instead of scale
-            parameters['horizontal.record_length'] = { 
-                initial_value: parseInt(document.getElementById('horizontal-record-length').value) 
+            parameters['horizontal.record_length'] = {
+                initial_value: parseInt(document.getElementById('horizontal-record-length').value)
             };
         } else {
             // In auto mode, include scale instead of record_length
-            parameters['horizontal.scale'] = { 
-                initial_value: parseFloat(document.getElementById('horizontal-scale').value) 
+            parameters['horizontal.scale'] = {
+                initial_value: parseFloat(document.getElementById('horizontal-scale').value)
             };
         }
-        
+
         return {
             name: document.getElementById('scope-config-name').value.trim(),
             description: document.getElementById('scope-config-description').value.trim(),
