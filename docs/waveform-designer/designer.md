@@ -28,6 +28,9 @@ Run the designer server using the `broadbean-designer` command:
 # Start with default settings (http://127.0.0.1:8000/)
 broadbean-designer runserver
 
+# Or simply (defaults to runserver)
+broadbean-designer
+
 # Specify host and port
 broadbean-designer runserver 0.0.0.0:8080
 
@@ -35,12 +38,19 @@ broadbean-designer runserver 0.0.0.0:8080
 broadbean-designer migrate
 ```
 
+Alternatively, use the Python module syntax:
+
+```bash
+python -m broadbean.designer.manage runserver
+python -m broadbean.designer.manage migrate
+```
+
 ### From Python
 
 ```python
 from broadbean.designer import run
 
-# Start the server programmatically
+# Start the server programmatically (runs migrations automatically)
 run(host="127.0.0.1", port=8000)
 ```
 
