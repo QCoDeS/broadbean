@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Waveform Designer{% endblock %}</title>
-    
+
     {% load static %}
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{% static 'waveform_designer/favicon.ico' %}">
@@ -12,12 +12,12 @@
     <link rel="stylesheet" href="{% static 'waveform_designer/css/bootstrap.min.css' %}">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="{% static 'waveform_designer/css/fontawesome/all.min.css' %}">
-    
+
     <!-- Common CSS -->
     <link rel="stylesheet" href="{% static 'waveform_designer/css/common.css' %}">
-    
+
     {% block extra_css %}{% endblock %}
-    
+
     <style>
         :root {
             --primary-color: #0078d4;
@@ -29,47 +29,47 @@
             --light-color: #f8f9fa;
             --dark-color: #343a40;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f5f5f5;
         }
-        
+
         .navbar-brand {
             font-weight: 600;
         }
-        
+
         .nav-link.active {
             font-weight: 600;
             border-bottom: 2px solid var(--primary-color);
         }
-        
+
         .main-content {
             padding: 20px;
         }
-        
+
         .card {
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             border: none;
             border-radius: 8px;
         }
-        
+
         .card-header {
             background-color: #fff;
             border-bottom: 1px solid #e9ecef;
             font-weight: 600;
         }
-        
+
         .btn-primary {
             background-color: var(--primary-color);
             border-color: var(--primary-color);
         }
-        
+
         .btn-primary:hover {
             background-color: #005a9e;
             border-color: #005a9e;
         }
-        
+
         /* Loading overlay */
         .loading-overlay {
             position: fixed;
@@ -83,11 +83,11 @@
             align-items: center;
             z-index: 9999;
         }
-        
+
         .loading-overlay.hidden {
             display: none;
         }
-        
+
         .loading-spinner {
             width: 50px;
             height: 50px;
@@ -96,12 +96,12 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        
+
         /* Toast notifications */
         .toast-container {
             position: fixed;
@@ -124,31 +124,31 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'designer' %}active{% endif %}" 
+                        <a class="nav-link {% if request.resolver_match.url_name == 'designer' %}active{% endif %}"
                            href="{% url 'waveform_designer:designer' %}">
                             <i class="fas fa-pencil-alt me-1"></i>Designer
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'sequencer' %}active{% endif %}" 
+                        <a class="nav-link {% if request.resolver_match.url_name == 'sequencer' %}active{% endif %}"
                            href="{% url 'waveform_designer:sequencer' %}">
                             <i class="fas fa-list-ol me-1"></i>Sequencer
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'parametric_generator' %}active{% endif %}" 
+                        <a class="nav-link {% if request.resolver_match.url_name == 'parametric_generator' %}active{% endif %}"
                            href="{% url 'waveform_designer:parametric_generator' %}">
                             <i class="fas fa-sliders-h me-1"></i>Parametric
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'upload' %}active{% endif %}" 
+                        <a class="nav-link {% if request.resolver_match.url_name == 'upload' %}active{% endif %}"
                            href="{% url 'waveform_designer:upload' %}">
                             <i class="fas fa-upload me-1"></i>Upload & Capture
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'instruments' %}active{% endif %}" 
+                        <a class="nav-link {% if request.resolver_match.url_name == 'instruments' %}active{% endif %}"
                            href="{% url 'waveform_designer:instruments' %}">
                             <i class="fas fa-cogs me-1"></i>Instruments
                         </a>
@@ -157,36 +157,36 @@
             </div>
         </div>
     </nav>
-    
+
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay hidden">
         <div class="loading-spinner"></div>
     </div>
-    
+
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
-    
+
     <!-- Main Content -->
     <main class="main-content">
         {% block content %}{% endblock %}
     </main>
-    
+
     <!-- Bootstrap JS -->
     <script src="{% static 'waveform_designer/js/bootstrap.bundle.min.js' %}"></script>
     <!-- Plotly -->
     <script src="{% static 'waveform_designer/js/plotly-2.24.1.min.js' %}"></script>
-    
+
     <script>
         // Utility functions available globally
         window.WaveformDesigner = {
             showLoading: function() {
                 document.getElementById('loadingOverlay').classList.remove('hidden');
             },
-            
+
             hideLoading: function() {
                 document.getElementById('loadingOverlay').classList.add('hidden');
             },
-            
+
             showToast: function(message, type = 'info') {
                 const container = document.getElementById('toastContainer');
                 const toast = document.createElement('div');
@@ -203,12 +203,12 @@
                 bsToast.show();
                 toast.addEventListener('hidden.bs.toast', () => toast.remove());
             },
-            
+
             // CSRF token for AJAX requests
             getCsrfToken: function() {
                 return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
             },
-            
+
             // API helper
             api: async function(url, options = {}) {
                 const defaultOptions = {
@@ -221,7 +221,7 @@
                 if (options.headers) {
                     mergedOptions.headers = { ...defaultOptions.headers, ...options.headers };
                 }
-                
+
                 try {
                     const response = await fetch(url, mergedOptions);
                     const data = await response.json();
@@ -234,7 +234,7 @@
                     throw error;
                 }
             },
-            
+
             // Format duration for display
             formatDuration: function(seconds) {
                 if (seconds < 1e-9) return (seconds * 1e12).toFixed(2) + ' ps';
@@ -243,7 +243,7 @@
                 if (seconds < 1) return (seconds * 1e3).toFixed(2) + ' ms';
                 return seconds.toFixed(4) + ' s';
             },
-            
+
             // Format frequency for display
             formatFrequency: function(hz) {
                 if (hz >= 1e9) return (hz / 1e9).toFixed(2) + ' GHz';
@@ -253,7 +253,7 @@
             }
         };
     </script>
-    
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>

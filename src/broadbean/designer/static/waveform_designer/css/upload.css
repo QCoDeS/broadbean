@@ -493,11 +493,11 @@
     .designer-main {
         grid-template-columns: 250px 1fr 300px;
     }
-    
+
     .sequence-card {
         padding: 10px;
     }
-    
+
     .control-panel {
         padding: var(--spacing-lg);
     }
@@ -545,7 +545,7 @@
             "center";
         height: auto;
     }
-    
+
     .sequence-library,
     .control-panel {
         max-height: 300px;

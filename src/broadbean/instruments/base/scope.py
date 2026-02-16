@@ -8,7 +8,6 @@ implementations must inherit from. Concrete implementations can be found in:
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +25,7 @@ class Scope(ABC):
     """
 
     @abstractmethod
-    def timebase(self) -> Tuple[str, any]:
+    def timebase(self) -> tuple[str, any]:
         """Get the current timebase setting of the scope.
 
         Returns:
@@ -43,7 +42,7 @@ class Scope(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def download(self) -> Tuple:
+    def download(self) -> tuple:
         """Download the acquired data from the scope.
 
         Returns:

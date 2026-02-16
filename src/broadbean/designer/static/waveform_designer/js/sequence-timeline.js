@@ -10,10 +10,10 @@ class SequenceTimeline {
         this.container = document.getElementById('sequence-timeline');
         this.positionCountBadge = document.getElementById('position-count');
         this.durationBadge = document.getElementById('total-duration-badge');
-        
+
         // Drag reorder manager for sequence positions
         this.dragReorderManager = null;
-        
+
         this.init();
     }
 
@@ -22,7 +22,7 @@ class SequenceTimeline {
         this.render();
         this.setupPositionReordering();
     }
-    
+
     setupPositionReordering() {
         // Clean up existing manager if any
         if (this.dragReorderManager) {
@@ -49,23 +49,23 @@ class SequenceTimeline {
     handlePositionReorder(data) {
         const draggedPos = parseInt(data.draggedId);
         const targetPos = parseInt(data.targetId);
-        
+
         // Calculate new position based on drop location
         let newPos = targetPos;
         if (data.position === 'after') {
             newPos = targetPos + 1;
         }
-        
+
         // Adjust if dragging from before the target
         if (draggedPos < targetPos && data.position === 'before') {
             newPos = targetPos - 1;
         }
-        
+
         // Don't do anything if dropping in the same position
         if (draggedPos === newPos || (draggedPos + 1 === newPos && data.position === 'after')) {
             return;
         }
-        
+
         // Perform the reorder
         this.moveElement(draggedPos, newPos);
     }
@@ -78,7 +78,7 @@ class SequenceTimeline {
 
         this.container.addEventListener('drop', (e) => {
             e.preventDefault();
-            
+
             try {
                 const elementData = JSON.parse(e.dataTransfer.getData('application/json'));
                 this.addElement(elementData);
@@ -90,7 +90,7 @@ class SequenceTimeline {
 
     addElement(elementData) {
         const position = this.sequenceElements.length + 1;
-        
+
         const sequenceElement = {
             position: position,
             element_id: elementData.id,
@@ -104,10 +104,10 @@ class SequenceTimeline {
         this.updateGotoDefaults();
         this.render();
         this.updateStats();
-        
+
         // Auto-scroll to the newly added element
         this.scrollToEnd();
-        
+
         // Notify other components
         this.dispatchChange();
     }
@@ -141,16 +141,16 @@ class SequenceTimeline {
     moveElement(fromPosition, toPosition) {
         const fromIndex = this.sequenceElements.findIndex(el => el.position === fromPosition);
         const toIndex = toPosition - 1;
-        
+
         if (fromIndex !== -1 && toIndex >= 0 && toIndex < this.sequenceElements.length) {
             const element = this.sequenceElements.splice(fromIndex, 1)[0];
             this.sequenceElements.splice(toIndex, 0, element);
-            
+
             // Renumber positions
             this.sequenceElements.forEach((el, idx) => {
                 el.position = idx + 1;
             });
-            
+
             this.updateGotoDefaults();
             this.render();
             this.updateStats();
@@ -161,7 +161,7 @@ class SequenceTimeline {
     selectElement(position) {
         this.selectedPosition = position;
         this.render();
-        
+
         const element = this.sequenceElements.find(el => el.position === position);
         if (element) {
             this.dispatchSelection(element);
@@ -174,12 +174,12 @@ class SequenceTimeline {
             Object.assign(element, updates);
             this.render();
             this.updateStats();
-            
+
             // Re-select the element to update inspector with new values
             if (this.selectedPosition === position) {
                 this.dispatchSelection(element);
             }
-            
+
             this.dispatchChange();
         }
     }
@@ -209,7 +209,7 @@ class SequenceTimeline {
         const card = document.createElement('div');
         card.className = 'sequence-position';
         card.dataset.position = seqElement.position;
-        
+
         if (seqElement.position === this.selectedPosition) {
             card.classList.add('selected');
         }
@@ -342,10 +342,10 @@ class SequenceTimeline {
         if (this.container) {
             const card = this.container.querySelector(`[data-position="${position}"]`);
             if (card) {
-                card.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'nearest', 
-                    inline: 'center' 
+                card.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest',
+                    inline: 'center'
                 });
             }
         }

@@ -12,24 +12,24 @@
     --color-primary: #3498db;
     --color-primary-dark: #2980b9;
     --color-primary-light: #e3f2fd;
-    
+
     --color-secondary: #95a5a6;
     --color-secondary-dark: #7f8c8d;
-    
+
     --color-success: #27ae60;
     --color-success-dark: #2ecc71;
     --color-success-light: #e8f8f5;
-    
+
     --color-warning: #f39c12;
     --color-warning-dark: #e67e22;
     --color-warning-light: #fff3cd;
-    
+
     --color-danger: #e74c3c;
     --color-danger-dark: #c0392b;
     --color-danger-light: #fee;
-    
+
     --color-info: #3498db;
-    
+
     /* Neutral Colors */
     --color-dark: #2c3e50;
     --color-dark-secondary: #34495e;
@@ -38,31 +38,31 @@
     --color-light: #ecf0f1;
     --color-lighter: #f8f9fa;
     --color-white: #ffffff;
-    
+
     /* Border Colors */
     --border-color: #dee2e6;
     --border-color-light: #e9ecef;
     --border-color-dark: #ddd;
-    
+
     /* Background Colors */
     --bg-primary: #ffffff;
     --bg-secondary: #f8f9fa;
     --bg-tertiary: #f5f5f5;
     --bg-hover: #ecf0f1;
-    
+
     /* Spacing Scale */
     --spacing-xs: 4px;
     --spacing-sm: 8px;
     --spacing-md: 12px;
     --spacing-lg: 15px;
     --spacing-xl: 20px;
-    
+
     /* Border Radius */
     --radius-sm: 3px;
     --radius-md: 4px;
     --radius-lg: 6px;
     --radius-xl: 8px;
-    
+
     /* Typography */
     --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     --font-size-xs: 0.75rem;      /* 12px */
@@ -72,21 +72,21 @@
     --font-size-lg: 1.1rem;       /* 17.6px */
     --font-size-xl: 1.2rem;       /* 19.2px */
     --font-size-2xl: 1.5rem;      /* 24px */
-    
+
     --font-weight-normal: 400;
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
-    
+
     /* Shadows */
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
     --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
     --shadow-xl: 0 4px 20px rgba(0, 0, 0, 0.3);
-    
+
     /* Transitions */
     --transition-fast: 0.2s ease;
     --transition-normal: 0.3s ease;
-    
+
     /* Z-index Scale */
     --z-dropdown: 100;
     --z-modal-backdrop: 1000;
@@ -955,17 +955,17 @@ textarea {
         width: 95%;
         max-width: none;
     }
-    
+
     .custom-modal-header,
     .custom-modal-body,
     .custom-modal-footer {
         padding: var(--spacing-lg);
     }
-    
+
     .custom-modal-title {
         font-size: var(--font-size-md);
     }
-    
+
     .btn {
         padding: var(--spacing-sm) var(--spacing-md);
         font-size: 13px;

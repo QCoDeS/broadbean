@@ -1,15 +1,17 @@
 """Views for the waveform designer interface (designer.html)."""
 
-import tempfile
-import os
 import json
+import os
+import tempfile
+
 import numpy as np
+import plotly.utils
+from django.conf import settings
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from django.conf import settings
-import plotly.utils
+
 from broadbean.element import ElementDurationError
 from broadbean.plotting import plotter
 
@@ -98,7 +100,7 @@ def export_waveform(request):
         try:
             elem.write_to_json(tmp_path)
 
-            with open(tmp_path, "r") as f:
+            with open(tmp_path) as f:
                 json_content = f.read()
 
             response = HttpResponse(json_content, content_type="application/json")

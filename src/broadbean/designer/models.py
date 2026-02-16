@@ -1,9 +1,9 @@
 """Models for the waveform designer app."""
 
-from django.db import models
 from django.core.validators import MinValueValidator
+from django.db import models
 
-from broadbean.instruments.registry import AWGDriver, ScopeDriver, InstrumentRegistry
+from broadbean.instruments.registry import AWGDriver, InstrumentRegistry, ScopeDriver
 
 # Constants for backward compatibility and model field defaults
 AWG_DRIVER_MOCK = AWGDriver.MOCK.value
@@ -43,7 +43,7 @@ class WaveformElement(models.Model):
         verbose_name_plural = "Waveform Elements"
 
     def __str__(self):
-        return f"{self.name} ({self.duration*1e6:.2f}μs)"
+        return f"{self.name} ({self.duration * 1e6:.2f}μs)"
 
 
 class WaveformSequence(models.Model):
@@ -204,6 +204,7 @@ class AWGStationConfig(models.Model):
     def to_station_yaml(self) -> str:
         """Generate qcodes Station YAML configuration string."""
         import yaml
+
         from broadbean.instruments.registry import AWGDriver
 
         if self.is_mock:
@@ -428,6 +429,7 @@ class ScopeStationConfig(models.Model):
     def to_station_yaml(self) -> str:
         """Generate qcodes Station YAML configuration string."""
         import yaml
+
         from broadbean.instruments.registry import ScopeDriver
 
         if self.is_mock:

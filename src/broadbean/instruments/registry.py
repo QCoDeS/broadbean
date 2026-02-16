@@ -11,7 +11,7 @@ Usage:
 
 import logging
 from enum import Enum
-from typing import Dict, Type, List, Tuple, Any
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -61,8 +61,8 @@ class InstrumentRegistry:
         awg = InstrumentRegistry.create_awg("my_driver", config_dict)
     """
 
-    _awg_registry: Dict[str, Type] = {}
-    _scope_registry: Dict[str, Type] = {}
+    _awg_registry: dict[str, type] = {}
+    _scope_registry: dict[str, type] = {}
 
     @classmethod
     def register_awg(cls, driver_key: str):
@@ -81,7 +81,7 @@ class InstrumentRegistry:
                 ...
         """
 
-        def decorator(impl_class: Type) -> Type:
+        def decorator(impl_class: type) -> type:
             if driver_key in cls._awg_registry:
                 logger.warning(
                     "AWG driver '%s' already registered, overwriting with %s",
@@ -113,7 +113,7 @@ class InstrumentRegistry:
                 ...
         """
 
-        def decorator(impl_class: Type) -> Type:
+        def decorator(impl_class: type) -> type:
             if driver_key in cls._scope_registry:
                 logger.warning(
                     "Scope driver '%s' already registered, overwriting with %s",
@@ -178,7 +178,7 @@ class InstrumentRegistry:
         return impl_class(config=config, **kwargs)
 
     @classmethod
-    def get_awg_choices(cls) -> List[Tuple[str, str]]:
+    def get_awg_choices(cls) -> list[tuple[str, str]]:
         """Get list of AWG driver choices for UI dropdowns.
 
         Returns:
@@ -197,7 +197,7 @@ class InstrumentRegistry:
         return choices
 
     @classmethod
-    def get_scope_choices(cls) -> List[Tuple[str, str]]:
+    def get_scope_choices(cls) -> list[tuple[str, str]]:
         """Get list of Scope driver choices for UI dropdowns.
 
         Returns:
@@ -211,17 +211,19 @@ class InstrumentRegistry:
                 # Derive label from enum value
                 # e.g., "tektronix_dpo70000" -> "Tektronix DPO70000"
                 parts = driver.value.split("_")
-                label = " ".join(p.capitalize() if p.islower() else p.upper() for p in parts)
+                label = " ".join(
+                    p.capitalize() if p.islower() else p.upper() for p in parts
+                )
             choices.append((driver.value, label))
         return choices
 
     @classmethod
-    def get_registered_awg_drivers(cls) -> List[str]:
+    def get_registered_awg_drivers(cls) -> list[str]:
         """Get list of currently registered AWG driver keys."""
         return list(cls._awg_registry.keys())
 
     @classmethod
-    def get_registered_scope_drivers(cls) -> List[str]:
+    def get_registered_scope_drivers(cls) -> list[str]:
         """Get list of currently registered Scope driver keys."""
         return list(cls._scope_registry.keys())
 

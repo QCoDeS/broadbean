@@ -6,7 +6,6 @@ qcodes Tektronix DPO driver methods.
 """
 
 import logging
-from typing import Tuple
 
 from broadbean.instruments.base.scope import Scope
 from broadbean.instruments.qcodes_base import QCodesStationMixin
@@ -53,7 +52,7 @@ class TektronixScopeBase(QCodesStationMixin, Scope):
         self.scope.single()
         logger.debug("Scope ready for triggered acquisition")
 
-    def download(self) -> Tuple:
+    def download(self) -> tuple:
         """Download acquired waveforms from enabled channels.
 
         Returns:
@@ -64,7 +63,7 @@ class TektronixScopeBase(QCodesStationMixin, Scope):
         logger.info("Downloaded %d waveforms", len(waveforms))
         return waveforms
 
-    def timebase(self) -> Tuple[str, any]:
+    def timebase(self) -> tuple[str, any]:
         """Get the timebase information from the scope.
 
         Returns:

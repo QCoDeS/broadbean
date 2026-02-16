@@ -1,16 +1,18 @@
 """Views for the sequencer interface (sequencer.html)."""
 
 import json
+
+import plotly.utils
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-import plotly.utils
-from broadbean.element import ElementDurationError
-from broadbean.sequence import Sequence
-from broadbean.plotting import plotter
 
-from ..models import WaveformElement, WaveformSequence, SequenceElement
+from broadbean.element import ElementDurationError
+from broadbean.plotting import plotter
+from broadbean.sequence import Sequence
+
+from ..models import SequenceElement, WaveformElement, WaveformSequence
 from .common import _build_sequence
 
 

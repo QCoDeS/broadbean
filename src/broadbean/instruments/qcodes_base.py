@@ -7,7 +7,6 @@ qcodes Station for configuration and initialization.
 import logging
 import os
 import tempfile
-from typing import Optional
 
 import yaml
 
@@ -23,6 +22,7 @@ def _get_station_class():
     if _qcodes_station is None:
         try:
             from qcodes.station import Station
+
             _qcodes_station = Station
         except ImportError:
             raise ImportError(
@@ -51,7 +51,7 @@ class QCodesStationMixin:
     QCODES_DRIVER: str = None  # Override in subclass
     INSTRUMENT_NAME: str = None  # Override in subclass (e.g., "awg", "scope")
 
-    _temp_yaml_path: Optional[str] = None
+    _temp_yaml_path: str | None = None
     station = None
 
     def _init_station(self, config: dict):

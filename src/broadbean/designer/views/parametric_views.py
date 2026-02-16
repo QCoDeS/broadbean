@@ -1,15 +1,17 @@
 """Views for the parametric generator interface (parametric_generator.html)."""
 
 import json
+
 import numpy as np
-from django.shortcuts import render
 from django.http import JsonResponse
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+
 from broadbean.tools import makeVaryingSequence
 
-from ..models import WaveformElement, WaveformSequence, SequenceElement
-from ..utils import parse_element_data_to_ui_format, map_ui_param_to_broadbean_arg
+from ..models import SequenceElement, WaveformElement, WaveformSequence
+from ..utils import map_ui_param_to_broadbean_arg, parse_element_data_to_ui_format
 from .common import _build_element, _build_sequence
 
 

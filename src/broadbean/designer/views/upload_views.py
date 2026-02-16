@@ -2,13 +2,15 @@
 
 import json
 import logging
-from django.shortcuts import render
+
 from django.http import JsonResponse
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from ..models import AWGStationConfig, ScopeStationConfig, WaveformSequence, LUTConfig
 from broadbean.instruments.base.mock_state import mock_state
+
+from ..models import AWGStationConfig, LUTConfig, ScopeStationConfig, WaveformSequence
 from .common import _get_instruments, reset_instrument_instances
 
 logger = logging.getLogger(__name__)

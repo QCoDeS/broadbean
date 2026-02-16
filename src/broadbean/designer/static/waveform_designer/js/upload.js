@@ -52,25 +52,25 @@ const instrumentConfigDetails = document.getElementById('instrument-config-detai
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize sequence preview
     sequencePreview = new UploadSequencePreview();
-    
+
     loadSequences();
     loadAllConfigs();
-    
+
     // Event listeners
     refreshSequencesBtn.addEventListener('click', loadSequences);
     uploadSequenceBtn.addEventListener('click', handleUploadSequence);
     triggerCaptureBtn.addEventListener('click', handleTriggerAndCapture);
     jumpToBtn.addEventListener('click', handleJumpToSegment);
     disconnectBtn.addEventListener('click', handleDisconnectInstruments);
-    
+
     awgConfigSelect.addEventListener('change', handleAwgConfigSelection);
     scopeConfigSelect.addEventListener('change', handleScopeConfigSelection);
     lutCh1Select.addEventListener('change', handleLutSelection);
     lutCh2Select.addEventListener('change', handleLutSelection);
-    
+
     // Add beforeunload handler for automatic disconnect on page navigation
     window.addEventListener('beforeunload', handleBeforeUnload);
-    
+
     // Intercept navigation links to disconnect before leaving
     setupNavigationInterception();
 });
@@ -82,12 +82,12 @@ async function loadAllConfigs() {
     try {
         const response = await fetch('/api/all-configs/');
         const data = await response.json();
-        
+
         if (data.success) {
             awgConfigs = data.awg_configs || [];
             scopeConfigs = data.scope_configs || [];
             lutConfigs = data.lut_configs || [];
-            
+
             renderConfigSelects();
         } else {
             console.error('Failed to load configs:', data.error);
@@ -112,7 +112,7 @@ function renderConfigSelects() {
             ${awgConfigs.map(c => `<option value="${c.id}">${CommonUtils.escapeHtml(c.name)}</option>`).join('')}
         `;
     }
-    
+
     // Scope configs
     if (scopeConfigs.length === 0) {
         scopeConfigSelect.innerHTML = '<option value="">No Scope configs available</option>';
@@ -122,7 +122,7 @@ function renderConfigSelects() {
             ${scopeConfigs.map(c => `<option value="${c.id}">${CommonUtils.escapeHtml(c.name)}</option>`).join('')}
         `;
     }
-    
+
     // LUT configs (for both channels)
     const lutOptions = `
         <option value="">None</option>
@@ -130,7 +130,7 @@ function renderConfigSelects() {
     `;
     lutCh1Select.innerHTML = lutOptions;
     lutCh2Select.innerHTML = lutOptions;
-    
+
     updateConfigDetails();
 }
 
@@ -139,7 +139,7 @@ function renderConfigSelects() {
  */
 function handleAwgConfigSelection() {
     const configId = awgConfigSelect.value;
-    
+
     if (!configId) {
         selectedAwgConfigId = null;
         selectedAwgConfig = null;
@@ -147,7 +147,7 @@ function handleAwgConfigSelection() {
         selectedAwgConfigId = parseInt(configId);
         selectedAwgConfig = awgConfigs.find(c => c.id === selectedAwgConfigId);
     }
-    
+
     updateConfigDetails();
     updateButtonStates();
 }
@@ -157,7 +157,7 @@ function handleAwgConfigSelection() {
  */
 function handleScopeConfigSelection() {
     const configId = scopeConfigSelect.value;
-    
+
     if (!configId) {
         selectedScopeConfigId = null;
         selectedScopeConfig = null;
@@ -165,7 +165,7 @@ function handleScopeConfigSelection() {
         selectedScopeConfigId = parseInt(configId);
         selectedScopeConfig = scopeConfigs.find(c => c.id === selectedScopeConfigId);
     }
-    
+
     updateConfigDetails();
     updateButtonStates();
 }
@@ -211,7 +211,7 @@ function isConfigMock(config) {
     // If is_mock is falsy (false, undefined, null, 0) AND driver_type is not 'mock', it's real hardware
     const isMockField = config.is_mock === true || config.is_mock === 'true' || config.is_mock === 'True';
     const isMockDriver = config.driver_type === 'mock';
-    
+
     // Debug logging (can be removed after verification)
     console.log('isConfigMock check:', {
         configName: config.name,
@@ -221,7 +221,7 @@ function isConfigMock(config) {
         isMockDriver: isMockDriver,
         result: isMockField || isMockDriver
     });
-    
+
     return isMockField || isMockDriver;
 }
 
@@ -237,14 +237,14 @@ function updateConfigDetails() {
         `;
         return;
     }
-    
+
     let html = '';
-    
+
     if (selectedAwgConfig) {
         const awgType = getDriverTypeLabel(selectedAwgConfig.driver_type, 'awg');
         const awgIp = extractIpFromAddress(selectedAwgConfig.address);
         const awgIsMock = isConfigMock(selectedAwgConfig);
-        
+
         html += `
             <div class="config-detail-row">
                 <span class="config-detail-label">AWG:</span>
@@ -252,12 +252,12 @@ function updateConfigDetails() {
             </div>
         `;
     }
-    
+
     if (selectedScopeConfig) {
         const scopeType = getDriverTypeLabel(selectedScopeConfig.driver_type, 'scope');
         const scopeIp = extractIpFromAddress(selectedScopeConfig.address);
         const scopeIsMock = isConfigMock(selectedScopeConfig);
-        
+
         html += `
             <div class="config-detail-row">
                 <span class="config-detail-label">Scope:</span>
@@ -265,7 +265,7 @@ function updateConfigDetails() {
             </div>
         `;
     }
-    
+
     // Determine overall mode - Real Hardware if either AWG or Scope is real
     const awgIsMock = isConfigMock(selectedAwgConfig);
     const scopeIsMock = isConfigMock(selectedScopeConfig);
@@ -275,13 +275,13 @@ function updateConfigDetails() {
     const alertClass = isMock ? 'alert-info' : 'alert-success';
     const modeText = isMock ? 'Simulation Mode' : 'Real Hardware';
     const modeIcon = isMock ? 'fa-microchip' : 'fa-plug';
-    
+
     html = `
         <div class="alert ${alertClass} mb-2 py-1 px-2">
             <i class="fas ${modeIcon}"></i> <small>${modeText}</small>
         </div>
     ` + html;
-    
+
     instrumentConfigDetails.innerHTML = html;
 }
 
@@ -291,10 +291,10 @@ function updateConfigDetails() {
 async function loadSequences() {
     try {
         showLoadingOverlay();
-        
+
         const response = await fetch('/api/sequences/');
         const data = await response.json();
-        
+
         if (data.success) {
             sequences = data.sequences;
             renderSequenceLibrary();
@@ -321,14 +321,14 @@ function renderSequenceLibrary() {
         `;
         return;
     }
-    
+
     sequenceLibrary.innerHTML = sequences.map(seq => `
-        <div class="sequence-card ${seq.id === selectedSequenceId ? 'selected' : ''}" 
+        <div class="sequence-card ${seq.id === selectedSequenceId ? 'selected' : ''}"
              data-sequence-id="${seq.id}">
             <div class="sequence-card-header">
                 <div class="sequence-card-name">${CommonUtils.escapeHtml(seq.name)}</div>
-                <a href="/api/sequences/${seq.id}/download/" 
-                   class="sequence-download-btn" 
+                <a href="/api/sequences/${seq.id}/download/"
+                   class="sequence-download-btn"
                    title="Download sequence data as JSON"
                    onclick="event.stopPropagation();">
                     <i class="fas fa-download"></i>
@@ -341,7 +341,7 @@ function renderSequenceLibrary() {
             ${seq.description ? `<div class="sequence-card-description">${CommonUtils.escapeHtml(seq.description)}</div>` : ''}
         </div>
     `).join('');
-    
+
     // Add click listeners to sequence cards
     document.querySelectorAll('.sequence-card').forEach(card => {
         card.addEventListener('click', () => {
@@ -359,16 +359,16 @@ async function selectSequence(sequenceId) {
     if (selectedSequenceId !== sequenceId && areInstrumentsConnected) {
         await disconnectInstrumentsSilently();
     }
-    
+
     selectedSequenceId = sequenceId;
     isSequenceUploaded = false;
     areInstrumentsConnected = false;
     const sequence = sequences.find(s => s.id === sequenceId);
-    
+
     if (sequence) {
         // Update UI
         renderSequenceLibrary();
-        
+
         // Update selected sequence display
         selectedSequenceDisplay.classList.add('has-selection');
         selectedSequenceDisplay.innerHTML = `
@@ -377,12 +377,12 @@ async function selectSequence(sequenceId) {
                 ${sequence.num_positions} positions • ${CommonUtils.formatDuration(sequence.total_duration)}
             </div>
         `;
-        
+
         // Update sequence preview
         if (sequencePreview) {
             sequencePreview.updatePreview(sequenceId);
         }
-        
+
         // Update button state
         updateButtonStates();
     }
@@ -394,14 +394,14 @@ async function selectSequence(sequenceId) {
 function updateButtonStates() {
     // Upload button is enabled when sequence AND AWG config are selected
     uploadSequenceBtn.disabled = !selectedSequenceId || !selectedAwgConfigId;
-    
+
     // Trigger button is only enabled when sequence is uploaded
     triggerCaptureBtn.disabled = !isSequenceUploaded;
-    
+
     // Jump To button and input are enabled when sequence is uploaded
     jumpToBtn.disabled = !isSequenceUploaded;
     jumpToIndex.disabled = !isSequenceUploaded;
-    
+
     // Disconnect button is enabled when instruments are connected
     disconnectBtn.disabled = !areInstrumentsConnected;
 }
@@ -431,27 +431,27 @@ async function handleUploadSequence() {
     if (!selectedSequenceId || !selectedAwgConfigId) {
         return;
     }
-    
+
     const modeStr = getModeString();
-    
+
     try {
         // Disable buttons and show status
         uploadSequenceBtn.disabled = true;
         triggerCaptureBtn.disabled = true;
         disconnectBtn.disabled = true;
         showOperationStatus(`Uploading sequence to ${modeStr} AWG...`);
-        
+
         // Build request body with separate config IDs
         const requestBody = {
             sequence_id: selectedSequenceId,
             awg_config_id: selectedAwgConfigId,
         };
-        
+
         // Add scope config if selected
         if (selectedScopeConfigId) {
             requestBody.scope_config_id = selectedScopeConfigId;
         }
-        
+
         // Add LUT config IDs if selected
         if (selectedLutCh1Id) {
             requestBody.lut_channel_1_id = selectedLutCh1Id;
@@ -459,7 +459,7 @@ async function handleUploadSequence() {
         if (selectedLutCh2Id) {
             requestBody.lut_channel_2_id = selectedLutCh2Id;
         }
-        
+
         const response = await fetch('/api/upload-sequence/', {
             method: 'POST',
             headers: {
@@ -467,19 +467,19 @@ async function handleUploadSequence() {
             },
             body: JSON.stringify(requestBody),
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             showOperationStatus('Sequence uploaded successfully!', 'success');
-            
+
             // Mark sequence as uploaded and instruments as connected
             isSequenceUploaded = true;
             areInstrumentsConnected = true;
-            
+
             // Update button states
             updateButtonStates();
-            
+
             // Hide status after delay
             setTimeout(() => {
                 hideOperationStatus();
@@ -505,14 +505,14 @@ async function handleTriggerAndCapture() {
     if (!selectedSequenceId) {
         return;
     }
-    
+
     try {
         // Disable button and show status
         triggerCaptureBtn.disabled = true;
         disconnectBtn.disabled = true;
         showOperationStatus('Triggering AWG and capturing...');
         updateCaptureStatus('Capturing...', 'warning');
-        
+
         const response = await fetch('/api/trigger-and-capture/', {
             method: 'POST',
             headers: {
@@ -522,19 +522,19 @@ async function handleTriggerAndCapture() {
                 sequence_id: selectedSequenceId,
             }),
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             showOperationStatus('Capture complete!', 'success');
             updateCaptureStatus('Captured', 'success');
-            
+
             // Plot the captured waveforms
             plotCapturedWaveforms(data);
-            
+
             // Update stats
             updateCaptureStats(data);
-            
+
             // Hide status after delay
             setTimeout(() => {
                 hideOperationStatus();
@@ -564,13 +564,13 @@ async function handleJumpToSegment() {
     if (!selectedSequenceId) {
         return;
     }
-    
+
     const segmentIndex = parseInt(jumpToIndex.value);
     if (!segmentIndex || segmentIndex < 1) {
         showError('Please enter a valid segment number (1 or greater)');
         return;
     }
-    
+
     try {
         // Disable buttons and show status
         jumpToBtn.disabled = true;
@@ -578,7 +578,7 @@ async function handleJumpToSegment() {
         disconnectBtn.disabled = true;
         showOperationStatus(`Jumping to segment ${segmentIndex} and capturing...`);
         updateCaptureStatus('Jumping and capturing...', 'warning');
-        
+
         const response = await fetch('/api/jump-to-and-capture/', {
             method: 'POST',
             headers: {
@@ -588,19 +588,19 @@ async function handleJumpToSegment() {
                 segment_index: segmentIndex,
             }),
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             showOperationStatus(`Jump to segment ${segmentIndex} complete!`, 'success');
             updateCaptureStatus('Captured', 'success');
-            
+
             // Plot the captured waveforms
             plotCapturedWaveforms(data);
-            
+
             // Update stats
             updateCaptureStats(data);
-            
+
             // Hide status after delay
             setTimeout(() => {
                 hideOperationStatus();
@@ -632,23 +632,23 @@ async function handleDisconnectInstruments() {
         triggerCaptureBtn.disabled = true;
         disconnectBtn.disabled = true;
         showOperationStatus('Disconnecting instruments...');
-        
+
         const response = await fetch('/api/disconnect-instruments/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             showOperationStatus('Instruments disconnected successfully!', 'success');
-            
+
             // Mark instruments as disconnected and sequence as not uploaded
             areInstrumentsConnected = false;
             isSequenceUploaded = false;
-            
+
             // Clear capture display
             scopeCapturePlot.innerHTML = `
                 <div class="plot-placeholder">
@@ -658,10 +658,10 @@ async function handleDisconnectInstruments() {
             `;
             updateCaptureStatus('No capture', 'secondary');
             captureStats.style.display = 'none';
-            
+
             // Update button states
             updateButtonStates();
-            
+
             // Hide status after delay
             setTimeout(() => {
                 hideOperationStatus();
@@ -686,7 +686,7 @@ async function handleDisconnectInstruments() {
  */
 function plotCapturedWaveforms(data) {
     const { time_axis, time_unit, channels } = data;
-    
+
     // Create traces for each channel
     const traces = channels.map(channel => ({
         x: time_axis,
@@ -698,10 +698,10 @@ function plotCapturedWaveforms(data) {
             width: 2,
         },
     }));
-    
+
     // Determine title based on config
     const modeStr = getModeString();
-    
+
     // Layout configuration
     const layout = {
         title: `Scope Capture (${modeStr})`,
@@ -730,7 +730,7 @@ function plotCapturedWaveforms(data) {
         },
         autosize: true,
     };
-    
+
     // Plot configuration
     const config = {
         responsive: true,
@@ -738,17 +738,17 @@ function plotCapturedWaveforms(data) {
         displaylogo: false,
         modeBarButtonsToRemove: ['lasso2d', 'select2d'],
     };
-    
+
     // Clear placeholder if exists
     scopeCapturePlot.innerHTML = '';
-    
+
     // Create the plot
     Plotly.newPlot(scopeCapturePlot, traces, layout, config).then(() => {
         setTimeout(() => {
             Plotly.Plots.resize(scopeCapturePlot);
         }, 100);
     });
-    
+
     window.addEventListener('resize', () => {
         Plotly.Plots.resize(scopeCapturePlot);
     });
@@ -759,11 +759,11 @@ function plotCapturedWaveforms(data) {
  */
 function updateCaptureStats(data) {
     const { time_unit, channels, time_axis } = data;
-    
+
     document.getElementById('stat-time-unit').textContent = time_unit;
     document.getElementById('stat-channels').textContent = channels.map(ch => ch.name).join(', ');
     document.getElementById('stat-points').textContent = time_axis.length.toLocaleString();
-    
+
     captureStats.style.display = 'grid';
 }
 
@@ -773,7 +773,7 @@ function updateCaptureStats(data) {
 function updateCaptureStatus(text, type) {
     captureStatus.textContent = text;
     captureStatus.className = 'badge';
-    
+
     switch (type) {
         case 'success':
             captureStatus.classList.add('bg-success');
@@ -836,7 +836,7 @@ async function disconnectInstrumentsSilently() {
     if (!areInstrumentsConnected) {
         return;
     }
-    
+
     try {
         const response = await fetch('/api/disconnect-instruments/', {
             method: 'POST',
@@ -844,9 +844,9 @@ async function disconnectInstrumentsSilently() {
                 'Content-Type': 'application/json',
             },
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             areInstrumentsConnected = false;
             isSequenceUploaded = false;
@@ -871,7 +871,7 @@ function handleBeforeUnload(event) {
  */
 function setupNavigationInterception() {
     const navLinks = document.querySelectorAll('.navbar-nav a.nav-link');
-    
+
     navLinks.forEach(link => {
         link.addEventListener('click', async (event) => {
             if (areInstrumentsConnected) {

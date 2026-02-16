@@ -12,7 +12,7 @@
         overflow: hidden;
         height: 100vh;
     }
-    
+
     .main-content {
         display: flex !important;
         flex-direction: column !important;
@@ -20,7 +20,7 @@
         padding: 0 !important;
         margin: 0 !important;
     }
-    
+
     /* Tab styles */
     .config-tabs {
         display: flex;
@@ -28,7 +28,7 @@
         border-bottom: 2px solid #dee2e6;
         margin-bottom: 10px;
     }
-    
+
     .config-tab {
         padding: 8px 16px;
         cursor: pointer;
@@ -40,29 +40,29 @@
         color: #6c757d;
         transition: all 0.2s;
     }
-    
+
     .config-tab:hover {
         background: #e9ecef;
     }
-    
+
     .config-tab.active {
         background: #0d6efd;
         color: white;
     }
-    
+
     .tab-content {
         display: none;
     }
-    
+
     .tab-content.active {
         display: block;
     }
-    
+
     /* Config sections in sidebar */
     .config-type-section {
         margin-bottom: 15px;
     }
-    
+
     .config-type-header {
         display: flex;
         justify-content: space-between;
@@ -71,13 +71,13 @@
         border-bottom: 1px solid #dee2e6;
         margin-bottom: 8px;
     }
-    
+
     .config-type-header h5 {
         margin: 0;
         font-size: 0.9rem;
         font-weight: 600;
     }
-    
+
     .config-type-header .btn {
         padding: 2px 8px;
         font-size: 0.75rem;
@@ -108,7 +108,7 @@
         <!-- Saved Configurations Panel -->
         <aside class="configs-panel">
             <h3>Saved Configurations</h3>
-            
+
             <!-- AWG Configs Section -->
             <div class="config-type-section">
                 <div class="config-type-header">
@@ -121,7 +121,7 @@
                     <!-- AWG configurations will be loaded here -->
                 </div>
             </div>
-            
+
             <!-- Scope Configs Section -->
             <div class="config-type-section">
                 <div class="config-type-header">
@@ -134,7 +134,7 @@
                     <!-- Scope configurations will be loaded here -->
                 </div>
             </div>
-            
+
             <!-- LUT Configs Section -->
             <div class="config-type-section">
                 <div class="config-type-header">
@@ -208,7 +208,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="form-check mt-2">
                             <input type="checkbox" class="form-check-input" id="awg-flags">
                             <label class="form-check-label" for="awg-flags">Enable Flags</label>
@@ -280,7 +280,7 @@
                         </div>
                     </div>
                 </section>
-                
+
                 <div class="action-buttons mt-3">
                     <button id="save-awg-btn" class="btn btn-success">
                         <i class="fas fa-save"></i> Save AWG Configuration
@@ -536,7 +536,7 @@
                         </div>
                     </div>
                 </section>
-                
+
                 <div class="action-buttons mt-3">
                     <button id="save-scope-btn" class="btn btn-success">
                         <i class="fas fa-save"></i> Save Scope Configuration
@@ -603,7 +603,7 @@
                         </div>
                     </div>
                 </section>
-                
+
                 <div class="action-buttons mt-3">
                     <button id="save-lut-btn" class="btn btn-success">
                         <i class="fas fa-save"></i> Save LUT Configuration
@@ -618,7 +618,7 @@
         <!-- Status Panel -->
         <aside class="actions-panel">
             <h3>Status</h3>
-            
+
             <div id="test-results" class="test-results mt-2">
                 <!-- Test results will be shown here -->
             </div>

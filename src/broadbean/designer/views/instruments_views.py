@@ -4,24 +4,25 @@ import csv
 import io
 import json
 import logging
+
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-
-from ..models import (
-    AWGStationConfig,
-    ScopeStationConfig,
-    LUTConfig,
-    AWG_DRIVER_MOCK,
-    SCOPE_DRIVER_MOCK,
-    AWG_DRIVER_CHOICES,
-    SCOPE_DRIVER_CHOICES,
-)
 
 # Import factories for instrument configuration
 from broadbean.interface.awg import AWGFactory
 from broadbean.interface.scope import ScopeFactory
+
+from ..models import (
+    AWG_DRIVER_CHOICES,
+    AWG_DRIVER_MOCK,
+    SCOPE_DRIVER_CHOICES,
+    SCOPE_DRIVER_MOCK,
+    AWGStationConfig,
+    LUTConfig,
+    ScopeStationConfig,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -1102,7 +1103,7 @@ def configure_instrument(request):
 
                 message = f"AWG configured successfully at {config_model.address}"
                 if sample_rate is not None:
-                    message += f" (sample_rate: {sample_rate/1e9:.2f} GSa/s)"
+                    message += f" (sample_rate: {sample_rate / 1e9:.2f} GSa/s)"
 
                 return JsonResponse({"success": True, "message": message})
 

@@ -9,7 +9,7 @@ class UploadSequencePreview {
         this.statusBadge = document.getElementById('preview-status');
         this.statsContainer = document.getElementById('preview-stats');
         this.currentSequenceId = null;
-        
+
         this.bindEvents();
     }
 
@@ -75,7 +75,7 @@ class UploadSequencePreview {
                 <p>Select a sequence to preview the waveforms</p>
             </div>
         `;
-        
+
         if (this.statusBadge) {
             this.statusBadge.textContent = 'No sequence';
             this.statusBadge.className = 'badge bg-secondary';
@@ -146,11 +146,11 @@ class UploadSequencePreview {
         try {
             // Parse and display Plotly plot
             const plotData = JSON.parse(plotJson);
-            
+
             // Fix trace data format before rendering (decode numpy arrays)
             const fixedTraces = plotData.data.map(trace => {
                 const fixedTrace = { ...trace };
-                
+
                 // Convert numpy array objects to JavaScript arrays
                 if (trace.x && typeof trace.x === 'object' && trace.x.bdata && trace.x.dtype) {
                     try {
@@ -166,7 +166,7 @@ class UploadSequencePreview {
                         fixedTrace.x = [];
                     }
                 }
-                
+
                 if (trace.y && typeof trace.y === 'object' && trace.y.bdata && trace.y.dtype) {
                     try {
                         const binaryString = atob(trace.y.bdata);
@@ -181,10 +181,10 @@ class UploadSequencePreview {
                         fixedTrace.y = [];
                     }
                 }
-                
+
                 return fixedTrace;
             });
-            
+
             // Clear container
             this.plotDiv.innerHTML = '';
 
@@ -247,7 +247,7 @@ class UploadSequencePreview {
             if (positionsEl) positionsEl.textContent = '0';
             if (durationEl) durationEl.textContent = '0 μs';
             if (sampleRateEl) sampleRateEl.textContent = '0 Hz';
-            
+
             // Hide stats container
             this.statsContainer.style.display = 'none';
         }

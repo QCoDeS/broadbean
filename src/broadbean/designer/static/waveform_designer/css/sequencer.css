@@ -516,7 +516,7 @@
     .element-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .sequence-position {
         width: 180px;
     }
@@ -527,20 +527,20 @@
         width: 160px;
         padding: 10px;
     }
-    
+
     .position-details {
         grid-template-columns: 1fr;
         gap: 6px;
     }
-    
+
     .position-btn {
         padding: 2px 6px;
     }
-    
+
     .sequence-timeline {
         gap: 10px;
     }
-    
+
     .sequence-timeline-container {
         padding: 10px;
     }
@@ -550,16 +550,16 @@
     .sequence-position {
         width: 140px;
     }
-    
+
     .position-number {
         font-size: 10px;
         padding: 3px var(--spacing-sm);
     }
-    
+
     .position-name {
         font-size: var(--font-size-xs);
     }
-    
+
     .position-detail {
         font-size: 11px;
     }

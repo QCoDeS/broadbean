@@ -14,7 +14,6 @@ from broadbean.func_serialization import (
     serialize_function,
 )
 
-
 # ------------------------------------------------------------------
 # Serialization tests
 # ------------------------------------------------------------------
@@ -92,7 +91,7 @@ def test_deserialize_named_function():
 def test_deserialize_named_function_with_numpy():
     """Named functions can use np in the safe namespace"""
     source = (
-        "def wave(t, freq, ampl):\n" "    return ampl * np.sin(2 * np.pi * freq * t)\n"
+        "def wave(t, freq, ampl):\n    return ampl * np.sin(2 * np.pi * freq * t)\n"
     )
     serialized = {
         "func_type": "named_function",

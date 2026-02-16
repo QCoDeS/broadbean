@@ -6,11 +6,10 @@ implementations based on configuration using the InstrumentRegistry.
 
 import logging
 
-from broadbean.instruments.base.awg import ArbitraryWaveformGenerator
-from broadbean.instruments.registry import InstrumentRegistry
-
 # Import implementations to trigger registration with InstrumentRegistry
 import broadbean.instruments.mock  # noqa: F401
+from broadbean.instruments.base.awg import ArbitraryWaveformGenerator
+from broadbean.instruments.registry import InstrumentRegistry
 
 # Try to import hardware drivers (optional dependency)
 try:

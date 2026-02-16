@@ -11,7 +11,7 @@ class ElementInspector {
         this.selectedElements = new Set();
         this.bulkEditMode = false;
         this.sequenceElements = [];
-        
+
         this.init();
     }
 
@@ -41,7 +41,7 @@ class ElementInspector {
 
     showElement(sequenceElement) {
         this.currentElement = sequenceElement;
-        
+
         const element = sequenceElement.element;
         const duration = CommonUtils.formatDuration(element.duration);
         const sampleRate = CommonUtils.formatSampleRate(element.sample_rate);
@@ -77,7 +77,7 @@ class ElementInspector {
 
                 <div class="form-group">
                     <label for="repetitions">Number of Repetitions</label>
-                    <input type="number" id="repetitions" class="form-control" 
+                    <input type="number" id="repetitions" class="form-control"
                            value="${sequenceElement.repetitions}" min="1" max="65536" step="1">
                     <small class="form-help-text">How many times to repeat this element (1-65536)</small>
                 </div>
@@ -160,7 +160,7 @@ class ElementInspector {
 
     updateList(sequenceElements) {
         if (!this.listContainer) return;
-        
+
         this.sequenceElements = sequenceElements;
 
         if (sequenceElements.length === 0) {
@@ -177,7 +177,7 @@ class ElementInspector {
 
         // Create list header with select all checkbox
         const header = this.createListHeader();
-        
+
         // Create list items
         const listItems = sequenceElements.map(seqElement => this.createListItem(seqElement));
 
@@ -193,10 +193,10 @@ class ElementInspector {
     createListHeader() {
         const header = document.createElement('div');
         header.className = 'sequence-list-header';
-        
-        const isAllSelected = this.sequenceElements.length > 0 && 
+
+        const isAllSelected = this.sequenceElements.length > 0 &&
                              this.sequenceElements.every(el => this.selectedElements.has(el.position));
-        
+
         header.innerHTML = `
             <div class="sequence-list-header-content">
                 <label class="sequence-list-select-all">
@@ -205,13 +205,13 @@ class ElementInspector {
                 </label>
             </div>
         `;
-        
+
         // Bind select all checkbox
         const selectAllCheckbox = header.querySelector('#select-all-checkbox');
         selectAllCheckbox.addEventListener('change', (e) => {
             this.selectAllElements(e.target.checked);
         });
-        
+
         return header;
     }
 
@@ -226,7 +226,7 @@ class ElementInspector {
         if (isCurrentElement) {
             item.classList.add('selected');
         }
-        
+
         if (isSelected) {
             item.classList.add('selected-for-bulk');
         }
@@ -283,10 +283,10 @@ class ElementInspector {
         // Update select all checkbox
         const selectAllCheckbox = document.getElementById('select-all-checkbox');
         if (selectAllCheckbox) {
-            const isAllSelected = this.sequenceElements.length > 0 && 
+            const isAllSelected = this.sequenceElements.length > 0 &&
                                  this.sequenceElements.every(el => this.selectedElements.has(el.position));
             selectAllCheckbox.checked = isAllSelected;
-            
+
             // Update label text
             const label = selectAllCheckbox.nextElementSibling;
             if (label) {
@@ -300,11 +300,11 @@ class ElementInspector {
             if (item) {
                 const checkbox = item.querySelector('input[type="checkbox"]');
                 const isSelected = this.selectedElements.has(seqElement.position);
-                
+
                 if (checkbox) {
                     checkbox.checked = isSelected;
                 }
-                
+
                 if (isSelected) {
                     item.classList.add('selected-for-bulk');
                 } else {
@@ -316,7 +316,7 @@ class ElementInspector {
 
     updateBulkEditMode() {
         const hasSelection = this.selectedElements.size > 0;
-        
+
         if (hasSelection && !this.bulkEditMode) {
             this.showBulkEditControls();
             this.bulkEditMode = true;
@@ -356,7 +356,7 @@ class ElementInspector {
 
                 <div class="form-group">
                     <label for="bulk-repetitions">Number of Repetitions</label>
-                    <input type="number" id="bulk-repetitions" class="form-control" 
+                    <input type="number" id="bulk-repetitions" class="form-control"
                            placeholder="Keep current values" min="1" max="65536" step="1">
                     <small class="form-help-text">How many times to repeat selected elements (1-65536)</small>
                 </div>
@@ -391,7 +391,7 @@ class ElementInspector {
             { value: 4, label: 'Pulse' }
         ];
 
-        const optionsHtml = flagOptions.map(opt => 
+        const optionsHtml = flagOptions.map(opt =>
             `<option value="${opt.value}"${opt.value === '' ? ' selected' : ''}>${opt.label}</option>`
         ).join('');
 
@@ -427,9 +427,9 @@ class ElementInspector {
         return `
             <div class="flag-group">
                 <label for="bulk-flag-ch${channel}-${flagLabel}" class="flag-label">${flagLabel}</label>
-                <select id="bulk-flag-ch${channel}-${flagLabel}" 
-                        class="form-control flag-select bulk-flag-select" 
-                        data-channel="${channel}" 
+                <select id="bulk-flag-ch${channel}-${flagLabel}"
+                        class="form-control flag-select bulk-flag-select"
+                        data-channel="${channel}"
                         data-flag-index="${flagIndex}">
                     ${optionsHtml}
                 </select>
@@ -475,12 +475,12 @@ class ElementInspector {
         // Apply updates to each selected element
         this.selectedElements.forEach(position => {
             const updates = {};
-            
+
             // Only update properties that have values
             if (triggerInput && triggerInput.value !== '') {
                 updates.trigger_input = parseInt(triggerInput.value);
             }
-            
+
             if (repetitions && repetitions.value !== '') {
                 let value = parseInt(repetitions.value);
                 // Validate range
@@ -497,25 +497,25 @@ class ElementInspector {
                 if (seqElement) {
                     // Start with existing flags or empty object
                     const flags = seqElement.flags ? JSON.parse(JSON.stringify(seqElement.flags)) : {};
-                    
+
                     // Update flags that have been changed (not "Keep current values")
                     bulkFlagSelects.forEach(select => {
                         if (select.value !== '') {
                             const channel = parseInt(select.dataset.channel);
                             const flagIndex = parseInt(select.dataset.flagIndex);
                             const flagValue = parseInt(select.value);
-                            
+
                             const channelKey = `channel_${channel}`;
                             // Initialize channel flags if not present
                             if (!flags[channelKey]) {
                                 flags[channelKey] = [0, 0, 0, 0];
                             }
-                            
+
                             // Update the specific flag
                             flags[channelKey][flagIndex] = flagValue;
                         }
                     });
-                    
+
                     // Only include flags in updates if any were changed
                     const hasChangedFlags = Array.from(bulkFlagSelects).some(select => select.value !== '');
                     if (hasChangedFlags) {
@@ -540,19 +540,19 @@ class ElementInspector {
     generateFlagsCard(sequenceElement) {
         const element = sequenceElement.element;
         const numChannels = element.num_channels;
-        
+
         if (!numChannels || numChannels === 0) {
             return '';
         }
 
         // Get existing flags or initialize with defaults
         const flags = sequenceElement.flags || {};
-        
+
         let channelsHtml = '';
         for (let channel = 1; channel <= numChannels; channel++) {
             const channelKey = `channel_${channel}`;
             const channelFlags = flags[channelKey] || [0, 0, 0, 0]; // Default to None
-            
+
             channelsHtml += `
                 <div class="flags-channel-group">
                     <label class="flags-channel-label">Channel ${channel}</label>
@@ -588,16 +588,16 @@ class ElementInspector {
             { value: 4, label: 'Pulse' }
         ];
 
-        const optionsHtml = options.map(opt => 
+        const optionsHtml = options.map(opt =>
             `<option value="${opt.value}" ${opt.value === selectedValue ? 'selected' : ''}>${opt.label}</option>`
         ).join('');
 
         return `
             <div class="flag-group">
                 <label for="flag-ch${channel}-${flagLabel}" class="flag-label">${flagLabel}</label>
-                <select id="flag-ch${channel}-${flagLabel}" 
-                        class="form-control flag-select" 
-                        data-channel="${channel}" 
+                <select id="flag-ch${channel}-${flagLabel}"
+                        class="form-control flag-select"
+                        data-channel="${channel}"
                         data-flag-index="${flagIndex}">
                     ${optionsHtml}
                 </select>
@@ -607,7 +607,7 @@ class ElementInspector {
 
     bindFlagsEvents() {
         const flagSelects = document.querySelectorAll('.flag-select');
-        
+
         flagSelects.forEach(select => {
             select.addEventListener('change', (e) => {
                 this.updateFlag(e.target);
@@ -626,7 +626,7 @@ class ElementInspector {
         const flags = this.currentElement.flags || {};
         const channelKey = `channel_${channel}`;
         const channelFlags = flags[channelKey] || [0, 0, 0, 0];
-        
+
         // Update the specific flag
         channelFlags[flagIndex] = flagValue;
         flags[channelKey] = channelFlags;

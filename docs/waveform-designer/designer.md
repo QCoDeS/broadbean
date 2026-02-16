@@ -135,7 +135,7 @@ Configure AWG, Scope, and LUT settings.
 
 **Scope Configuration:**
 - Name and description
-- VISA address  
+- VISA address
 - Driver type (Mock, Tektronix DPO70000, DPO7200)
 - Acquisition parameters
 - Channel settings (coupling, scale, offset)
@@ -225,7 +225,7 @@ from broadbean.sequence import Sequence
 
 with open("my_sequence.json") as f:
     data = json.load(f)
-    
+
 seq = Sequence.sequence_from_description(data)
 ```
 

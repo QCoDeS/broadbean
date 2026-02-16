@@ -8,7 +8,7 @@ class SequencesLibrarySequencer {
         this.sequences = [];
         this.container = document.getElementById('sequences-library');
         this.refreshBtn = document.getElementById('refresh-sequences-btn');
-        
+
         this.init();
     }
 
@@ -182,12 +182,12 @@ class SequencesLibrarySequencer {
 
         } catch (error) {
             console.error('Failed to load sequence to timeline:', error);
-            
+
             // Ensure loading state is cleared on error
             if (window.sequencerApp) {
                 window.sequencerApp.finishSequenceLoading(false);
             }
-            
+
             this.hideLoadingOverlay();
             CommonUtils.showError('Failed to load sequence: ' + error.message);
         }
@@ -205,38 +205,38 @@ class SequencesLibrarySequencer {
         if (sequenceData.elements && Array.isArray(sequenceData.elements)) {
             // Clear existing sequence first
             timeline.clearSequence();
-            
+
             for (const elementData of sequenceData.elements) {
                 console.log('Loading sequence element:', elementData);
-                
+
                 try {
                     // Fetch the full element data from the API
                     const elementResponse = await fetch(`/api/elements/${elementData.element_id}/`);
                     const elementResult = await elementResponse.json();
-                    
+
                     if (!elementResponse.ok || !elementResult.success) {
                         throw new Error(`Failed to fetch element ${elementData.element_id}: ${elementResult.error}`);
                     }
-                    
+
                     const fullElementData = elementResult.element;
-                    
+
                     // Add element to timeline using the correct method
                     timeline.addElement(fullElementData);
-                    
+
                     // Update the element with the sequence-specific properties
                     const updates = {
                         trigger_input: elementData.trigger_input,
                         repetitions: elementData.repetitions,
                         goto: elementData.goto_position
                     };
-                    
+
                     // Include flags if they exist in the saved sequence
                     if (elementData.flags) {
                         updates.flags = elementData.flags;
                     }
-                    
+
                     timeline.updateElement(elementData.position, updates);
-                    
+
                 } catch (error) {
                     console.error('Failed to load element:', elementData, error);
                     throw new Error(`Failed to load element "${elementData.element_name}": ${error.message}`);
@@ -293,12 +293,12 @@ class SequencesLibrarySequencer {
 
         } catch (error) {
             console.error('Failed to load sequence for editing:', error);
-            
+
             // Ensure loading state is cleared on error
             if (window.sequencerApp) {
                 window.sequencerApp.finishSequenceLoading(false);
             }
-            
+
             this.hideLoadingOverlay();
             CommonUtils.showError('Failed to load sequence for editing: ' + error.message);
         }
@@ -445,7 +445,7 @@ class SequencesLibrarySequencer {
             .split('; ')
             .find(row => row.startsWith('csrftoken='))
             ?.split('=')[1];
-        
+
         return cookieValue || '';
     }
 }

@@ -65,9 +65,9 @@ logger = logging.getLogger(__name__)
 @InstrumentRegistry.register_awg("keysight_m8195a")
 class KeysightM8195A(QCodesStationMixin, ArbitraryWaveformGenerator):
     """Keysight M8195A AWG implementation.
-    
+
     High-performance 65 GSa/s arbitrary waveform generator.
-    
+
     Args:
         config: Configuration dictionary with:
             - address: VISA address for the AWG
@@ -75,59 +75,59 @@ class KeysightM8195A(QCodesStationMixin, ArbitraryWaveformGenerator):
         flags: Whether to use flags when outputting sequence files.
         **kwargs: Additional arguments (ignored).
     """
-    
+
     INSTRUMENT_NAME = "awg"
     QCODES_DRIVER = "qcodes.instrument_drivers.keysight.KeysightM8195A"
-    
+
     def __init__(self, config: dict, flags: bool = False, **kwargs):
         self.flags = flags
         self._init_station(config)
         self.awg = self.station.load_awg()
-        
+
         # Log basic info
         try:
             sample_rate = self.awg.sample_rate()
             logger.info("AWG loaded - Sample rate: %s Sa/s", sample_rate)
         except Exception as e:
             logger.warning("Could not read sample rate: %s", e)
-    
+
     def upload(self, sequence: Sequence):
         """Upload a sequence to the AWG.
-        
+
         Note: Keysight AWGs may use different upload methods than Tektronix.
         Implement the appropriate logic here.
         """
         sequence_name = getattr(sequence, "name", "sequence")
         logger.info("Uploading sequence '%s' to Keysight AWG", sequence_name)
-        
+
         # Example: Keysight might use WFM files instead of SEQX
         # wfm_data = sequence.outputForWFMFile()
         # self.awg.upload_wfm(wfm_data, sequence_name=sequence_name)
-        
+
         # Or if it supports SEQX format:
         if self.flags:
             seqx_input = sequence.outputForSEQXFileWithFlags()
         else:
             seqx_input = sequence.outputForSEQXFile()
-        
+
         self.awg.upload_seqx(seqx_input, sequence_name=sequence_name)
         logger.info("Sequence '%s' uploaded", sequence_name)
-    
+
     def jump_to(self, index: int):
         """Jump to a specific sequence position."""
         logger.debug("Jumping to sequence position %d", index)
         self.awg.sequence_jump(index)  # Method name may differ
-    
+
     def trigger(self):
         """Trigger the AWG."""
         logger.debug("Triggering AWG")
         self.awg.trigger()  # Method name may differ
-    
+
     def trigger_segment(self, segment: int):
         """Jump to a segment and trigger."""
         self.jump_to(segment)
         self.trigger()
-    
+
     def disconnect(self):
         """Disconnect from the AWG."""
         self._disconnect_station()
@@ -205,24 +205,24 @@ logger = logging.getLogger(__name__)
 @InstrumentRegistry.register_scope("lecroy_hdo9000")
 class LecroyHDO9000(QCodesStationMixin, Scope):
     """LeCroy HDO9000 series oscilloscope implementation.
-    
+
     High Definition Oscilloscope with 12-bit resolution.
-    
+
     Args:
         config: Configuration dictionary with:
             - address: VISA address for the scope
             - parameters: Dict of parameter configurations
         **kwargs: Additional arguments (ignored).
     """
-    
+
     INSTRUMENT_NAME = "scope"
     QCODES_DRIVER = "qcodes.instrument_drivers.lecroy.LecroyHDO9000"
-    
+
     def __init__(self, config: dict, **kwargs):
         self._init_station(config)
         self.scope = self.station.load_scope(update_snapshot=False)
         logger.info("LeCroy scope loaded successfully")
-    
+
     def single(self):
         """Set scope into single acquisition mode."""
         logger.debug("Setting scope to single acquisition mode")
@@ -230,10 +230,10 @@ class LecroyHDO9000(QCodesStationMixin, Scope):
         self.scope.trigger_mode("single")
         self.scope.arm()
         logger.debug("Scope ready for triggered acquisition")
-    
+
     def download(self) -> Tuple:
         """Download acquired waveforms from enabled channels.
-        
+
         Returns:
             Tuple of numpy arrays, one per enabled channel.
         """
@@ -241,10 +241,10 @@ class LecroyHDO9000(QCodesStationMixin, Scope):
         waveforms = self.scope.get_waveforms()  # Method may differ
         logger.info("Downloaded %d waveforms", len(waveforms))
         return waveforms
-    
+
     def timebase(self) -> Tuple[str, any]:
         """Get the timebase information from the scope.
-        
+
         Returns:
             Tuple of (time_unit: str, time_axis: np.ndarray)
         """
@@ -255,7 +255,7 @@ class LecroyHDO9000(QCodesStationMixin, Scope):
         import numpy as np
         time_axis = np.linspace(-5 * time_div, 5 * time_div, record_length)
         return "s", time_axis
-    
+
     def disconnect(self):
         """Disconnect from the scope."""
         self._disconnect_station()
@@ -292,14 +292,14 @@ The `QCodesStationMixin` provides common qcodes Station functionality:
 ```python
 class QCodesStationMixin:
     """Mixin providing common qcodes Station functionality."""
-    
+
     QCODES_DRIVER: str = None   # Set to full qcodes driver path
     INSTRUMENT_NAME: str = None  # Set to "awg" or "scope"
-    
+
     def _init_station(self, config: dict):
         """Initialize qcodes Station from config dict."""
         # Creates temp YAML file and initializes Station
-    
+
     def _disconnect_station(self):
         """Close Station instruments and cleanup."""
 ```
@@ -312,21 +312,21 @@ If your instrument doesn't use qcodes Station (e.g., uses a different driver fra
 @InstrumentRegistry.register_awg("custom_awg")
 class CustomAWG(ArbitraryWaveformGenerator):
     """Custom AWG that doesn't use qcodes."""
-    
+
     def __init__(self, config: dict, **kwargs):
         import custom_driver
         self.driver = custom_driver.connect(config["address"])
-    
+
     def upload(self, sequence):
         # Custom upload logic
         pass
-    
+
     def jump_to(self, index: int):
         self.driver.jump(index)
-    
+
     def trigger(self):
         self.driver.trig()
-    
+
     def disconnect(self):
         self.driver.close()
 ```
@@ -397,12 +397,12 @@ class TestKeysightM8195A(unittest.TestCase):
     @patch('broadbean.instruments.awg.keysight.Station')
     def test_init(self, mock_station):
         from broadbean.instruments.awg.keysight import KeysightM8195A
-        
+
         mock_station.return_value.load_awg.return_value = MagicMock()
-        
+
         config = {"address": "mock", "parameters": {}}
         awg = KeysightM8195A(config)
-        
+
         self.assertIsNotNone(awg.awg)
 ```
 

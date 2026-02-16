@@ -7,11 +7,10 @@ qcodes Tektronix driver methods.
 
 import logging
 
-from broadbean.sequence import Sequence
-
 from broadbean.instruments.base.awg import ArbitraryWaveformGenerator
 from broadbean.instruments.qcodes_base import QCodesStationMixin
 from broadbean.instruments.registry import InstrumentRegistry
+from broadbean.sequence import Sequence
 
 logger = logging.getLogger(__name__)
 

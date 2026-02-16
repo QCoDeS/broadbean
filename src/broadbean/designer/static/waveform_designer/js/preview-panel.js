@@ -10,16 +10,16 @@ class PreviewPanel {
         this.isUpdating = false;
         this.updateTimeout = null;
         this.sampleRate = window.waveformDesignerSettings?.defaultSampleRate || 25e9; // Default from settings
-        
+
         this.plotDiv = document.getElementById('preview-plot');
         this.refreshBtn = document.getElementById('refresh-preview-btn');
-        
+
         // Stats elements
         this.statDuration = document.getElementById('stat-duration');
         this.statPoints = document.getElementById('stat-points');
         this.statPeak = document.getElementById('stat-peak');
         this.sampleCountBadge = document.getElementById('sample-count-badge');
-        
+
         this.bindEvents();
         this.initializePlot();
     }
@@ -142,14 +142,14 @@ class PreviewPanel {
         try {
             // Get global scale settings from the properties panel
             const timeUnitsSelect = document.getElementById('time-units');
-            
+
             const timeUnitsValue = timeUnitsSelect ? timeUnitsSelect.value : 'us';
             const amplitudeScaleValue = 'V'; // Fixed amplitude units
-            
+
             // Check if we have multi-channel data
             const channels = this.timeline?.channels || [];
             let requestData;
-            
+
             if (channels.length > 0 && channels.some(channel => channel.segments && channel.segments.length > 0)) {
                 // Multi-channel data - send channel structure
                 requestData = {
@@ -196,7 +196,7 @@ class PreviewPanel {
             });
 
             const data = await response.json();
-            
+
             if (data.success) {
                 await this.renderPlot(data.plot, data.stats);
                 this.updateStats(data.stats.total_duration, data.stats.points, data.stats.peak_amplitude);
@@ -223,12 +223,12 @@ class PreviewPanel {
             // Always use the backend-generated plot directly
             // The backend now handles both single-channel and multi-channel plotting
             const plotData = JSON.parse(plotJson);
-            
-            
+
+
             // Fix trace data format before rendering
             const fixedTraces = plotData.data.map(trace => {
                 const fixedTrace = { ...trace };
-                
+
                 // Convert numpy array objects to JavaScript arrays
                 if (trace.x && typeof trace.x === 'object' && trace.x.bdata && trace.x.dtype) {
                     try {
@@ -238,17 +238,17 @@ class PreviewPanel {
                         for (let i = 0; i < binaryString.length; i++) {
                             bytes[i] = binaryString.charCodeAt(i);
                         }
-                        
+
                         // Convert bytes to float64 array
                         const float64Array = new Float64Array(bytes.buffer);
                         fixedTrace.x = Array.from(float64Array);
-                        
+
                     } catch (error) {
                         console.error('Failed to decode x data:', error);
                         fixedTrace.x = [];
                     }
                 }
-                
+
                 if (trace.y && typeof trace.y === 'object' && trace.y.bdata && trace.y.dtype) {
                     try {
                         // Decode base64 binary data for numpy arrays
@@ -257,23 +257,23 @@ class PreviewPanel {
                         for (let i = 0; i < binaryString.length; i++) {
                             bytes[i] = binaryString.charCodeAt(i);
                         }
-                        
+
                         // Convert bytes to float64 array
                         const float64Array = new Float64Array(bytes.buffer);
                         fixedTrace.y = Array.from(float64Array);
-                        
+
                     } catch (error) {
                         console.error('Failed to decode y data:', error);
                         fixedTrace.y = [];
                     }
                 }
-                
+
                 return fixedTrace;
             });
-            
+
             // Use the plot data directly from the backend (which includes subplots if multi-channel)
             await Plotly.react(this.plotDiv, fixedTraces, plotData.layout);
-            
+
         } catch (error) {
             console.error('Failed to render plot:', error);
             this.showError('Failed to render waveform plot');
@@ -335,9 +335,9 @@ class PreviewPanel {
 
         // Split the message into shorter lines for better wrapping
         const wrappedMessage = message
-            .replace('All channels within the waveform element must be the same length.', 
+            .replace('All channels within the waveform element must be the same length.',
                      'All channels within the waveform element<br>must be the same length.')
-            .replace('Please edit the duration or add additional segments to ensure all channels are the same length.', 
+            .replace('Please edit the duration or add additional segments to ensure all channels are the same length.',
                      'Please edit the duration or add additional<br>segments to ensure all channels are<br>the same length.');
 
         const fullMessage = `<b>Plot not updated:</b><br><br>${wrappedMessage}${channelDetails}`;
@@ -377,7 +377,7 @@ class PreviewPanel {
         };
 
         Plotly.react(this.plotDiv, [], layout);
-        
+
         // Clear stats to indicate no valid data
         this.updateStats(0, 0, 0);
     }
@@ -394,7 +394,7 @@ class PreviewPanel {
 
     exportPlotData() {
         if (!this.timeline) return null;
-        
+
         const segments = this.timeline.getSegments();
         return {
             segments: segments,

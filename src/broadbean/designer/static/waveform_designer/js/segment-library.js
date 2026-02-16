@@ -5,29 +5,29 @@
 
 // Centralized segment default parameters configuration
 const SEGMENT_DEFAULTS = {
-    'ramp': { 
-        start: 0.0, 
-        stop: 1.0 
+    'ramp': {
+        start: 0.0,
+        stop: 1.0
     },
-    'sine': { 
-        frequency: 1e6, 
-        phase: 0, 
-        offset: 0.0 
+    'sine': {
+        frequency: 1e6,
+        phase: 0,
+        offset: 0.0
     },
-    'gaussian': { 
-        width: 0.1e-6, 
-        center: 0e-6 
+    'gaussian': {
+        width: 0.1e-6,
+        center: 0e-6
     },
-    'exponential': { 
-        time_constant: 0.33e-6, 
-        type: 'rise' 
+    'exponential': {
+        time_constant: 0.33e-6,
+        type: 'rise'
     },
-    'waituntil': { 
-        absolute_time: 1e-6 
+    'waituntil': {
+        absolute_time: 1e-6
     },
-    'custom': { 
-        expression: 't, amp, tau: amp * exp(-t / tau)', 
-        params_json: '{"amp": 2, "tau": 0.33e-6}' 
+    'custom': {
+        expression: 't, amp, tau: amp * exp(-t / tau)',
+        params_json: '{"amp": 2, "tau": 0.33e-6}'
     }
 };
 
@@ -38,7 +38,7 @@ class SegmentLibrary {
     constructor() {
         this.segmentTypes = [];
         this.container = document.getElementById('segment-types');
-        
+
         this.loadSegmentTypes();
         this.bindEvents();
     }
@@ -57,7 +57,7 @@ class SegmentLibrary {
 
     render() {
         this.container.innerHTML = '';
-        
+
         this.segmentTypes.forEach(segmentType => {
             const segmentItem = this.createSegmentItem(segmentType);
             this.container.appendChild(segmentItem);
@@ -69,39 +69,39 @@ class SegmentLibrary {
         item.className = 'segment-item';
         item.draggable = true;
         item.dataset.segmentType = segmentType.id;
-        
+
         // Create header with icon and name on same line
         const header = document.createElement('div');
         header.className = 'segment-item-header';
-        
+
         // Create segment icon with preview
         const icon = document.createElement('div');
         icon.className = 'segment-icon';
         icon.style.backgroundColor = segmentType.color;
-        
+
         // Add a mini preview of the waveform shape
         const preview = this.createMiniPreview(segmentType.id, segmentType.color);
         icon.appendChild(preview);
-        
+
         // Create name
         const name = document.createElement('div');
         name.className = 'segment-name';
         name.textContent = segmentType.name;
-        
+
         header.appendChild(icon);
         header.appendChild(name);
-        
+
         // Create description
         const description = document.createElement('div');
         description.className = 'segment-description';
         description.textContent = segmentType.description;
-        
+
         item.appendChild(header);
         item.appendChild(description);
-        
+
         // Add drag event listeners
         this.addDragListeners(item, segmentType);
-        
+
         return item;
     }
 
@@ -111,23 +111,23 @@ class SegmentLibrary {
         canvas.height = 30;
         canvas.style.width = '40px';
         canvas.style.height = '30px';
-        
+
         const ctx = canvas.getContext('2d');
-        
+
         // Generate preview waveform
         const points = 40;
         const amplitude = 12; // Half height minus padding
         const centerY = 15;
-        
+
         ctx.strokeStyle = 'white';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
-        
+
         for (let i = 0; i < points; i++) {
             const x = i;
             const t = i / (points - 1); // normalized time 0-1
             let y = centerY;
-            
+
             switch (type) {
                 case 'ramp':
                     y = centerY - amplitude * t;
@@ -153,16 +153,16 @@ class SegmentLibrary {
                 default:
                     y = centerY - amplitude * t;
             }
-            
+
             if (i === 0) {
                 ctx.moveTo(x, y);
             } else {
                 ctx.lineTo(x, y);
             }
         }
-        
+
         ctx.stroke();
-        
+
         return canvas;
     }
 
@@ -170,18 +170,18 @@ class SegmentLibrary {
         item.addEventListener('dragstart', (e) => {
             e.dataTransfer.setData('text/plain', segmentType.id);
             e.dataTransfer.effectAllowed = 'copy';
-            
+
             item.classList.add('dragging');
-            
+
             // Create a custom drag image
             const dragImage = this.createDragImage(segmentType);
             e.dataTransfer.setDragImage(dragImage, 25, 15);
         });
-        
+
         item.addEventListener('dragend', (e) => {
             item.classList.remove('dragging');
         });
-        
+
         // Add click handler for quick add to timeline
         item.addEventListener('click', () => {
             this.addToTimeline(segmentType.id);
@@ -204,16 +204,16 @@ class SegmentLibrary {
         dragImage.style.fontSize = '11px';
         dragImage.style.fontWeight = '500';
         dragImage.textContent = segmentType.name;
-        
+
         document.body.appendChild(dragImage);
-        
+
         // Remove the drag image after a short delay
         setTimeout(() => {
             if (dragImage.parentNode) {
                 dragImage.parentNode.removeChild(dragImage);
             }
         }, 100);
-        
+
         return dragImage;
     }
 
@@ -229,7 +229,7 @@ class SegmentLibrary {
         document.getElementById('sample-rate')?.addEventListener('change', (e) => {
             this.notifySettingChange('sampleRate', parseFloat(e.target.value));
         });
-        
+
         document.getElementById('time-scale')?.addEventListener('change', (e) => {
             this.notifySettingChange('timeScale', parseFloat(e.target.value));
         });

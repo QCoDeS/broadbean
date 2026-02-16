@@ -12,12 +12,12 @@ class DragReorderManager {
         this.dragDataType = options.dragDataType || 'application/x-card-reorder';
         this.getCardId = options.getCardId || ((card) => card.dataset.id);
         this.canDragCard = options.canDragCard || (() => true);
-        
+
         this.draggedCard = null;
         this.dropIndicator = null;
         this.currentDropTarget = null;
         this.dropPosition = null; // 'before' or 'after'
-        
+
         this.init();
     }
 
@@ -54,11 +54,11 @@ class DragReorderManager {
 
         this.draggedCard = card;
         const cardId = this.getCardId(card);
-        
+
         // Set custom data type to distinguish from library drags
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData(this.dragDataType, cardId);
-        
+
         // Add visual feedback
         setTimeout(() => {
             card.classList.add('drag-reorder-source');
@@ -130,7 +130,7 @@ class DragReorderManager {
         e.stopPropagation();
 
         const draggedId = e.dataTransfer.getData(this.dragDataType);
-        
+
         if (!this.currentDropTarget || !this.draggedCard) {
             this.hideDropIndicator();
             this.clearDropTarget();
@@ -138,7 +138,7 @@ class DragReorderManager {
         }
 
         const targetId = this.getCardId(this.currentDropTarget);
-        
+
         // Don't do anything if dropping on itself
         if (draggedId === targetId) {
             this.hideDropIndicator();
@@ -162,7 +162,7 @@ class DragReorderManager {
     showDropIndicator(card, position) {
         const rect = card.getBoundingClientRect();
         const containerRect = this.container.getBoundingClientRect();
-        
+
         // Gap size from CSS (--spacing-lg = 15px)
         const gapSize = 15;
         const halfGap = gapSize / 2;
@@ -173,7 +173,7 @@ class DragReorderManager {
             const extendedHeight = rect.height + 40;
             this.dropIndicator.style.height = `${extendedHeight}px`;
             this.dropIndicator.style.top = `${rect.top - containerRect.top + this.container.scrollTop - 20}px`;
-            
+
             if (position === 'before') {
                 // Position in the center of the gap before the card
                 this.dropIndicator.style.left = `${rect.left - containerRect.left + this.container.scrollLeft - halfGap - 1}px`;
@@ -187,7 +187,7 @@ class DragReorderManager {
             this.dropIndicator.style.width = `${extendedWidth}px`;
             this.dropIndicator.style.height = '2px';
             this.dropIndicator.style.left = `${rect.left - containerRect.left + this.container.scrollLeft - 20}px`;
-            
+
             if (position === 'before') {
                 // Position in the center of the gap before the card
                 this.dropIndicator.style.top = `${rect.top - containerRect.top + this.container.scrollTop - halfGap - 1}px`;
@@ -198,7 +198,7 @@ class DragReorderManager {
         }
 
         this.dropIndicator.style.display = 'block';
-        
+
         // Append to container if not already there
         if (!this.dropIndicator.parentNode) {
             this.container.style.position = 'relative';

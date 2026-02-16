@@ -9,9 +9,9 @@ class WaveformSequencer {
         this.timeline = null;
         this.inspector = null;
         this.preview = null;
-        
+
         this.isInitialized = false;
-        
+
         this.init();
     }
 
@@ -19,13 +19,13 @@ class WaveformSequencer {
         try {
             await this.initializeComponents();
             this.setupHeaderControls();
-            
+
             // Make globally accessible for cross-component communication
             window.sequencerApp = this;
-            
+
             this.isInitialized = true;
             console.log('Waveform Sequencer initialized successfully');
-            
+
         } catch (error) {
             console.error('Failed to initialize Waveform Sequencer:', error);
             this.showError('Failed to initialize application');
@@ -93,7 +93,7 @@ class WaveformSequencer {
 
     async showSaveModal() {
         const isUpdate = this.editMode && this.editMode.active;
-        
+
         const result = await ModalUtils.showSaveModal({
             title: isUpdate ? 'Update Waveform Sequence' : 'Save Waveform Sequence',
             nameLabel: 'Sequence Name',
@@ -107,7 +107,7 @@ class WaveformSequencer {
                 await this.performSaveSequence(name, description);
             }
         });
-        
+
         return result;
     }
 
@@ -116,7 +116,7 @@ class WaveformSequencer {
 
         // Determine if we're updating or creating new
         const isUpdate = this.editMode && this.editMode.active;
-        
+
         // Prepare save data
         const saveData = {
             name: name,
@@ -161,7 +161,7 @@ class WaveformSequencer {
             }
 
             this.showMessage(`Sequence "${result.name || name}" ${isUpdate ? 'updated' : 'saved'} successfully!`);
-            
+
             // If we updated a sequence, exit edit mode and refresh the sequences library
             if (isUpdate) {
                 this.exitEditMode();
@@ -181,7 +181,7 @@ class WaveformSequencer {
             .split('; ')
             .find(row => row.startsWith('csrftoken='))
             ?.split('=')[1];
-        
+
         return cookieValue || '';
     }
 
@@ -220,9 +220,9 @@ class WaveformSequencer {
             font-size: 14px;
         `;
         notification.textContent = message;
-        
+
         document.body.appendChild(notification);
-        
+
         setTimeout(() => {
             if (notification.parentNode) {
                 notification.parentNode.removeChild(notification);
@@ -263,9 +263,9 @@ class WaveformSequencer {
             originalName: sequenceData.name,
             originalDescription: sequenceData.description
         };
-        
+
         console.log(`Entered edit mode for sequence: ${sequenceData.name}`);
-        
+
         // Update UI to show edit mode
         this.updateEditModeUI(true);
     }
