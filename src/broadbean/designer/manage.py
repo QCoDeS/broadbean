@@ -6,6 +6,7 @@ This module provides compatibility for running management commands via:
 
 The main entry point is in broadbean.designer.__init__.py
 """
+
 from broadbean.designer import main
 
 if __name__ == "__main__":
