@@ -177,6 +177,12 @@ class AWGStationConfig(models.Model):
         help_text="Whether to use flags when outputting sequence files",
     )
 
+    # VISA timeout in seconds
+    visa_timeout = models.IntegerField(
+        default=60,
+        help_text="VISA connection timeout in seconds",
+    )
+
     # Optional: store raw YAML content for imported configurations
     yaml_content = models.TextField(
         blank=True,
@@ -235,6 +241,7 @@ class AWGStationConfig(models.Model):
             "address": self.address,
             "driver_type": self.driver_type,
             "parameters": self.parameters,
+            "visa_timeout": self.visa_timeout,
         }
 
     @classmethod
@@ -349,6 +356,12 @@ class ScopeStationConfig(models.Model):
         help_text="List of channel configurations: [{number, coupling, scale, offset, position, enabled}, ...]",
     )
 
+    # VISA timeout in seconds
+    visa_timeout = models.IntegerField(
+        default=60,
+        help_text="VISA connection timeout in seconds",
+    )
+
     # Optional: store raw YAML content for imported configurations
     yaml_content = models.TextField(
         blank=True,
@@ -460,6 +473,7 @@ class ScopeStationConfig(models.Model):
             "address": self.address,
             "driver_type": self.driver_type,
             "parameters": self._build_all_parameters(),
+            "visa_timeout": self.visa_timeout,
         }
 
     def get_enabled_channels(self) -> list:

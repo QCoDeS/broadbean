@@ -93,15 +93,22 @@ class QCodesStationMixin:
             config: Configuration dictionary containing:
                 - address: VISA address for the instrument
                 - parameters: Dict of parameter configurations
+                - visa_timeout: VISA timeout in seconds (default: 60)
 
         Returns:
             YAML string suitable for qcodes Station initialization.
         """
+        # Get timeout from config, default to 60 seconds
+        visa_timeout = config.get("visa_timeout", 60)
+
         station_config = {
             "instruments": {
                 self.INSTRUMENT_NAME: {
                     "type": self.QCODES_DRIVER,
                     "address": config.get("address", ""),
+                    "init": {
+                        "timeout": visa_timeout,
+                    },
                     "parameters": config.get("parameters", {}),
                 }
             }

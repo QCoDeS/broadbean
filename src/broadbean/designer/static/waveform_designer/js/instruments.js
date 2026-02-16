@@ -350,6 +350,7 @@ const InstrumentsManager = {
         // Extract parameters
         const params = config.parameters || {};
         document.getElementById('awg-sample-rate').value = params['sample_rate']?.initial_value || 25e9;
+        document.getElementById('awg-timeout').value = config.visa_timeout || 60;
         document.getElementById('awg-flags').checked = config.use_flags || false;
 
         // Channel parameters
@@ -371,6 +372,7 @@ const InstrumentsManager = {
             driver_type: document.getElementById('awg-type').value,
             address: `TCPIP0::${ip}::inst0::INSTR`,
             use_flags: document.getElementById('awg-flags').checked,
+            visa_timeout: parseInt(document.getElementById('awg-timeout').value) || 60,
             parameters: {
                 'sample_rate': { initial_value: parseFloat(document.getElementById('awg-sample-rate').value) },
                 'ch1.resolution': { initial_value: parseInt(document.getElementById('awg-ch1-resolution').value) },
@@ -391,6 +393,7 @@ const InstrumentsManager = {
         document.getElementById('awg-type').value = awgType;
         document.getElementById('awg-ip').value = '192.168.0.2';
         document.getElementById('awg-sample-rate').value = '25000000000';
+        document.getElementById('awg-timeout').value = '60';
         document.getElementById('awg-flags').checked = false;
 
         ['1', '2'].forEach(ch => {
@@ -513,6 +516,9 @@ const InstrumentsManager = {
         document.getElementById('horizontal-sample-rate').value = params['horizontal.sample_rate']?.initial_value || 2.5e9;
         document.getElementById('horizontal-mode').value = params['horizontal.mode']?.initial_value || 'auto';
 
+        // Timeout
+        document.getElementById('scope-timeout').value = config.visa_timeout || 60;
+
         const channels = config.channels || [];
         for (let i = 0; i < 3; i++) {
             const ch = channels[i] || {};
@@ -534,6 +540,7 @@ const InstrumentsManager = {
             // Send driver_type directly (dropdown now has driver_type values)
             driver_type: document.getElementById('scope-type').value,
             address: `TCPIP0::${ip}::inst0::INSTR`,
+            visa_timeout: parseInt(document.getElementById('scope-timeout').value) || 60,
             parameters: {
                 'acquisition.mode': { initial_value: document.getElementById('scope-acq-mode').value },
                 'trigger.type': { initial_value: triggerType },
@@ -589,6 +596,8 @@ const InstrumentsManager = {
         document.getElementById('horizontal-record-length').value = '5000';
         document.getElementById('horizontal-sample-rate').value = '25000000000';
         document.getElementById('horizontal-mode').value = 'manual';
+
+        document.getElementById('scope-timeout').value = '60';
 
         ['1', '2', '3'].forEach(ch => {
             document.getElementById(`scope-ch${ch}-enabled`).checked = false;
