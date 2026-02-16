@@ -118,6 +118,37 @@ const InstrumentsManager = {
 
         // LUT file input change
         document.getElementById('lut-file')?.addEventListener('change', (e) => this.handleLutFileChange(e));
+
+        // Horizontal mode change handler for Scope
+        document.getElementById('horizontal-mode')?.addEventListener('change', (e) => this.handleHorizontalModeChange(e));
+    },
+
+    /**
+     * Handle horizontal mode change for Scope settings
+     * In manual mode, scale is determined by sample rate and record length, so disable the scale field
+     */
+    handleHorizontalModeChange(event) {
+        const mode = event.target.value;
+        this.updateHorizontalScaleFieldState(mode);
+    },
+
+    /**
+     * Update the horizontal scale field state based on mode
+     * @param {string} mode - 'auto' or 'manual'
+     */
+    updateHorizontalScaleFieldState(mode) {
+        const scaleInput = document.getElementById('horizontal-scale');
+        if (scaleInput) {
+            if (mode === 'manual') {
+                scaleInput.disabled = true;
+                scaleInput.classList.add('text-muted');
+                scaleInput.title = 'Scale is automatically determined by sample rate and record length in manual mode';
+            } else {
+                scaleInput.disabled = false;
+                scaleInput.classList.remove('text-muted');
+                scaleInput.title = '';
+            }
+        }
     },
 
     /**
@@ -512,9 +543,13 @@ const InstrumentsManager = {
         // Horizontal settings
         document.getElementById('horizontal-position').value = params['horizontal.position']?.initial_value || 0;
         document.getElementById('horizontal-scale').value = params['horizontal.scale']?.initial_value || 100e-9;
-        document.getElementById('horizontal-record-length').value = 5000;  // Not stored
+        document.getElementById('horizontal-record-length').value = params['horizontal.record_length']?.initial_value || 5000;
         document.getElementById('horizontal-sample-rate').value = params['horizontal.sample_rate']?.initial_value || 2.5e9;
-        document.getElementById('horizontal-mode').value = params['horizontal.mode']?.initial_value || 'auto';
+        
+        // Set mode and update scale field state accordingly
+        const mode = params['horizontal.mode']?.initial_value || 'auto';
+        document.getElementById('horizontal-mode').value = mode;
+        this.updateHorizontalScaleFieldState(mode);
 
         // Timeout
         document.getElementById('scope-timeout').value = config.visa_timeout || 60;
@@ -534,6 +569,33 @@ const InstrumentsManager = {
         const ip = document.getElementById('scope-ip').value.trim();
         // Convert trigger type to lowercase as qcodes expects lowercase values
         const triggerType = document.getElementById('trigger-type').value.toLowerCase();
+        const horizontalMode = document.getElementById('horizontal-mode').value;
+        
+        // Build parameters based on mode
+        // In manual mode, scale is determined by sample_rate and record_length, so we don't include scale
+        // In auto mode, we include scale but not record_length
+        const parameters = {
+            'acquisition.mode': { initial_value: document.getElementById('scope-acq-mode').value },
+            'trigger.type': { initial_value: triggerType },
+            'trigger.source': { initial_value: document.getElementById('trigger-source').value },
+            'trigger.level': { initial_value: parseFloat(document.getElementById('trigger-level').value) },
+            'horizontal.mode': { initial_value: horizontalMode },
+            'horizontal.position': { initial_value: parseFloat(document.getElementById('horizontal-position').value) },
+            'horizontal.sample_rate': { initial_value: parseFloat(document.getElementById('horizontal-sample-rate').value) }
+        };
+        
+        if (horizontalMode === 'manual') {
+            // In manual mode, include record_length instead of scale
+            parameters['horizontal.record_length'] = { 
+                initial_value: parseInt(document.getElementById('horizontal-record-length').value) 
+            };
+        } else {
+            // In auto mode, include scale instead of record_length
+            parameters['horizontal.scale'] = { 
+                initial_value: parseFloat(document.getElementById('horizontal-scale').value) 
+            };
+        }
+        
         return {
             name: document.getElementById('scope-config-name').value.trim(),
             description: document.getElementById('scope-config-description').value.trim(),
@@ -541,16 +603,7 @@ const InstrumentsManager = {
             driver_type: document.getElementById('scope-type').value,
             address: `TCPIP0::${ip}::inst0::INSTR`,
             visa_timeout: parseInt(document.getElementById('scope-timeout').value) || 60,
-            parameters: {
-                'acquisition.mode': { initial_value: document.getElementById('scope-acq-mode').value },
-                'trigger.type': { initial_value: triggerType },
-                'trigger.source': { initial_value: document.getElementById('trigger-source').value },
-                'trigger.level': { initial_value: parseFloat(document.getElementById('trigger-level').value) },
-                'horizontal.mode': { initial_value: document.getElementById('horizontal-mode').value },
-                'horizontal.position': { initial_value: parseFloat(document.getElementById('horizontal-position').value) },
-                'horizontal.scale': { initial_value: parseFloat(document.getElementById('horizontal-scale').value) },
-                'horizontal.sample_rate': { initial_value: parseFloat(document.getElementById('horizontal-sample-rate').value) }
-            },
+            parameters: parameters,
             channels: [
                 {
                     source: 'CH1',
@@ -592,10 +645,12 @@ const InstrumentsManager = {
         document.getElementById('trigger-source').value = 'AUX';
 
         document.getElementById('horizontal-position').value = '0';
-        document.getElementById('horizontal-scale').value = '1';
+        document.getElementById('horizontal-scale').value = '100e-9';
         document.getElementById('horizontal-record-length').value = '5000';
-        document.getElementById('horizontal-sample-rate').value = '25000000000';
-        document.getElementById('horizontal-mode').value = 'manual';
+        document.getElementById('horizontal-sample-rate').value = '2500000000';
+        // Default to 'auto' mode and update scale field state
+        document.getElementById('horizontal-mode').value = 'auto';
+        this.updateHorizontalScaleFieldState('auto');
 
         document.getElementById('scope-timeout').value = '60';
 

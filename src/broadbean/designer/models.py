@@ -393,9 +393,23 @@ class ScopeStationConfig(models.Model):
         channels, producing the combined dict used by both
         ``to_station_yaml`` and ``to_config_dict``.
 
+        In manual mode, horizontal.scale is excluded from the parameters
+        because the scope determines scale automatically from sample_rate
+        and record_length. Attempting to set scale in manual mode causes
+        initialization failures.
+
         Channel data format: {"source": "CH1", "enabled": "ON", ...}
         """
         all_parameters = dict(self.parameters)
+
+        # Check horizontal mode - if manual, ensure scale is not included
+        # (scale is auto-determined by sample_rate and record_length in manual mode)
+        horizontal_mode = all_parameters.get("horizontal.mode", {}).get(
+            "initial_value", "auto"
+        )
+        if horizontal_mode == "manual":
+            # Remove horizontal.scale if present - it cannot be set in manual mode
+            all_parameters.pop("horizontal.scale", None)
 
         for ch_config in self.channels:
             source = ch_config.get("source", "CH1")
