@@ -1,0 +1,1682 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="Getting Started" href="../../start/index.html"><link rel="prev" title="Documentation" href="../../index.html">
+
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+        <title>broadbean package - broadbean 0.15.0.dev1625 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #eeffcc;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../index.html"><div class="brand">broadbean 0.15.0.dev1625 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
+  
+  <span class="sidebar-brand-text">broadbean 0.15.0.dev1625 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">broadbean package</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../start/index.html">Getting Started</a><input aria-label="Toggle navigation of Getting Started" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../examples/index.html">Broadbean Examples</a><input aria-label="Toggle navigation of Broadbean Examples" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/Pulse_Building_Tutorial.html">Pulsebuilding tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/Pulse_Building_Tutorial.html#Blueprints">Blueprints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/Pulse_Building_Tutorial.html#Elements">Elements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/Pulse_Building_Tutorial.html#Sequences">Sequences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/Making_output_for_Tektronix_AWG70000A.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/Example_Write_Read_JSON.html">Read and Write from JSON file Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/Example_Write_Read_JSON.html#Ekstras">Ekstras</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/Filter_compensation.html">Filter compensation with the ripasso module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/Filter_compensation.html#RC-Filters">RC Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/Filter_compensation.html#User-supplied-transfer-function">User-supplied transfer function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/Subsequences.html">Subsequences</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../changes/index.html">Changelogs</a><input aria-label="Toggle navigation of Changelogs" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../changes/0.11.0.html">0.11.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../changes/0.10.0.html">0.10.0</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../../_sources/api/generated/broadbean.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="broadbean-package">
+<h1>broadbean package<a class="headerlink" href="#broadbean-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-broadbean.blueprint">
+<span id="broadbean-blueprint-module"></span><h2>broadbean.blueprint module<a class="headerlink" href="#module-broadbean.blueprint" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="broadbean.blueprint.BluePrint">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">broadbean.blueprint.</span></span><span class="sig-name descname"><span class="pre">BluePrint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">funlist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">argslist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namelist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">marker1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">marker2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">segmentmarker1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">segmentmarker2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">durslist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/blueprint.html#BluePrint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.blueprint.BluePrint" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The class of a waveform to become.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="broadbean.blueprint.BluePrint.SR">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">SR</span></span><a class="headerlink" href="#broadbean.blueprint.BluePrint.SR" title="Link to this definition">¶</a></dt>
+<dd><p>Sample rate of the blueprint</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.blueprint.BluePrint.blueprint_from_description">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">blueprint_from_description</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blue_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/blueprint.html#BluePrint.blueprint_from_description"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.blueprint.BluePrint.blueprint_from_description" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a blueprint from a description given as a dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>blue_dict</strong> – a dict in the same form as returned by</p></li>
+<li><p><strong>BluePrint.description</strong></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.blueprint.BluePrint.changeArg">
+<span class="sig-name descname"><span class="pre">changeArg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replaceeverywhere</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/blueprint.html#BluePrint.changeArg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.blueprint.BluePrint.changeArg" title="Link to this definition">¶</a></dt>
+<dd><p>Change an argument of one or more of the functions in the blueprint.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – The name of the segment in which to change an argument</p></li>
+<li><p><strong>arg</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>str</em><em>]</em>) – Either the position (int) or name (str) of
+the argument to change</p></li>
+<li><p><strong>value</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>float</em><em>]</em>) – The new value of the argument</p></li>
+<li><p><strong>replaceeverywhere</strong> (<em>bool</em>) – If True, the same argument is overwritten
+in ALL segments where the name matches. E.g. ‘gaussian1’ will
+match ‘gaussian’, ‘gaussian2’, etc. If False, only the segment
+with exact name match gets a replacement.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If the argument can not be matched (either the argument
+    name does not match or the argument number is wrong).</p></li>
+<li><p><strong>ValueError</strong> – If the name can not be matched.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.blueprint.BluePrint.changeDuration">
+<span class="sig-name descname"><span class="pre">changeDuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dur</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replaceeverywhere</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/blueprint.html#BluePrint.changeDuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.blueprint.BluePrint.changeDuration" title="Link to this definition">¶</a></dt>
+<dd><p>Change the duration of one or more segments in the blueprint</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – The name of the segment in which to change duration</p></li>
+<li><p><strong>dur</strong> (<em>Union</em><em>[</em><em>float</em><em>, </em><em>int</em><em>]</em>) – The new duration.</p></li>
+<li><p><strong>replaceeverywhere</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – If True, the duration(s)
+is(are) overwritten in ALL segments where the name matches.
+E.g. ‘gaussian1’ will match ‘gaussian’, ‘gaussian2’,
+etc. If False, only the segment with exact name match
+gets a replacement.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If durations are not specified for the blueprint</p></li>
+<li><p><strong>ValueError</strong> – If too many or too few durations are given.</p></li>
+<li><p><strong>ValueError</strong> – If no segment matches the name.</p></li>
+<li><p><strong>ValueError</strong> – If dur is not positive</p></li>
+<li><p><strong>ValueError</strong> – If SR is given for the blueprint and dur is less than
+    1/SR.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.blueprint.BluePrint.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/blueprint.html#BluePrint.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.blueprint.BluePrint.copy" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a copy of the BluePrint</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="broadbean.blueprint.BluePrint.description">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">description</span></span><a class="headerlink" href="#broadbean.blueprint.BluePrint.description" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a dict describing the blueprint.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="broadbean.blueprint.BluePrint.duration">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">duration</span></span><a class="headerlink" href="#broadbean.blueprint.BluePrint.duration" title="Link to this definition">¶</a></dt>
+<dd><p>The total duration of the BluePrint. If necessary, all the arrays
+are built.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="broadbean.blueprint.BluePrint.durations">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">durations</span></span><a class="headerlink" href="#broadbean.blueprint.BluePrint.durations" title="Link to this definition">¶</a></dt>
+<dd><p>The list of durations</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.blueprint.BluePrint.init_from_json">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init_from_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#broadbean.blueprint.BluePrint" title="broadbean.blueprint.BluePrint"><span class="pre">BluePrint</span></a></span></span><a class="reference internal" href="../../_modules/broadbean/blueprint.html#BluePrint.init_from_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.blueprint.BluePrint.init_from_json" title="Link to this definition">¶</a></dt>
+<dd><p>Reads blueprint from JSON file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_to_file</strong> – the path to the file to be read ex:</p></li>
+<li><p><strong>path_to_file/blueprint.json</strong></p></li>
+<li><p><strong>write_to_json</strong> (<em>by the function</em>)</p></li>
+<li><p><strong>writen</strong> (<em>The JSON file needs to be structured as if it was</em>)</p></li>
+<li><p><strong>write_to_json</strong></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.blueprint.BluePrint.insertSegment">
+<span class="sig-name descname"><span class="pre">insertSegment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dur</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">durs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/blueprint.html#BluePrint.insertSegment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.blueprint.BluePrint.insertSegment" title="Link to this definition">¶</a></dt>
+<dd><p>Insert a segment into the bluePrint.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pos</strong> (<em>int</em>) – The position at which to add the segment. Counts like
+a python list; 0 is first, -1 is last. Values below -1 are
+not allowed, though.</p></li>
+<li><p><strong>func</strong> (<em>function</em>) – Function describing the segment. Must have its
+duration as the last argument (unless its a special function).</p></li>
+<li><p><strong>args</strong> (<em>Optional</em><em>[</em><em>Tuple</em><em>[</em><em>Any</em><em>]</em><em>]</em>) – Tuple of arguments BESIDES duration.
+Default: ()</p></li>
+<li><p><strong>dur</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>int</em><em>, </em><em>float</em><em>]</em><em>]</em>) – The duration of the
+segment. Must be given UNLESS the segment is
+‘waituntil’ or ‘ensureaverage_fixed_level’</p></li>
+<li><p><strong>Optional</strong><strong>[</strong><strong>str</strong><strong>]</strong> (<a class="reference internal" href="#broadbean.sequence.Sequence.name" title="broadbean.sequence.Sequence.name"><em>name</em></a>) – Name of the segment. If none is given,
+the segment will receive the name of its function,
+possibly with a number appended.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If the position is negative</p></li>
+<li><p><strong>ValueError</strong> – If the name ends in a number</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="broadbean.blueprint.BluePrint.length_segments">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">length_segments</span></span><a class="headerlink" href="#broadbean.blueprint.BluePrint.length_segments" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the number of segments in the blueprint</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="broadbean.blueprint.BluePrint.points">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">points</span></span><a class="headerlink" href="#broadbean.blueprint.BluePrint.points" title="Link to this definition">¶</a></dt>
+<dd><p>The total number of points in the BluePrint. If necessary,
+all the arrays are built.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.blueprint.BluePrint.removeSegment">
+<span class="sig-name descname"><span class="pre">removeSegment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/blueprint.html#BluePrint.removeSegment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.blueprint.BluePrint.removeSegment" title="Link to this definition">¶</a></dt>
+<dd><p>Remove the specified segment from the blueprint.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – The name of the segment to remove.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.blueprint.BluePrint.removeSegmentMarker">
+<span class="sig-name descname"><span class="pre">removeSegmentMarker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">markerID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/blueprint.html#BluePrint.removeSegmentMarker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.blueprint.BluePrint.removeSegmentMarker" title="Link to this definition">¶</a></dt>
+<dd><p>Remove all bound markers from a specific segment</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of the segment</p></li>
+<li><p><strong>markerID</strong> (<em>int</em>) – Which marker channel to remove from (1 or 2).</p></li>
+<li><p><strong>number</strong> (<em>int</em>) – The number of the marker, in case several markers are
+bound to one element. Default: 1 (the first marker).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.blueprint.BluePrint.setSR">
+<span class="sig-name descname"><span class="pre">setSR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">SR</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/blueprint.html#BluePrint.setSR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.blueprint.BluePrint.setSR" title="Link to this definition">¶</a></dt>
+<dd><p>Set the associated sample rate</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>SR</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>float</em><em>]</em>) – The sample rate in Sa/s.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.blueprint.BluePrint.setSegmentMarker">
+<span class="sig-name descname"><span class="pre">setSegmentMarker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">markerID</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/blueprint.html#BluePrint.setSegmentMarker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.blueprint.BluePrint.setSegmentMarker" title="Link to this definition">¶</a></dt>
+<dd><p>Bind a marker to a specific segment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of the segment</p></li>
+<li><p><strong>specs</strong> (<em>tuple</em>) – Marker specification tuple, (delay, duration),
+where the delay is relative to the segment start</p></li>
+<li><p><strong>markerID</strong> (<em>int</em>) – Which marker channel to output on. Must be 1 or 2.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.blueprint.BluePrint.showPrint">
+<span class="sig-name descname"><span class="pre">showPrint</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/blueprint.html#BluePrint.showPrint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.blueprint.BluePrint.showPrint" title="Link to this definition">¶</a></dt>
+<dd><p>Pretty-print the contents of the BluePrint. Not finished.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.blueprint.BluePrint.write_to_json">
+<span class="sig-name descname"><span class="pre">write_to_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/blueprint.html#BluePrint.write_to_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.blueprint.BluePrint.write_to_json" title="Link to this definition">¶</a></dt>
+<dd><p>Writes blueprint to JSON file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_to_file</strong> – the path to the file to write to ex:</p></li>
+<li><p><strong>path_to_file/blueprint.json</strong></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="broadbean.blueprint.SegmentDurationError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">broadbean.blueprint.</span></span><span class="sig-name descname"><span class="pre">SegmentDurationError</span></span><a class="reference internal" href="../../_modules/broadbean/blueprint.html#SegmentDurationError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.blueprint.SegmentDurationError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+</section>
+<section id="module-broadbean.broadbean">
+<span id="broadbean-broadbean-module"></span><h2>broadbean.broadbean module<a class="headerlink" href="#module-broadbean.broadbean" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="broadbean.broadbean.PulseAtoms">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">broadbean.broadbean.</span></span><span class="sig-name descname"><span class="pre">PulseAtoms</span></span><a class="reference internal" href="../../_modules/broadbean/broadbean.html#PulseAtoms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.broadbean.PulseAtoms" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class full of static methods.
+The basic pulse shapes.</p>
+<p>Any pulse shape function should return a list or an np.array
+and have SR, npoints as its final two arguments.</p>
+<p>Rounding errors are a real concern/pain in the business of
+making waveforms of short duration (few samples). Therefore,
+the PulseAtoms take the number of points rather than the
+duration as input argument, so that all ambiguity can be handled
+in one place (the _subelementBuilder)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.broadbean.PulseAtoms.arb_func">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">arb_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SR</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/broadbean.html#PulseAtoms.arb_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.broadbean.PulseAtoms.arb_func" title="Link to this definition">¶</a></dt>
+<dd><p>This function is used to generate an arbitrary waveform from a function.
+The function must be of the form f(time, **kwargs) where time is a numpy array and
+kwargs is a dict that provides any additional parameters needed for the function.</p>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">time</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">ampl</span><span class="p">,</span> <span class="n">off</span><span class="p">,</span> <span class="n">phase</span><span class="p">:</span> <span class="n">ampl</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">freq</span><span class="o">*</span><span class="n">time</span><span class="o">+</span><span class="n">phase</span><span class="p">)</span><span class="o">+</span><span class="n">off</span>
+<span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;freq&#39;</span><span class="p">:</span> <span class="mf">1e6</span><span class="p">,</span> <span class="s1">&#39;ampl&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;off&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;phase&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.broadbean.PulseAtoms.gaussian">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">gaussian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ampl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SR</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/broadbean.html#PulseAtoms.gaussian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.broadbean.PulseAtoms.gaussian" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a Gaussian of peak height ampl (when offset==0)</p>
+<p>Is by default centred in the middle of the interval</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.broadbean.PulseAtoms.gaussian_smooth_cutoff">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">gaussian_smooth_cutoff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ampl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SR</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/broadbean.html#PulseAtoms.gaussian_smooth_cutoff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.broadbean.PulseAtoms.gaussian_smooth_cutoff" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a Gaussian of peak height ampl (when offset==0)</p>
+<p>Is by default centred in the middle of the interval</p>
+<p>smooth cutoff by making offsetting the Gaussian so endpoint = 0 and normalizing the hight to 1</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.broadbean.PulseAtoms.ramp">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ramp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SR</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/broadbean.html#PulseAtoms.ramp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.broadbean.PulseAtoms.ramp" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.broadbean.PulseAtoms.sine">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">sine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ampl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">off</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SR</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/broadbean.html#PulseAtoms.sine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.broadbean.PulseAtoms.sine" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.broadbean.PulseAtoms.waituntil">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">waituntil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dummy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SR</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/broadbean.html#PulseAtoms.waituntil"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.broadbean.PulseAtoms.waituntil" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="broadbean.broadbean.marked_for_deletion">
+<span class="sig-prename descclassname"><span class="pre">broadbean.broadbean.</span></span><span class="sig-name descname"><span class="pre">marked_for_deletion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">replaced_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span></span></span><a class="reference internal" href="../../_modules/broadbean/broadbean.html#marked_for_deletion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.broadbean.marked_for_deletion" title="Link to this definition">¶</a></dt>
+<dd><p>A decorator for functions we want to kill. The function still
+gets called.</p>
+</dd></dl>
+
+</section>
+<section id="module-broadbean.element">
+<span id="broadbean-element-module"></span><h2>broadbean.element module<a class="headerlink" href="#module-broadbean.element" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="broadbean.element.Element">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">broadbean.element.</span></span><span class="sig-name descname"><span class="pre">Element</span></span><a class="reference internal" href="../../_modules/broadbean/element.html#Element"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.element.Element" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Object representing an element. An element is a collection of waves that
+are to be run simultaneously. The element consists of a number of channels
+that are then each filled with anything of the appropriate length.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="broadbean.element.Element.SR">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">SR</span></span><a class="headerlink" href="#broadbean.element.Element.SR" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the sample rate, if well-defined. Else raises
+an error about what went wrong.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.element.Element.addArray">
+<span class="sig-name descname"><span class="pre">addArray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">waveform</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SR</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/element.html#Element.addArray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.element.Element.addArray" title="Link to this definition">¶</a></dt>
+<dd><p>Add an array of voltage value to the element on the specified channel.
+Overwrites whatever was there before. Markers can be specified via
+the kwargs, i.e. the kwargs must specify arrays of markers. The names
+can be ‘m1’, ‘m2’, ‘m3’, etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>channel</strong> – The channel number</p></li>
+<li><p><strong>waveform</strong> – The array of waveform values (V)</p></li>
+<li><p><strong>SR</strong> – The sample rate in Sa/s</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.element.Element.addBluePrint">
+<span class="sig-name descname"><span class="pre">addBluePrint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blueprint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#broadbean.blueprint.BluePrint" title="broadbean.blueprint.BluePrint"><span class="pre">BluePrint</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/element.html#Element.addBluePrint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.element.Element.addBluePrint" title="Link to this definition">¶</a></dt>
+<dd><p>Add a blueprint to the element on the specified channel.
+Overwrites whatever was there before.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.element.Element.addFlags">
+<span class="sig-name descname"><span class="pre">addFlags</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/element.html#Element.addFlags"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.element.Element.addFlags" title="Link to this definition">¶</a></dt>
+<dd><p>Adds flags for the specified channel.
+List of 4 flags, each of which should be 0 or “” for ‘No change’, 1 or “H” for ‘High’,
+2 or “L” for ‘Low’, 3 or “T” for ‘Toggle’, 4 or “P” for ‘Pulse’.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.element.Element.changeArg">
+<span class="sig-name descname"><span class="pre">changeArg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replaceeverywhere</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/element.html#Element.changeArg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.element.Element.changeArg" title="Link to this definition">¶</a></dt>
+<dd><p>Change the argument of a function of the blueprint on the specified
+channel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>channel</strong> – The channel where the blueprint sits.</p></li>
+<li><p><strong>name</strong> – The name of the segment in which to change an argument</p></li>
+<li><p><strong>arg</strong> – Either the position (int) or name (str) of
+the argument to change</p></li>
+<li><p><strong>value</strong> – The new value of the argument</p></li>
+<li><p><strong>replaceeverywhere</strong> – If True, the same argument is overwritten
+in ALL segments where the name matches. E.g. ‘gaussian1’ will
+match ‘gaussian’, ‘gaussian2’, etc. If False, only the segment
+with exact name match gets a replacement.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If the specified channel has no blueprint.</p></li>
+<li><p><strong>ValueError</strong> – If the argument can not be matched (either the argument
+    name does not match or the argument number is wrong).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.element.Element.changeDuration">
+<span class="sig-name descname"><span class="pre">changeDuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">newdur</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replaceeverywhere</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/element.html#Element.changeDuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.element.Element.changeDuration" title="Link to this definition">¶</a></dt>
+<dd><p>Change the duration of a segment of the blueprint on the specified
+channel</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>channel</strong> – The channel holding the blueprint in question</p></li>
+<li><p><strong>name</strong><strong>)</strong> – The name of the segment to modify</p></li>
+<li><p><strong>newdur</strong> – The new duration.</p></li>
+<li><p><strong>replaceeverywhere</strong> – If True, all segments
+matching the base
+name given will have their duration changed. If False, only the
+segment with an exact name match will have its duration
+changed. Default: False.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="broadbean.element.Element.channels">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">channels</span></span><a class="headerlink" href="#broadbean.element.Element.channels" title="Link to this definition">¶</a></dt>
+<dd><p>The channels that has something on them</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.element.Element.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/element.html#Element.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.element.Element.copy" title="Link to this definition">¶</a></dt>
+<dd><p>Return a copy of the element</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="broadbean.element.Element.description">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">description</span></span><a class="headerlink" href="#broadbean.element.Element.description" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a dict describing the element.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="broadbean.element.Element.duration">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">duration</span></span><a class="headerlink" href="#broadbean.element.Element.duration" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the duration in seconds of the element, if said duration is
+well-defined. Else raises an error.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.element.Element.element_from_description">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">element_from_description</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/element.html#Element.element_from_description"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.element.Element.element_from_description" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a blueprint from a description given as a dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>element_dict</strong> – a dict in the same form as returned by</p></li>
+<li><p><strong>Element.description</strong></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.element.Element.getArrays">
+<span class="sig-name descname"><span class="pre">getArrays</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">includetime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/broadbean/element.html#Element.getArrays"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.element.Element.getArrays" title="Link to this definition">¶</a></dt>
+<dd><p>Return arrays of the element. Heavily used by the Sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>includetime</strong> – Whether to include time arrays. They will have the key
+‘time’. Time should be included when plotting, otherwise not.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary with channel numbers (ints) as keys and forged
+blueprints as values. A forged blueprint is a dict with
+the mandatory key ‘wfm’ and optional keys ‘m1’, ‘m2’, ‘m3’ (etc)
+and ‘time’.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.element.Element.init_from_json">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init_from_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#broadbean.element.Element" title="broadbean.element.Element"><span class="pre">Element</span></a></span></span><a class="reference internal" href="../../_modules/broadbean/element.html#Element.init_from_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.element.Element.init_from_json" title="Link to this definition">¶</a></dt>
+<dd><p>Reads Element from JSON file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_to_file</strong> – the path to the file to be read ex:</p></li>
+<li><p><strong>path_to_file/Element.json</strong></p></li>
+<li><p><strong>write_to_json</strong> (<em>by the function</em>)</p></li>
+<li><p><strong>writen</strong> (<em>The JSON file needs to be structured as if it was</em>)</p></li>
+<li><p><strong>write_to_json</strong></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="broadbean.element.Element.points">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">points</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#broadbean.element.Element.points" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the number of points of each channel if that number is
+well-defined. Else an error is raised.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.element.Element.validateDurations">
+<span class="sig-name descname"><span class="pre">validateDurations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/element.html#Element.validateDurations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.element.Element.validateDurations" title="Link to this definition">¶</a></dt>
+<dd><p>Check that all channels have the same specified duration, number of
+points and sample rate.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.element.Element.write_to_json">
+<span class="sig-name descname"><span class="pre">write_to_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/element.html#Element.write_to_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.element.Element.write_to_json" title="Link to this definition">¶</a></dt>
+<dd><p>Writes element to JSON file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_to_file</strong> – the path to the file to write to ex:</p></li>
+<li><p><strong>path_to_file/element.json</strong></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="broadbean.element.ElementDurationError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">broadbean.element.</span></span><span class="sig-name descname"><span class="pre">ElementDurationError</span></span><a class="reference internal" href="../../_modules/broadbean/element.html#ElementDurationError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.element.ElementDurationError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+</section>
+<section id="module-broadbean.plotting">
+<span id="broadbean-plotting-module"></span><h2>broadbean.plotting module<a class="headerlink" href="#module-broadbean.plotting" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="broadbean.plotting.getSIScalingAndPrefix">
+<span class="sig-prename descclassname"><span class="pre">broadbean.plotting.</span></span><span class="sig-name descname"><span class="pre">getSIScalingAndPrefix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">minmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/broadbean/plotting.html#getSIScalingAndPrefix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.plotting.getSIScalingAndPrefix" title="Link to this definition">¶</a></dt>
+<dd><p>Return the scaling exponent and unit prefix. E.g. (-2e-3, 1e-6) will
+return (1e3, ‘m’)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>minmax</strong> – The (min, max) value of the signal</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple of the scaling (inverse of the prefix) and the prefix</dt><dd><p>string.</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="broadbean.plotting.plotter">
+<span class="sig-prename descclassname"><span class="pre">broadbean.plotting.</span></span><span class="sig-name descname"><span class="pre">plotter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj_to_plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#broadbean.sequence.Sequence" title="broadbean.sequence.Sequence"><span class="pre">Sequence</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#broadbean.blueprint.BluePrint" title="broadbean.blueprint.BluePrint"><span class="pre">BluePrint</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#broadbean.element.Element" title="broadbean.element.Element"><span class="pre">Element</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">forger_kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/plotting.html#plotter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.plotting.plotter" title="Link to this definition">¶</a></dt>
+<dd><p>The one plot function to be called. Turns whatever it gets
+into a sequence, forges it, and plots that.</p>
+</dd></dl>
+
+</section>
+<section id="module-broadbean.ripasso">
+<span id="broadbean-ripasso-module"></span><h2>broadbean.ripasso module<a class="headerlink" href="#module-broadbean.ripasso" title="Link to this heading">¶</a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="broadbean.ripasso.MissingFrequenciesError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">broadbean.ripasso.</span></span><span class="sig-name descname"><span class="pre">MissingFrequenciesError</span></span><a class="reference internal" href="../../_modules/broadbean/ripasso.html#MissingFrequenciesError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.ripasso.MissingFrequenciesError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="broadbean.ripasso.applyCustomTransferFunction">
+<span class="sig-prename descclassname"><span class="pre">broadbean.ripasso.</span></span><span class="sig-name descname"><span class="pre">applyCustomTransferFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SR</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf_freqs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf_amp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/ripasso.html#applyCustomTransferFunction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.ripasso.applyCustomTransferFunction" title="Link to this definition">¶</a></dt>
+<dd><p>Apply custom transfer function</p>
+<p>Given a signal, its sample rate, and a provided transfer function, apply
+the transfer function to the signal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>signal</strong> (<em>np.array</em>) – A numpy array containing the signal</p></li>
+<li><p><strong>SR</strong> (<em>int</em>) – The sample rate of the signal (Sa/s)</p></li>
+<li><p><strong>tf_freqs</strong> (<em>np.array</em>) – The frequencies of the transfer function. Must
+be monotonically increasing.</p></li>
+<li><p><strong>tf_amp</strong> (<em>np.array</em>) – The amplitude of the transfer function. Must be
+dimensionless.</p></li>
+<li><p><strong>invert</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – If True, the inverse transfer function is
+applied. Default: False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The modified signal.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="broadbean.ripasso.applyInverseRCFilter">
+<span class="sig-prename descclassname"><span class="pre">broadbean.ripasso.</span></span><span class="sig-name descname"><span class="pre">applyInverseRCFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SR</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_cut</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DCgain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/ripasso.html#applyInverseRCFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.ripasso.applyInverseRCFilter" title="Link to this definition">¶</a></dt>
+<dd><p>Apply the inverse of an RC-circuit filter to a signal and return the
+compensated signal.</p>
+<p>Note that a high-pass filter in principle has identically zero DC
+gain which requires an infinite offset to compensate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>signal</strong> (<em>np.array</em>) – The input signal. The signal is assumed to start at
+t=0 and be evenly sampled at sample rate SR.</p></li>
+<li><p><strong>SR</strong> (<em>int</em>) – Sample rate (Sa/s) of the input signal</p></li>
+<li><p><strong>kind</strong> (<em>str</em>) – The type of filter. Either ‘HP’ or ‘LP’.</p></li>
+<li><p><strong>f_cut</strong> (<em>float</em>) – The cutoff frequency of the filter (Hz)</p></li>
+<li><p><strong>order</strong> (<em>int</em>) – The order of the filter. The first order filter is
+applied order times.</p></li>
+<li><p><strong>DCgain</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The DC gain of the filter. ONLY used by the
+high-pass filter. Default: 1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The filtered signal along the original time axis. Imaginary
+parts are discarded prior to return.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If kind is neither ‘HP’ nor ‘LP’</p></li>
+<li><p><strong>ValueError</strong> – If DCgain is zero.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="broadbean.ripasso.applyRCFilter">
+<span class="sig-prename descclassname"><span class="pre">broadbean.ripasso.</span></span><span class="sig-name descname"><span class="pre">applyRCFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SR</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_cut</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DCgain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/ripasso.html#applyRCFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.ripasso.applyRCFilter" title="Link to this definition">¶</a></dt>
+<dd><p>Apply a simple RC-circuit filter
+to signal and return the filtered signal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>signal</strong> (<em>np.array</em>) – The input signal. The signal is assumed to start at
+t=0 and be evenly sampled at sample rate SR.</p></li>
+<li><p><strong>SR</strong> (<em>int</em>) – Sample rate (Sa/s) of the input signal</p></li>
+<li><p><strong>kind</strong> (<em>str</em>) – The type of filter. Either ‘HP’ or ‘LP’.</p></li>
+<li><p><strong>f_cut</strong> (<em>float</em>) – The cutoff frequency of the filter (Hz)</p></li>
+<li><p><strong>order</strong> (<em>int</em>) – The order of the filter. The first order filter is
+applied order times.</p></li>
+<li><p><strong>DCgain</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – The DC gain of the filter. ONLY used by the
+high-pass filter. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The filtered signal along the original time axis. Imaginary
+parts are discarded prior to return.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If kind is neither ‘HP’ nor ‘LP’</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-broadbean.sequence">
+<span id="broadbean-sequence-module"></span><h2>broadbean.sequence module<a class="headerlink" href="#module-broadbean.sequence" title="Link to this heading">¶</a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="broadbean.sequence.InvalidForgedSequenceError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">broadbean.sequence.</span></span><span class="sig-name descname"><span class="pre">InvalidForgedSequenceError</span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#InvalidForgedSequenceError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.InvalidForgedSequenceError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">broadbean.sequence.</span></span><span class="sig-name descname"><span class="pre">Sequence</span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Sequence object</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.SR">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">SR</span></span><a class="headerlink" href="#broadbean.sequence.Sequence.SR" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the sample rate, if defined. Else returns -1.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.addElement">
+<span class="sig-name descname"><span class="pre">addElement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">element</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#broadbean.element.Element" title="broadbean.element.Element"><span class="pre">Element</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.addElement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.addElement" title="Link to this definition">¶</a></dt>
+<dd><p>Add an element to the sequence. Overwrites previous values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>position</strong> (<em>int</em>) – The sequence position of the element (lowest: 1)</p></li>
+<li><p><strong>element</strong> (<a class="reference internal" href="#broadbean.element.Element" title="broadbean.element.Element"><em>Element</em></a>) – An element instance</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the element has inconsistent durations</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.addSubSequence">
+<span class="sig-name descname"><span class="pre">addSubSequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsequence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#broadbean.sequence.Sequence" title="broadbean.sequence.Sequence"><span class="pre">Sequence</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.addSubSequence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.addSubSequence" title="Link to this definition">¶</a></dt>
+<dd><p>Add a subsequence to the sequence. Overwrites anything previously
+assigned to this position. The subsequence can not contain any
+subsequences itself.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>position</strong> – The sequence position (starting from 1)</p></li>
+<li><p><strong>subsequence</strong> – The subsequence to add</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.channels">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">channels</span></span><a class="headerlink" href="#broadbean.sequence.Sequence.channels" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a list of the specified channels of the sequence</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.checkConsistency">
+<span class="sig-name descname"><span class="pre">checkConsistency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.checkConsistency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.checkConsistency" title="Link to this definition">¶</a></dt>
+<dd><p>Checks wether the sequence can be built, i.e. wether all elements
+have waveforms on the same channels and of the same length.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.copy" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a copy of the sequence.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.description">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">description</span></span><a class="headerlink" href="#broadbean.sequence.Sequence.description" title="Link to this definition">¶</a></dt>
+<dd><p>Return a dictionary fully describing the Sequence.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.duration">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">duration</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#broadbean.sequence.Sequence.duration" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the duration in seconds of the sequence.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.element">
+<span class="sig-name descname"><span class="pre">element</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.element"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.element" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the element at the given position. Changes made to the return
+value of this methods will apply to the sequence. If this is undesired,
+make a copy of the returned element using Element.copy</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pos</strong> (<em>int</em>) – The sequence position</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>KeyError</strong> – If no element is specified at the given position</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.forge">
+<span class="sig-name descname"><span class="pre">forge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">apply_delays</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_filters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">includetime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.forge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.forge" title="Link to this definition">¶</a></dt>
+<dd><p>Forge the sequence, applying all specified transformations
+(delays and ripasso filter corrections). Copies the data, so
+that the sequence is not modified by forging.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>apply_delays</strong> – Whether to apply the assigned channel delays
+(if any)</p></li>
+<li><p><strong>apply_filters</strong> – Whether to apply the assigned channel filters
+(if any)</p></li>
+<li><p><strong>includetime</strong> – Whether to include the time axis and the segment
+durations (a list) with the arrays. Used for plotting.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A nested dictionary holding the forged sequence.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.init_from_json">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init_from_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#broadbean.sequence.Sequence" title="broadbean.sequence.Sequence"><span class="pre">Sequence</span></a></span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.init_from_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.init_from_json" title="Link to this definition">¶</a></dt>
+<dd><p>Reads sequense from JSON file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_to_file</strong> – the path to the file to be read ex:</p></li>
+<li><p><strong>path_to_file/sequense.json</strong></p></li>
+<li><p><strong>write_to_json</strong> (<em>by the function</em>)</p></li>
+<li><p><strong>writen</strong> (<em>The JSON file needs to be structured as if it was</em>)</p></li>
+<li><p><strong>write_to_json</strong></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.length_sequenceelements">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">length_sequenceelements</span></span><a class="headerlink" href="#broadbean.sequence.Sequence.length_sequenceelements" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the current number of specified sequence elements</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.name">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#broadbean.sequence.Sequence.name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.outputForAWGFile">
+<span class="sig-name descname"><span class="pre">outputForAWGFile</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.outputForAWGFile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.outputForAWGFile" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a sliceable object with items matching the call
+signature of the ‘make_*_awg_file’ functions of the QCoDeS
+AWG5014 driver. One may then construct an awg file as follows
+(assuming that seq is the sequence object):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">package</span> <span class="o">=</span> <span class="n">seq</span><span class="o">.</span><span class="n">outputForAWGFile</span><span class="p">()</span>
+<span class="n">make_awg_file</span><span class="p">(</span><span class="o">*</span><span class="n">package</span><span class="p">[:],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.outputForSEQXFile">
+<span class="sig-name descname"><span class="pre">outputForSEQXFile</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.outputForSEQXFile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.outputForSEQXFile" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a tuple matching the call signature of the QCoDeS
+AWG70000A driver’s <cite>makeSEQXFile</cite> function. If channel delays
+have been specified, they are added to the ouput before exporting.
+The intended use of this function together with the QCoDeS driver is</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pkg</span> <span class="o">=</span> <span class="n">seq</span><span class="o">.</span><span class="n">outputForSEQXFile</span><span class="p">()</span>
+<span class="n">seqx</span> <span class="o">=</span> <span class="n">awg70000A</span><span class="o">.</span><span class="n">makeSEQXFile</span><span class="p">(</span><span class="o">*</span><span class="n">pkg</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>A tuple holding (trig_waits, nreps, event_jumps, event_jump_to,</dt><dd><p>go_to, wfms, amplitudes, seqname)</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.outputForSEQXFileWithFlags">
+<span class="sig-name descname"><span class="pre">outputForSEQXFileWithFlags</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.outputForSEQXFileWithFlags"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.outputForSEQXFileWithFlags" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a tuple matching the call signature of the QCoDeS
+AWG70000A driver’s <cite>makeSEQXFile</cite> function. Same as outputForSEQXFile(),
+but also includes information about the flags.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>A tuple holding (trig_waits, nreps, event_jumps, event_jump_to,</dt><dd><p>go_to, wfms, amplitudes, seqname, flags)</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.points">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">points</span></span><a class="headerlink" href="#broadbean.sequence.Sequence.points" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the number of points of the sequence, disregarding
+sequencing info (like repetitions). Useful for asserting upload
+times, i.e. the size of the built sequence.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.sequence_from_description">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">sequence_from_description</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seq_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#broadbean.sequence.Sequence" title="broadbean.sequence.Sequence"><span class="pre">Sequence</span></a></span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.sequence_from_description"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.sequence_from_description" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a sequence from a description given as a dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>seq_dict</strong> – a dict in the same form as returned by</p></li>
+<li><p><strong>Sequence.description</strong></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.setChannelAmplitude">
+<span class="sig-name descname"><span class="pre">setChannelAmplitude</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ampl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.setChannelAmplitude"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.setChannelAmplitude" title="Link to this definition">¶</a></dt>
+<dd><p>Assign the physical voltage amplitude of the channel. This is used
+when making output for real instruments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>channel</strong> – The channel number</p></li>
+<li><p><strong>ampl</strong> – The channel peak-to-peak amplitude (V)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.setChannelDelay">
+<span class="sig-name descname"><span class="pre">setChannelDelay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.setChannelDelay"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.setChannelDelay" title="Link to this definition">¶</a></dt>
+<dd><p>Assign a delay to a channel. This is used when making output for .awg
+files. Use the delay to compensate for cable length differences etc.
+Zeros are prepended to the waveforms to delay them and correspondingly
+appended to non (or less) delayed channels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>channel</strong> – The channel number/name</p></li>
+<li><p><strong>delay</strong> – The required delay (s)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If a non-integer or non-non-negative channel number is
+    given.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.setChannelFilterCompensation">
+<span class="sig-name descname"><span class="pre">setChannelFilterCompensation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_cut</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.setChannelFilterCompensation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.setChannelFilterCompensation" title="Link to this definition">¶</a></dt>
+<dd><p>Specify a filter to compensate for.</p>
+<p>The specified channel will get a compensation (pre-distorion) to
+compensate for the specified frequency filter. Just to be clear:
+the INVERSE transfer function of the one you specify is applied.
+Only compensation for simple RC-circuit type high pass and low
+pass is supported.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>channel</strong> – The channel to apply this to.</p></li>
+<li><p><strong>kind</strong> – Either ‘LP’ or ‘HP’</p></li>
+<li><p><strong>order</strong> – The order of the filter to compensate for.
+May be negative. Default: 1.</p></li>
+<li><p><strong>f_cut</strong> – The cut_off frequency (Hz).</p></li>
+<li><p><strong>tau</strong><strong>)</strong> – The time constant (s). Note that
+tau = 1/f_cut and that only one of the two can be specified.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If kind is not ‘LP’ or ‘HP’</p></li>
+<li><p><strong>ValueError</strong> – If order is not an int.</p></li>
+<li><p><a class="reference internal" href="#broadbean.sequence.SpecificationInconsistencyError" title="broadbean.sequence.SpecificationInconsistencyError"><strong>SpecificationInconsistencyError</strong></a> – If both f_cut and tau are given.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.setChannelOffset">
+<span class="sig-name descname"><span class="pre">setChannelOffset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.setChannelOffset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.setChannelOffset" title="Link to this definition">¶</a></dt>
+<dd><p>Assign the physical voltage offset of the channel. This is used
+by some backends when making output for real instruments</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>channel</strong> – The channel number/name</p></li>
+<li><p><strong>offset</strong> – The channel offset (V)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.setChannelVoltageRange">
+<span class="sig-name descname"><span class="pre">setChannelVoltageRange</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ampl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.setChannelVoltageRange"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.setChannelVoltageRange" title="Link to this definition">¶</a></dt>
+<dd><p>Assign the physical voltages of the channel. This is used when making
+output for .awg files. The corresponding parameters in the QCoDeS
+AWG5014 driver are called chXX_amp and chXX_offset. Please ensure that
+the channel in question is indeed in ampl/offset mode and not in
+high/low mode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>channel</strong> (<em>int</em>) – The channel number</p></li>
+<li><p><strong>ampl</strong> (<em>float</em>) – The channel peak-to-peak amplitude (V)</p></li>
+<li><p><strong>offset</strong> (<em>float</em>) – The channel offset (V)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.setSR">
+<span class="sig-name descname"><span class="pre">setSR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">SR</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.setSR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.setSR" title="Link to this definition">¶</a></dt>
+<dd><p>Set the sample rate for the sequence</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.setSequenceSettings">
+<span class="sig-name descname"><span class="pre">setSequenceSettings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nreps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jump</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">goto</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.setSequenceSettings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.setSequenceSettings" title="Link to this definition">¶</a></dt>
+<dd><p>Set the sequence setting for the sequence element at pos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pos</strong> (<em>int</em>) – The sequence element (counting from 1)</p></li>
+<li><p><strong>wait</strong> (<em>int</em>) – The wait state specifying whether to wait for a
+trigger. 0: OFF, don’t wait, 1: ON, wait. For some backends,
+additional integers are allowed to specify the trigger input.
+0 always means off.</p></li>
+<li><p><strong>nreps</strong> (<em>int</em>) – Number of repetitions. 0 corresponds to infinite
+repetitions</p></li>
+<li><p><strong>jump</strong> (<em>int</em>) – Event jump target, the position of a sequence element.
+If 0, the event jump state is off.</p></li>
+<li><p><strong>goto</strong> (<em>int</em>) – Goto target, the position of a sequence element.
+0 means next.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.setSequencingEventInput">
+<span class="sig-name descname"><span class="pre">setSequencingEventInput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jump_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.setSequencingEventInput"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.setSequencingEventInput" title="Link to this definition">¶</a></dt>
+<dd><p>Set the event input for the sequence element at pos. This setting is
+ignored by the AWG 5014.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pos</strong> – The sequence element (counting from 1)</p></li>
+<li><p><strong>jump_input</strong> – The input specifier,  0 for off,
+1 for ‘TrigA’, 2 for ‘TrigB’, 3 for ‘Internal’.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.setSequencingEventJumpTarget">
+<span class="sig-name descname"><span class="pre">setSequencingEventJumpTarget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jump_target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.setSequencingEventJumpTarget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.setSequencingEventJumpTarget" title="Link to this definition">¶</a></dt>
+<dd><p>Set the event jump target for the sequence element at pos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pos</strong> – The sequence element (counting from 1)</p></li>
+<li><p><strong>jump_target</strong> – The sequence element to jump to (counting from 1)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.setSequencingGoto">
+<span class="sig-name descname"><span class="pre">setSequencingGoto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">goto</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.setSequencingGoto"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.setSequencingGoto" title="Link to this definition">¶</a></dt>
+<dd><p>Set the goto target (which element to play after the current one ends)
+for the sequence element at pos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pos</strong> – The sequence element (counting from 1)</p></li>
+<li><p><strong>goto</strong> – The position of the element to play. 0 means ‘next in line’</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.setSequencingNumberOfRepetitions">
+<span class="sig-name descname"><span class="pre">setSequencingNumberOfRepetitions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nrep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.setSequencingNumberOfRepetitions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.setSequencingNumberOfRepetitions" title="Link to this definition">¶</a></dt>
+<dd><p>Set the number of repetitions for the sequence element at pos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pos</strong> – The sequence element (counting from 1)</p></li>
+<li><p><strong>nrep</strong> – The number of repetitions (0 means infinite)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.setSequencingTriggerWait">
+<span class="sig-name descname"><span class="pre">setSequencingTriggerWait</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.setSequencingTriggerWait"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.setSequencingTriggerWait" title="Link to this definition">¶</a></dt>
+<dd><p>Set the trigger wait for the sequence element at pos. For
+AWG 5014 out, this can be 0 or 1, For AWG 70000A output, this
+can be 0, 1, 2, or 3.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pos</strong> – The sequence element (counting from 1)</p></li>
+<li><p><strong>wait</strong> – The wait state/input depending on backend.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="broadbean.sequence.Sequence.write_to_json">
+<span class="sig-name descname"><span class="pre">write_to_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#Sequence.write_to_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.Sequence.write_to_json" title="Link to this definition">¶</a></dt>
+<dd><p>Writes sequences to JSON file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_to_file</strong> – the path to the file to write to ex:</p></li>
+<li><p><strong>path_to_file/sequense.json</strong></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="broadbean.sequence.SequenceCompatibilityError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">broadbean.sequence.</span></span><span class="sig-name descname"><span class="pre">SequenceCompatibilityError</span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#SequenceCompatibilityError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.SequenceCompatibilityError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="broadbean.sequence.SequenceConsistencyError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">broadbean.sequence.</span></span><span class="sig-name descname"><span class="pre">SequenceConsistencyError</span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#SequenceConsistencyError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.SequenceConsistencyError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="broadbean.sequence.SequencingError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">broadbean.sequence.</span></span><span class="sig-name descname"><span class="pre">SequencingError</span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#SequencingError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.SequencingError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="broadbean.sequence.SpecificationInconsistencyError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">broadbean.sequence.</span></span><span class="sig-name descname"><span class="pre">SpecificationInconsistencyError</span></span><a class="reference internal" href="../../_modules/broadbean/sequence.html#SpecificationInconsistencyError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.sequence.SpecificationInconsistencyError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+</section>
+<section id="module-broadbean.tools">
+<span id="broadbean-tools-module"></span><h2>broadbean.tools module<a class="headerlink" href="#module-broadbean.tools" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="broadbean.tools.makeLinearlyVaryingSequence">
+<span class="sig-prename descclassname"><span class="pre">broadbean.tools.</span></span><span class="sig-name descname"><span class="pre">makeLinearlyVaryingSequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">baseelement</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/tools.html#makeLinearlyVaryingSequence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.tools.makeLinearlyVaryingSequence" title="Link to this definition">¶</a></dt>
+<dd><p>Make a pulse sequence where a single parameter varies linearly.
+The pulse sequence will consist of N copies of the same element with just
+the specified argument changed (N = abs(stop-start)/steps)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>baseelement</strong> (<a class="reference internal" href="#broadbean.element.Element" title="broadbean.element.Element"><em>Element</em></a>) – The basic element.</p></li>
+<li><p><strong>channel</strong> (<em>int</em>) – The channel where the change should happen</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Name of the blueprint segment to change</p></li>
+<li><p><strong>arg</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em>) – Name (str) or position (int) of the argument
+to change. If the arg is ‘duration’, the duration is changed
+instead.</p></li>
+<li><p><strong>start</strong> (<em>float</em>) – Start point of the variation (included)</p></li>
+<li><p><strong>stop</strong> (<em>float</em>) – Stop point of the variation (included)</p></li>
+<li><p><strong>step</strong> (<em>float</em>) – Increment of the variation</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="broadbean.tools.makeVaryingSequence">
+<span class="sig-prename descclassname"><span class="pre">broadbean.tools.</span></span><span class="sig-name descname"><span class="pre">makeVaryingSequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">baseelement</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/tools.html#makeVaryingSequence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.tools.makeVaryingSequence" title="Link to this definition">¶</a></dt>
+<dd><p>Make a pulse sequence where N parameters vary simultaneously in M steps.
+The user inputs a baseelement which is copied M times and changed
+according to the given inputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>baseelement</strong> (<a class="reference internal" href="#broadbean.element.Element" title="broadbean.element.Element"><em>Element</em></a>) – The basic element.</p></li>
+<li><p><strong>channels</strong> (<em>Union</em><em>[</em><em>list</em><em>, </em><em>tuple</em><em>]</em>) – Either a list or a tuple of channels on
+which to find the blueprint to change. Must have length N.</p></li>
+<li><p><strong>names</strong> (<em>Union</em><em>[</em><em>list</em><em>, </em><em>tuple</em><em>]</em>) – Either a list or a tuple of names of the
+segment to change. Must have length N.</p></li>
+<li><p><strong>args</strong> (<em>Union</em><em>[</em><em>list</em><em>, </em><em>tuple</em><em>]</em>) – Either a list or a tuple of argument
+specifications for the argument to change. Use ‘duration’ to change
+the segment duration. Must have length N.</p></li>
+<li><p><strong>iters</strong> (<em>Union</em><em>[</em><em>list</em><em>, </em><em>tuple</em><em>]</em>) – Either a list or a tuple of length N
+containing Union[list, tuple, range] of length M.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If not channels, names, args, and iters are of the same
+    length.</p></li>
+<li><p><strong>ValueError</strong> – If not each iter in iters specifies the same number of
+    values.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="broadbean.tools.repeatAndVarySequence">
+<span class="sig-prename descclassname"><span class="pre">broadbean.tools.</span></span><span class="sig-name descname"><span class="pre">repeatAndVarySequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poss</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/broadbean/tools.html#repeatAndVarySequence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#broadbean.tools.repeatAndVarySequence" title="Link to this definition">¶</a></dt>
+<dd><p>Repeat a sequence and vary part(s) of it. Returns a new sequence.
+Given N specifications of M steps, N parameters are varied in M
+steps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>seq</strong> (<a class="reference internal" href="#broadbean.sequence.Sequence" title="broadbean.sequence.Sequence"><em>Sequence</em></a>) – The sequence to be repeated.</p></li>
+<li><p><strong>poss</strong> (<em>Union</em><em>[</em><em>list</em><em>, </em><em>tuple</em><em>]</em>) – A length N list/tuple specifying at which
+sequence position(s) the blueprint to change is.</p></li>
+<li><p><strong>channels</strong> (<em>Union</em><em>[</em><em>list</em><em>, </em><em>tuple</em><em>]</em>) – A length N list/tuple specifying on
+which channel(s) the blueprint to change is.</p></li>
+<li><p><strong>names</strong> (<em>Union</em><em>[</em><em>list</em><em>, </em><em>tuple</em><em>]</em>) – A length N list/tuple specifying the name
+of the segment to change.</p></li>
+<li><p><strong>args</strong> (<em>Union</em><em>[</em><em>list</em><em>, </em><em>tuple</em><em>]</em>) – A length N list/tuple specifying which
+argument to change. A valid argument is also ‘duration’.</p></li>
+<li><p><strong>iters</strong> (<em>Union</em><em>[</em><em>list</em><em>, </em><em>tuple</em><em>]</em>) – A length N list/tuple containing length
+M indexable iterables with the values to step through.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-broadbean">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-broadbean" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../../start/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Getting Started</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../../index.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Home</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Microsoft Quantum
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">broadbean package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-broadbean.blueprint">broadbean.blueprint module</a><ul>
+<li><a class="reference internal" href="#broadbean.blueprint.BluePrint"><code class="docutils literal notranslate"><span class="pre">BluePrint</span></code></a><ul>
+<li><a class="reference internal" href="#broadbean.blueprint.BluePrint.SR"><code class="docutils literal notranslate"><span class="pre">BluePrint.SR</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.blueprint.BluePrint.blueprint_from_description"><code class="docutils literal notranslate"><span class="pre">BluePrint.blueprint_from_description()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.blueprint.BluePrint.changeArg"><code class="docutils literal notranslate"><span class="pre">BluePrint.changeArg()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.blueprint.BluePrint.changeDuration"><code class="docutils literal notranslate"><span class="pre">BluePrint.changeDuration()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.blueprint.BluePrint.copy"><code class="docutils literal notranslate"><span class="pre">BluePrint.copy()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.blueprint.BluePrint.description"><code class="docutils literal notranslate"><span class="pre">BluePrint.description</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.blueprint.BluePrint.duration"><code class="docutils literal notranslate"><span class="pre">BluePrint.duration</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.blueprint.BluePrint.durations"><code class="docutils literal notranslate"><span class="pre">BluePrint.durations</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.blueprint.BluePrint.init_from_json"><code class="docutils literal notranslate"><span class="pre">BluePrint.init_from_json()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.blueprint.BluePrint.insertSegment"><code class="docutils literal notranslate"><span class="pre">BluePrint.insertSegment()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.blueprint.BluePrint.length_segments"><code class="docutils literal notranslate"><span class="pre">BluePrint.length_segments</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.blueprint.BluePrint.points"><code class="docutils literal notranslate"><span class="pre">BluePrint.points</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.blueprint.BluePrint.removeSegment"><code class="docutils literal notranslate"><span class="pre">BluePrint.removeSegment()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.blueprint.BluePrint.removeSegmentMarker"><code class="docutils literal notranslate"><span class="pre">BluePrint.removeSegmentMarker()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.blueprint.BluePrint.setSR"><code class="docutils literal notranslate"><span class="pre">BluePrint.setSR()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.blueprint.BluePrint.setSegmentMarker"><code class="docutils literal notranslate"><span class="pre">BluePrint.setSegmentMarker()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.blueprint.BluePrint.showPrint"><code class="docutils literal notranslate"><span class="pre">BluePrint.showPrint()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.blueprint.BluePrint.write_to_json"><code class="docutils literal notranslate"><span class="pre">BluePrint.write_to_json()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#broadbean.blueprint.SegmentDurationError"><code class="docutils literal notranslate"><span class="pre">SegmentDurationError</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-broadbean.broadbean">broadbean.broadbean module</a><ul>
+<li><a class="reference internal" href="#broadbean.broadbean.PulseAtoms"><code class="docutils literal notranslate"><span class="pre">PulseAtoms</span></code></a><ul>
+<li><a class="reference internal" href="#broadbean.broadbean.PulseAtoms.arb_func"><code class="docutils literal notranslate"><span class="pre">PulseAtoms.arb_func()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.broadbean.PulseAtoms.gaussian"><code class="docutils literal notranslate"><span class="pre">PulseAtoms.gaussian()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.broadbean.PulseAtoms.gaussian_smooth_cutoff"><code class="docutils literal notranslate"><span class="pre">PulseAtoms.gaussian_smooth_cutoff()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.broadbean.PulseAtoms.ramp"><code class="docutils literal notranslate"><span class="pre">PulseAtoms.ramp()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.broadbean.PulseAtoms.sine"><code class="docutils literal notranslate"><span class="pre">PulseAtoms.sine()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.broadbean.PulseAtoms.waituntil"><code class="docutils literal notranslate"><span class="pre">PulseAtoms.waituntil()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#broadbean.broadbean.marked_for_deletion"><code class="docutils literal notranslate"><span class="pre">marked_for_deletion()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-broadbean.element">broadbean.element module</a><ul>
+<li><a class="reference internal" href="#broadbean.element.Element"><code class="docutils literal notranslate"><span class="pre">Element</span></code></a><ul>
+<li><a class="reference internal" href="#broadbean.element.Element.SR"><code class="docutils literal notranslate"><span class="pre">Element.SR</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.element.Element.addArray"><code class="docutils literal notranslate"><span class="pre">Element.addArray()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.element.Element.addBluePrint"><code class="docutils literal notranslate"><span class="pre">Element.addBluePrint()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.element.Element.addFlags"><code class="docutils literal notranslate"><span class="pre">Element.addFlags()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.element.Element.changeArg"><code class="docutils literal notranslate"><span class="pre">Element.changeArg()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.element.Element.changeDuration"><code class="docutils literal notranslate"><span class="pre">Element.changeDuration()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.element.Element.channels"><code class="docutils literal notranslate"><span class="pre">Element.channels</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.element.Element.copy"><code class="docutils literal notranslate"><span class="pre">Element.copy()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.element.Element.description"><code class="docutils literal notranslate"><span class="pre">Element.description</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.element.Element.duration"><code class="docutils literal notranslate"><span class="pre">Element.duration</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.element.Element.element_from_description"><code class="docutils literal notranslate"><span class="pre">Element.element_from_description()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.element.Element.getArrays"><code class="docutils literal notranslate"><span class="pre">Element.getArrays()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.element.Element.init_from_json"><code class="docutils literal notranslate"><span class="pre">Element.init_from_json()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.element.Element.points"><code class="docutils literal notranslate"><span class="pre">Element.points</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.element.Element.validateDurations"><code class="docutils literal notranslate"><span class="pre">Element.validateDurations()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.element.Element.write_to_json"><code class="docutils literal notranslate"><span class="pre">Element.write_to_json()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#broadbean.element.ElementDurationError"><code class="docutils literal notranslate"><span class="pre">ElementDurationError</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-broadbean.plotting">broadbean.plotting module</a><ul>
+<li><a class="reference internal" href="#broadbean.plotting.getSIScalingAndPrefix"><code class="docutils literal notranslate"><span class="pre">getSIScalingAndPrefix()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.plotting.plotter"><code class="docutils literal notranslate"><span class="pre">plotter()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-broadbean.ripasso">broadbean.ripasso module</a><ul>
+<li><a class="reference internal" href="#broadbean.ripasso.MissingFrequenciesError"><code class="docutils literal notranslate"><span class="pre">MissingFrequenciesError</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.ripasso.applyCustomTransferFunction"><code class="docutils literal notranslate"><span class="pre">applyCustomTransferFunction()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.ripasso.applyInverseRCFilter"><code class="docutils literal notranslate"><span class="pre">applyInverseRCFilter()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.ripasso.applyRCFilter"><code class="docutils literal notranslate"><span class="pre">applyRCFilter()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-broadbean.sequence">broadbean.sequence module</a><ul>
+<li><a class="reference internal" href="#broadbean.sequence.InvalidForgedSequenceError"><code class="docutils literal notranslate"><span class="pre">InvalidForgedSequenceError</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence"><code class="docutils literal notranslate"><span class="pre">Sequence</span></code></a><ul>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.SR"><code class="docutils literal notranslate"><span class="pre">Sequence.SR</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.addElement"><code class="docutils literal notranslate"><span class="pre">Sequence.addElement()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.addSubSequence"><code class="docutils literal notranslate"><span class="pre">Sequence.addSubSequence()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.channels"><code class="docutils literal notranslate"><span class="pre">Sequence.channels</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.checkConsistency"><code class="docutils literal notranslate"><span class="pre">Sequence.checkConsistency()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.copy"><code class="docutils literal notranslate"><span class="pre">Sequence.copy()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.description"><code class="docutils literal notranslate"><span class="pre">Sequence.description</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.duration"><code class="docutils literal notranslate"><span class="pre">Sequence.duration</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.element"><code class="docutils literal notranslate"><span class="pre">Sequence.element()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.forge"><code class="docutils literal notranslate"><span class="pre">Sequence.forge()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.init_from_json"><code class="docutils literal notranslate"><span class="pre">Sequence.init_from_json()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.length_sequenceelements"><code class="docutils literal notranslate"><span class="pre">Sequence.length_sequenceelements</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.name"><code class="docutils literal notranslate"><span class="pre">Sequence.name</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.outputForAWGFile"><code class="docutils literal notranslate"><span class="pre">Sequence.outputForAWGFile()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.outputForSEQXFile"><code class="docutils literal notranslate"><span class="pre">Sequence.outputForSEQXFile()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.outputForSEQXFileWithFlags"><code class="docutils literal notranslate"><span class="pre">Sequence.outputForSEQXFileWithFlags()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.points"><code class="docutils literal notranslate"><span class="pre">Sequence.points</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.sequence_from_description"><code class="docutils literal notranslate"><span class="pre">Sequence.sequence_from_description()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.setChannelAmplitude"><code class="docutils literal notranslate"><span class="pre">Sequence.setChannelAmplitude()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.setChannelDelay"><code class="docutils literal notranslate"><span class="pre">Sequence.setChannelDelay()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.setChannelFilterCompensation"><code class="docutils literal notranslate"><span class="pre">Sequence.setChannelFilterCompensation()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.setChannelOffset"><code class="docutils literal notranslate"><span class="pre">Sequence.setChannelOffset()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.setChannelVoltageRange"><code class="docutils literal notranslate"><span class="pre">Sequence.setChannelVoltageRange()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.setSR"><code class="docutils literal notranslate"><span class="pre">Sequence.setSR()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.setSequenceSettings"><code class="docutils literal notranslate"><span class="pre">Sequence.setSequenceSettings()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.setSequencingEventInput"><code class="docutils literal notranslate"><span class="pre">Sequence.setSequencingEventInput()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.setSequencingEventJumpTarget"><code class="docutils literal notranslate"><span class="pre">Sequence.setSequencingEventJumpTarget()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.setSequencingGoto"><code class="docutils literal notranslate"><span class="pre">Sequence.setSequencingGoto()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.setSequencingNumberOfRepetitions"><code class="docutils literal notranslate"><span class="pre">Sequence.setSequencingNumberOfRepetitions()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.setSequencingTriggerWait"><code class="docutils literal notranslate"><span class="pre">Sequence.setSequencingTriggerWait()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.Sequence.write_to_json"><code class="docutils literal notranslate"><span class="pre">Sequence.write_to_json()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#broadbean.sequence.SequenceCompatibilityError"><code class="docutils literal notranslate"><span class="pre">SequenceCompatibilityError</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.SequenceConsistencyError"><code class="docutils literal notranslate"><span class="pre">SequenceConsistencyError</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.SequencingError"><code class="docutils literal notranslate"><span class="pre">SequencingError</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.sequence.SpecificationInconsistencyError"><code class="docutils literal notranslate"><span class="pre">SpecificationInconsistencyError</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-broadbean.tools">broadbean.tools module</a><ul>
+<li><a class="reference internal" href="#broadbean.tools.makeLinearlyVaryingSequence"><code class="docutils literal notranslate"><span class="pre">makeLinearlyVaryingSequence()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.tools.makeVaryingSequence"><code class="docutils literal notranslate"><span class="pre">makeVaryingSequence()</span></code></a></li>
+<li><a class="reference internal" href="#broadbean.tools.repeatAndVarySequence"><code class="docutils literal notranslate"><span class="pre">repeatAndVarySequence()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-broadbean">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../_static/documentation_options.js?v=841e26a1"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    </body>
+</html>
