@@ -24,7 +24,8 @@ log = logging.getLogger(__name__)
 fs_schema = Schema(
     {
         int: {
-            "type": Or("subsequence", "element"),
+            # https://github.com/keleshev/schema/issues/322
+            "type": Or("subsequence", "element"),  # ty: ignore[invalid-argument-type]
             "content": {
                 int: {
                     "data": {Or(str, int): {str: np.ndarray}},

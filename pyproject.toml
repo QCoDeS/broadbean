@@ -51,6 +51,7 @@ docs = [
     "nbsphinx",
     "sphinx-jsonschema",
     "ipykernel",
+    "qcodes",
 ]
 
 

@@ -11,7 +11,7 @@ ramp = bb.PulseAtoms.ramp
 sine = bb.PulseAtoms.sine
 gauss = bb.PulseAtoms.gaussian
 
-SR1 = 1e9
+SR1 = int(1e9)
 
 forged_sequence_schema = fs_schema
 
