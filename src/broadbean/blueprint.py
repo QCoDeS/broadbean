@@ -9,6 +9,7 @@ from inspect import signature
 import numpy as np
 
 from .broadbean import PulseAtoms
+from .func_serialization import deserialize_function, serialize_function
 
 
 class SegmentDurationError(Exception):
@@ -83,7 +84,8 @@ class BluePrint:
         # Infer names from signature if not given, i.e. allow for '' names
         for ii, name in enumerate(namelist):
             if isinstance(funlist[ii], str):
-                namelist[ii] = funlist[ii]
+                if name == "":
+                    namelist[ii] = funlist[ii]
             elif name == "":
                 namelist[ii] = funlist[ii].__name__
 
@@ -93,8 +95,8 @@ class BluePrint:
                 argslist[ii] = (args,)
         self._argslist = argslist
 
-        self._namelist = namelist
         namelist = self._make_names_unique(namelist)
+        self._namelist = namelist
 
         # initialise markers
         if marker1 is None:
@@ -265,6 +267,12 @@ class BluePrint:
             desc[segkey]["durations"] = self._durslist[sn]
             if desc[segkey]["function"] == "waituntil":
                 desc[segkey]["arguments"] = {"waittime": self._argslist[sn]}
+            elif desc[segkey]["function"] == "function PulseAtoms.arb_func":
+                # Special handling for arb_func serialization
+                func_obj, kwargs_dict = self._argslist[sn]
+                serialized = serialize_function(func_obj)
+                serialized["kwargs"] = kwargs_dict
+                desc[segkey]["arguments"] = serialized
             else:
                 sig = signature(self._funlist[sn])
                 desc[segkey]["arguments"] = dict(
@@ -275,6 +283,7 @@ class BluePrint:
         desc["marker2_abs"] = self.marker2
         desc["marker1_rel"] = self._segmark1
         desc["marker2_rel"] = self._segmark2
+        desc["SR"] = self._SR
 
         return desc
 
@@ -312,7 +321,26 @@ class BluePrint:
             if seg_dict["function"] == "waituntil":
                 arguments = blue_dict[seg]["arguments"].values()
                 arguments = (list(arguments)[0][0],)
-                bp_seg.insertSegment(i, "waituntil", arguments)
+                bp_seg.insertSegment(i, "waituntil", arguments, name=seg_dict["name"])
+            elif seg_dict["function"] == "function PulseAtoms.arb_func":
+                # Special handling for arb_func reconstruction
+                args_dict = blue_dict[seg]["arguments"]
+                kwargs_dict = args_dict["kwargs"]
+
+                if args_dict.get("func_type") in ("lambda", "named_function"):
+                    func_obj = deserialize_function(args_dict)
+                    arguments = (func_obj, kwargs_dict)
+                else:
+                    # Legacy format or fallback
+                    arguments = tuple(blue_dict[seg]["arguments"].values())
+
+                bp_seg.insertSegment(
+                    i,
+                    knowfunctions[seg_dict["function"]],
+                    arguments,
+                    name=re.sub(r"\d", "", seg_dict["name"]),
+                    dur=seg_dict["durations"],
+                )
             else:
                 arguments = tuple(blue_dict[seg]["arguments"].values())
                 bp_seg.insertSegment(
@@ -329,6 +357,8 @@ class BluePrint:
         listmarker2 = blue_dict["marker2_rel"]
         bp_sum._segmark1 = [tuple(mark) for mark in listmarker1]
         bp_sum._segmark2 = [tuple(mark) for mark in listmarker2]
+        if "SR" in blue_dict:
+            bp_sum._SR = blue_dict["SR"]
         return bp_sum
 
     @classmethod
@@ -664,7 +694,6 @@ class BluePrint:
 
         if pos < -1:
             raise ValueError("Position must be strictly larger than -1")
-
         if name is None or name == "":
             if func == "waituntil":
                 name = "waituntil"
@@ -674,7 +703,6 @@ class BluePrint:
             if len(name) > 0:
                 if name[-1].isdigit():
                     raise ValueError("Segment name must not end in a number")
-
         if pos == -1:
             self._namelist.append(name)
             self._namelist = self._make_names_unique(self._namelist)
