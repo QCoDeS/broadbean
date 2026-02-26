@@ -4,14 +4,14 @@ import json
 import logging
 import warnings
 from copy import deepcopy
-from typing import Any, cast
+from typing import TypedDict, cast
 
 import numpy as np
 from schema import Optional, Or, Schema
 
 from broadbean.blueprint import BluePrint
 from broadbean.element import Element  # TODO: change import to element.py
-from broadbean.ripasso import applyInverseRCFilter
+from broadbean.ripasso import applyAmplitudeLUT, applyInverseRCFilter
 
 from .broadbean import (
     PulseAtoms,
@@ -20,6 +20,21 @@ from .broadbean import (
 )
 
 log = logging.getLogger(__name__)
+
+
+class ChannelArrays(TypedDict, total=False):
+    """Arrays for a single channel in a forged element."""
+
+    wfm: np.ndarray
+    m1: np.ndarray
+    m2: np.ndarray
+    time: np.ndarray
+    flags: list[int]  # List of 4 integers representing the flags for each point
+
+
+# A forged element: channel identifier -> channel arrays
+ForgedElement = dict[int | str, ChannelArrays]
+
 
 fs_schema = Schema(
     {
@@ -385,6 +400,30 @@ class Sequence:
             "tau": tau,
         }
 
+    def setAmplitudeLUT(
+        self, channel: int | str, lut_input: list[float], lut_output: list[float]
+    ) -> None:
+        """
+        Set an amplitude lookup table for a channel. This is used when making
+        output for .awg files. The LUT is applied after all other waveform
+        processing.
+
+        Args:
+            channel: The channel number/name
+            lut_input: The input levels for the LUT
+            lut_output: The output levels for the LUT
+
+        Example:
+            >>> lut_input = [-1.0, -0.5, 0.0, 0.5, 1.0]
+            >>> lut_output = [-0.8, -0.3, 0.0, 0.3, 0.8]
+            >>> seq.setAmplitudeLUT(1, lut_input, lut_output)
+        """
+
+        self._awgspecs[f"channel{channel}_amplitude_LUT"] = {
+            "LUT_input": lut_input,
+            "LUT_output": lut_output,
+        }
+
     def addElement(self, position: int, element: Element) -> None:
         """
         Add an element to the sequence. Overwrites previous values.
@@ -701,7 +740,7 @@ class Sequence:
         return elem
 
     @staticmethod
-    def _plotSummary(seq: dict[int, dict]) -> dict[int, dict[str, np.ndarray]]:
+    def _plotSummary(seq: dict[int, dict]) -> ForgedElement:
         """
         Return a plotting summary of a subsequence.
 
@@ -714,7 +753,7 @@ class Sequence:
             are just two points, np.array([min, max])
         """
 
-        output = {}
+        output: ForgedElement = {}
 
         # we assume correctness, all postions specify the same channels
         chans = seq[1]["data"].keys()
@@ -841,9 +880,22 @@ class Sequence:
                                 output[pos1]["content"][pos2]["data"][channame]["wfm"]
                             ) = postfilter
 
+                        # Apply amplitude LUT if present
+                        lut_key = f"channel{channame}_amplitude_LUT"
+                        if lut_key in self._awgspecs.keys():
+                            lut = self._awgspecs[lut_key]
+                            output[pos1]["content"][pos2]["data"][channame]["wfm"] = (
+                                applyAmplitudeLUT(
+                                    output[pos1]["content"][pos2]["data"][channame][
+                                        "wfm"
+                                    ],
+                                    lut,
+                                )
+                            )
+
         return output
 
-    def _prepareForOutputting(self) -> list[dict[int, Any]]:
+    def _prepareForOutputting(self) -> list[ForgedElement]:
         """
         The preparser for numerical output. Applies delay and ripasso
         corrections.
@@ -954,6 +1006,15 @@ class Sequence:
                     )
                     elements[pos][chan]["wfm"] = postfilter
 
+            # Apply amplitude LUT if present
+            lut_key = f"channel{chan}_amplitude_LUT"
+            if lut_key in self._awgspecs.keys():
+                lut = self._awgspecs[lut_key]
+                for pos in range(seqlen):
+                    elements[pos][chan]["wfm"] = applyAmplitudeLUT(
+                        elements[pos][chan]["wfm"], lut
+                    )
+
         return elements
 
     def outputForSEQXFile(
@@ -984,8 +1045,7 @@ class Sequence:
                 go_to, wfms, amplitudes, seqname)
         """
 
-        # most of the footwork is done by the following function
-        elements = self._prepareForOutputting()
+        elements: list[ForgedElement] = self._prepareForOutputting()
         # _prepareForOutputting asserts that channel amplitudes and
         # full sequencing is specified
         seqlen = len(elements)
@@ -1157,7 +1217,7 @@ class Sequence:
             flags_pos = []
             for pos in range(1, seqlen + 1):
                 if "flags" in elements[pos - 1][chan]:
-                    flags = elements[pos - 1][chan]["flags"].tolist()
+                    flags = elements[pos - 1][chan]["flags"]
                 else:
                     flags = [0, 0, 0, 0]
                 flags_pos.append(flags)

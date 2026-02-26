@@ -152,6 +152,8 @@ pillow==12.1.1
     # via matplotlib
 platformdirs==4.9.2
     # via jupyter-core
+plotly==6.5.0
+    # via broadbean (pyproject.toml)
 pluggy==1.6.0
     # via
     #   pytest
