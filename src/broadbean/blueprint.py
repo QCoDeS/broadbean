@@ -58,6 +58,16 @@ class BluePrint:
         if durslist is None:
             durslist = []
 
+        if marker1 is None:
+            marker1 = []
+        if marker2 is None:
+            marker2 = []
+
+        if segmentmarker1 is None:
+            segmentmarker1 = [(0, 0)] * len(funlist)
+        if segmentmarker2 is None:
+            segmentmarker2 = [(0, 0)] * len(funlist)
+
         # Are the lists of matching lengths?
         lenlist = [len(funlist), len(argslist), len(namelist), len(durslist)]
 
@@ -97,27 +107,12 @@ class BluePrint:
         namelist = self._make_names_unique(namelist)
 
         # initialise markers
-        if marker1 is None:
-            self.marker1 = []
-        else:
-            self.marker1 = marker1
-        if marker2 is None:
-            self.marker2 = []
-        else:
-            self.marker2 = marker2
-        if segmentmarker1 is None:
-            self._segmark1 = [(0, 0)] * len(funlist)
-        else:
-            self._segmark1 = segmentmarker1
-        if segmentmarker2 is None:
-            self._segmark2 = [(0, 0)] * len(funlist)
-        else:
-            self._segmark2 = segmentmarker2
+        self.marker1 = marker1
+        self.marker2 = marker2
+        self._segmark1 = segmentmarker1
+        self._segmark2 = segmentmarker2
 
-        if durslist is not None:
-            self._durslist = list(durslist)
-        else:
-            self._durslist = None
+        self._durslist = list(durslist)
 
         self._SR = SR
 
@@ -545,12 +540,12 @@ class BluePrint:
 
             self._durslist[position] = dur
 
-    def setSR(self, SR):
+    def setSR(self, SR: int):
         """
         Set the associated sample rate
 
         Args:
-            SR (Union[int, float]): The sample rate in Sa/s.
+            SR: The sample rate in Sa/s.
         """
         self._SR = SR
 
