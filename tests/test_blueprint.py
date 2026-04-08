@@ -401,6 +401,65 @@ def test_add_two_different(blueprint_tophat, blueprint_nasty):
 
 
 ##################################################
+# NAME INFERENCE
+
+
+def test_name_inferred_from_function():
+    """When namelist has empty strings, names should be inferred from function.__name__"""
+    bp = bb.BluePrint(
+        funlist=[ramp],
+        argslist=[(0, 0)],
+        namelist=[""],
+        durslist=[1],
+    )
+    assert bp._namelist == ["ramp"]
+
+
+def test_name_inferred_from_string_function():
+    """When funlist contains a string (e.g. 'waituntil') and name is '', the string is used"""
+    bp = bb.BluePrint(
+        funlist=["waituntil"],
+        argslist=[(1,)],
+        namelist=[""],
+        durslist=[None],
+    )
+    assert bp._namelist == ["waituntil"]
+
+
+def test_explicit_name_preserved():
+    """When an explicit name is given, it should not be overwritten"""
+    bp = bb.BluePrint(
+        funlist=[ramp],
+        argslist=[(0, 0)],
+        namelist=["myname"],
+        durslist=[1],
+    )
+    assert bp._namelist == ["myname"]
+
+
+def test_explicit_name_preserved_for_string_function():
+    """When an explicit name is given for a string function, it should not be overwritten"""
+    bp = bb.BluePrint(
+        funlist=["waituntil"],
+        argslist=[(1,)],
+        namelist=["mywait"],
+        durslist=[None],
+    )
+    assert bp._namelist == ["mywait"]
+
+
+def test_mixed_name_inference():
+    """Mix of explicit names, empty names for functions, and empty names for string functions"""
+    bp = bb.BluePrint(
+        funlist=[ramp, "waituntil", sine],
+        argslist=[(0, 0), (1,), (1, 0, 0)],
+        namelist=["myramp", "", ""],
+        durslist=[1, None, 0.5],
+    )
+    assert bp._namelist == ["myramp", "waituntil", "sine"]
+
+
+##################################################
 # MISC
 
 
@@ -409,6 +468,7 @@ def test_description(blueprint_nasty, blueprint_tophat):
     desc2 = blueprint_tophat.description
 
     exp_keys = [
+        "SR",
         "marker1_abs",
         "marker1_rel",
         "marker2_abs",
