@@ -1,0 +1,192 @@
+{
+    "1": {
+        "segment_01": {
+            "name": "ramp",
+            "function": "function PulseAtoms.ramp",
+            "durations": 1e-07,
+            "arguments": {
+                "start": 0,
+                "stop": 0
+            }
+        },
+        "segment_02": {
+            "name": "top",
+            "function": "function PulseAtoms.ramp",
+            "durations": 1e-07,
+            "arguments": {
+                "start": 0.001,
+                "stop": 0.001
+            }
+        },
+        "segment_03": {
+            "name": "ramp2",
+            "function": "function PulseAtoms.ramp",
+            "durations": 1e-07,
+            "arguments": {
+                "start": 0,
+                "stop": 0
+            }
+        },
+        "segment_04": {
+            "name": "ramp3",
+            "function": "function PulseAtoms.ramp",
+            "durations": 1e-07,
+            "arguments": {
+                "start": 0,
+                "stop": 0
+            }
+        },
+        "segment_05": {
+            "name": "top2",
+            "function": "function PulseAtoms.ramp",
+            "durations": 1e-07,
+            "arguments": {
+                "start": 0.001,
+                "stop": 0.001
+            }
+        },
+        "segment_06": {
+            "name": "ramp4",
+            "function": "function PulseAtoms.ramp",
+            "durations": 1e-07,
+            "arguments": {
+                "start": 0,
+                "stop": 0
+            }
+        },
+        "marker1_abs": [],
+        "marker2_abs": [],
+        "marker1_rel": [
+            [
+                0,
+                0
+            ],
+            [
+                0,
+                0
+            ],
+            [
+                0,
+                0
+            ],
+            [
+                0,
+                0
+            ],
+            [
+                0,
+                0
+            ],
+            [
+                0,
+                0
+            ]
+        ],
+        "marker2_rel": [
+            [
+                0,
+                0
+            ],
+            [
+                0,
+                0
+            ],
+            [
+                0,
+                0
+            ],
+            [
+                0,
+                0
+            ],
+            [
+                0,
+                0
+            ],
+            [
+                0,
+                0
+            ]
+        ],
+        "SR": 1000000000.0
+    },
+    "3": {
+        "segment_01": {
+            "name": "sine",
+            "function": "function PulseAtoms.sine",
+            "durations": 3e-07,
+            "arguments": {
+                "freq": 3333000.0,
+                "ampl": 0.0015,
+                "off": 0,
+                "phase": 0
+            }
+        },
+        "segment_02": {
+            "name": "ramp",
+            "function": "function PulseAtoms.ramp",
+            "durations": 1e-07,
+            "arguments": {
+                "start": 0,
+                "stop": 0
+            }
+        },
+        "segment_03": {
+            "name": "top",
+            "function": "function PulseAtoms.ramp",
+            "durations": 1e-07,
+            "arguments": {
+                "start": 0.001,
+                "stop": 0.001
+            }
+        },
+        "segment_04": {
+            "name": "ramp2",
+            "function": "function PulseAtoms.ramp",
+            "durations": 1e-07,
+            "arguments": {
+                "start": 0,
+                "stop": 0
+            }
+        },
+        "marker1_abs": [],
+        "marker2_abs": [],
+        "marker1_rel": [
+            [
+                0,
+                0
+            ],
+            [
+                -0.0,
+                1e-07
+            ],
+            [
+                0,
+                0
+            ],
+            [
+                0,
+                0
+            ]
+        ],
+        "marker2_rel": [
+            [
+                -0.0,
+                1e-07
+            ],
+            [
+                0,
+                0
+            ],
+            [
+                0,
+                0
+            ],
+            [
+                0,
+                0
+            ]
+        ],
+        "SR": 1000000000.0
+    }
+}

@@ -27,6 +27,7 @@ Documentation
 
     api/generated/broadbean
     start/index
+    waveform-designer/index
     examples/index
     changes/index
 

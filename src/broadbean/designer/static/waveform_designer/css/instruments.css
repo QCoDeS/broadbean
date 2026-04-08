@@ -1,0 +1,478 @@
+/* Instruments Configuration Page Styles */
+
+.instruments-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.instruments-header {
+    background: #2c3e50;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.instruments-header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 300;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.instruments-main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Configs Panel (Left) */
+.configs-panel {
+    width: 250px;
+    background: white;
+    border-right: 1px solid #ddd;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.configs-panel h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.1rem;
+    color: #2c3e50;
+}
+
+.configs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.config-item {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.config-item:hover {
+    border-color: #667eea;
+    background: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.config-item.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #667eea15, #667eea05);
+}
+
+.config-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.config-item-name {
+    font-weight: 600;
+    color: #2c3e50;
+    flex: 1;
+    word-break: break-word;
+}
+
+.config-item-downloads {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.config-item-downloads .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 6px;
+    font-size: 0.65rem;
+    color: #667eea;
+    background: white;
+    border: 1px solid #667eea;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.config-item-downloads .download-btn:hover {
+    background: #667eea;
+    color: white;
+}
+
+.config-item-downloads .download-btn i {
+    font-size: 0.6rem;
+}
+
+.config-item-type {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.config-item-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 4px;
+}
+
+.config-item-badge.awg {
+    background: #e7f3ff;
+    color: #0078d4;
+}
+
+.config-item-badge.scope {
+    background: #fff3e0;
+    color: #ff9800;
+}
+
+/* Editor Panel (Center) */
+.editor-panel {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f5f6f8;
+}
+
+.config-header-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.config-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.config-section h4 {
+    margin: 0 0 15px 0;
+    font-size: 1.1rem;
+    color: #2c3e50;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.config-section h4 i {
+    color: #667eea;
+}
+
+.config-card {
+    /* Additional styling for config cards if needed */
+}
+
+.subsection {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.subsection h5 {
+    margin: 0 0 12px 0;
+    font-size: 0.95rem;
+    color: #495057;
+}
+
+.channel-settings h5 {
+    margin: 0 0 12px 0;
+    font-size: 0.95rem;
+    color: #495057;
+}
+
+.channel-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.channel-card h6 {
+    margin: 0 0 10px 0;
+    font-size: 0.9rem;
+    color: #667eea;
+    font-weight: 600;
+}
+
+.channel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.channel-header span {
+    font-weight: 600;
+    color: #667eea;
+}
+
+.form-group {
+    margin-bottom: 10px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 4px;
+}
+
+/* Actions Panel (Right) */
+.actions-panel {
+    width: 280px;
+    background: white;
+    border-left: 1px solid #ddd;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.actions-panel h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.1rem;
+    color: #2c3e50;
+}
+
+.action-section {
+    /* Additional styling for action sections */
+}
+
+.action-section h4 {
+    margin: 0 0 10px 0;
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.test-results {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 10px;
+    min-height: 60px;
+}
+
+.test-result-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 0.85rem;
+}
+
+.test-result-item.success {
+    color: #28a745;
+}
+
+.test-result-item.error {
+    color: #dc3545;
+}
+
+.test-result-item i {
+    width: 16px;
+}
+
+.status-display {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 0.85rem;
+}
+
+.status-display p {
+    margin: 0;
+}
+
+/* Header Controls */
+.header-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.header-controls .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.header-controls .btn-info {
+    background: #17a2b8;
+    color: white;
+    border: none;
+}
+
+.header-controls .btn-info:hover {
+    background: #138496;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Custom Modal */
+.custom-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.custom-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+}
+
+.custom-modal-dialog {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 500px;
+}
+
+.custom-modal-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.custom-modal-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.custom-modal-title {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.custom-modal-body {
+    padding: 1.5rem;
+}
+
+.custom-modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.custom-modal-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.custom-modal-btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.custom-modal-btn-primary:hover {
+    background: #5a6fd6;
+}
+
+.custom-modal-btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.custom-modal-btn-secondary:hover {
+    background: #5a6268;
+}
+
+.custom-modal-btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.custom-modal-btn-danger:hover {
+    background: #c82333;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    color: #999;
+    padding: 2rem;
+    font-style: italic;
+}
+
+.empty-state i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    display: block;
+    opacity: 0.5;
+}
