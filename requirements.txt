@@ -173,7 +173,7 @@ pygments==2.20.0
     #   sphinx
 pyparsing==3.3.2
     # via matplotlib
-pytest==9.0.2
+pytest==9.0.3
     # via
     #   broadbean (pyproject.toml)
     #   pytest-cov
