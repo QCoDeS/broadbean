@@ -214,8 +214,6 @@ nbsphinx_execute = "always"
 
 nbsphinx_allow_errors = True
 
-# https://github.com/astral-sh/ty/issues/860
-assert broadbean.__file__ is not None
 apidoc_module_dir = os.path.dirname(broadbean.__file__)
 apidoc_output_dir = "reference"
 apidoc_separate_modules = True
