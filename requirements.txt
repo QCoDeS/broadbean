@@ -104,7 +104,7 @@ markupsafe==3.0.3
     # via
     #   jinja2
     #   nbconvert
-matplotlib==3.10.8
+matplotlib==3.10.9
     # via broadbean (pyproject.toml)
 matplotlib-inline==0.2.1
     # via
