@@ -235,12 +235,12 @@ def test_copy_and_eq(protosequence1):
 
 def test_addition_fail_vrange(protosequence1, protosequence2):
     with pytest.raises(SequenceCompatibilityError):
-        protosequence1 + protosequence2
+        _ = protosequence1 + protosequence2
 
 
 def test_addition_fail_position(protosequence1, badseq_missing_pos):
     with pytest.raises(SequenceConsistencyError):
-        protosequence1 + badseq_missing_pos
+        _ = protosequence1 + badseq_missing_pos
 
 
 def test_addition_data(protosequence1, protosequence2):

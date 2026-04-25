@@ -481,7 +481,7 @@ class BluePrint:
 
             # Mutating the immutable...
             larg = list(self._argslist[position])
-            larg[arg] = value
+            larg[int(arg)] = value
             self._argslist[position] = tuple(larg)
 
     def changeDuration(self, name, dur, replaceeverywhere=False):
@@ -664,7 +664,7 @@ class BluePrint:
             if func == "waituntil":
                 name = "waituntil"
             else:
-                name = func.__name__
+                name = func if isinstance(func, str) else func.__name__
         elif isinstance(name, str):
             if len(name) > 0:
                 if name[-1].isdigit():
