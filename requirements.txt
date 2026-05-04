@@ -144,7 +144,7 @@ packaging==26.2
     #   versioningit
 pandocfilters==1.5.1
     # via nbconvert
-parso==0.8.6
+parso==0.8.7
     # via jedi
 pathspec==1.1.1
     # via mypy
