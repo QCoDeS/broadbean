@@ -193,7 +193,7 @@ referencing==0.37.0
     # via
     #   jsonschema
     #   jsonschema-specifications
-requests==2.33.1
+requests==2.34.0
     # via
     #   sphinx
     #   sphinx-jsonschema
