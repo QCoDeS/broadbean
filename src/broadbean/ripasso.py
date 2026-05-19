@@ -28,6 +28,8 @@ def _rcFilter(SR, npts, f_cut, kind="HP", order=1, DCgain=0):
     tau = 1 / f_cut
     top = 2j * np.pi
 
+    tf: np.ndarray = np.ones(npts, dtype=complex)
+
     if kind == "HP":
         tf = top * tau * freqs / (1 + top * tau * freqs)
 

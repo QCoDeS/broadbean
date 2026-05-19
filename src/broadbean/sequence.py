@@ -24,7 +24,9 @@ log = logging.getLogger(__name__)
 fs_schema = Schema(
     {
         int: {
-            "type": Or("subsequence", "element"),
+            # https://github.com/keleshev/schema/issues/322
+            # schema's Or() accepts strings at runtime but its type stubs don't reflect that
+            "type": Or("subsequence", "element"),  # type: ignore
             "content": {
                 int: {
                     "data": {Or(str, int): {str: np.ndarray}},
@@ -478,13 +480,14 @@ class Sequence:
 
         # Then check that elements use the same channels
         specchans = []
+        chans: list[str | int] | None = None
         for elem in self._data.values():
             chans = _channelListSorter(elem.channels)
             specchans.append(chans)
         if specchans == []:  # case of empty Sequence
             chans = None
             specchans = [None]
-        if specchans.count(chans) != len(specchans):
+        if not all(s == chans for s in specchans):
             failmssg = (
                 "checkConsistency failed: different elements specify different channels"
             )
