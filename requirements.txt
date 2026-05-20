@@ -56,7 +56,7 @@ fonttools==4.63.0
     # via matplotlib
 furo==2025.12.19
     # via broadbean (pyproject.toml)
-hypothesis==6.152.8
+hypothesis==6.152.9
     # via broadbean (pyproject.toml)
 idna==3.15
     # via requests
