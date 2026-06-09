@@ -12,7 +12,7 @@ attrs==26.1.0
     #   referencing
 babel==2.18.0
     # via sphinx
-beautifulsoup4==4.14.3
+beautifulsoup4==4.15.0
     # via
     #   furo
     #   nbconvert
