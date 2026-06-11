@@ -15,7 +15,7 @@ sine = bb.PulseAtoms.sine
 
 @pytest.fixture
 def protosequence1():
-    SR = 1e9
+    SR = int(1e9)
 
     th = bb.BluePrint()
     th.insertSegment(0, ramp, args=(0, 0), name="ramp", dur=10e-6)
