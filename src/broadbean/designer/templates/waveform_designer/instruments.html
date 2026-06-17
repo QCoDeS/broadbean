@@ -1,0 +1,690 @@
+{% extends "waveform_designer/base.html" %}
+{% load static %}
+
+{% block title %}Instrument Configuration{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'waveform_designer/css/instruments.css' %}">
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        height: 100vh;
+    }
+
+    .main-content {
+        display: flex !important;
+        flex-direction: column !important;
+        height: calc(100vh - 60px) !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Tab styles */
+    .config-tabs {
+        display: flex;
+        gap: 0;
+        border-bottom: 2px solid #dee2e6;
+        margin-bottom: 10px;
+    }
+
+    .config-tab {
+        padding: 8px 16px;
+        cursor: pointer;
+        border: none;
+        background: #f8f9fa;
+        border-radius: 4px 4px 0 0;
+        margin-right: 2px;
+        font-weight: 500;
+        color: #6c757d;
+        transition: all 0.2s;
+    }
+
+    .config-tab:hover {
+        background: #e9ecef;
+    }
+
+    .config-tab.active {
+        background: #0d6efd;
+        color: white;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    /* Config sections in sidebar */
+    .config-type-section {
+        margin-bottom: 15px;
+    }
+
+    .config-type-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        border-bottom: 1px solid #dee2e6;
+        margin-bottom: 8px;
+    }
+
+    .config-type-header h5 {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .config-type-header .btn {
+        padding: 2px 8px;
+        font-size: 0.75rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="instruments-container">
+    <!-- Header -->
+    <header class="instruments-header">
+        <h1><i class="fas fa-cogs"></i> Instrument Configuration</h1>
+        <div class="header-controls">
+            <a href="{% url 'waveform_designer:designer' %}" class="btn btn-info">
+                <i class="fas fa-wave-square"></i> Designer
+            </a>
+            <a href="{% url 'waveform_designer:sequencer' %}" class="btn btn-info">
+                <i class="fas fa-list"></i> Sequencer
+            </a>
+            <a href="{% url 'waveform_designer:upload' %}" class="btn btn-info">
+                <i class="fas fa-upload"></i> Upload & Capture
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="instruments-main">
+        <!-- Saved Configurations Panel -->
+        <aside class="configs-panel">
+            <h3>Saved Configurations</h3>
+
+            <!-- AWG Configs Section -->
+            <div class="config-type-section">
+                <div class="config-type-header">
+                    <h5><i class="fas fa-broadcast-tower"></i> AWG</h5>
+                    <button class="btn btn-sm btn-success" onclick="InstrumentsManager.newConfig('awg')">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div id="awg-configs-list" class="configs-list">
+                    <!-- AWG configurations will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Scope Configs Section -->
+            <div class="config-type-section">
+                <div class="config-type-header">
+                    <h5><i class="fas fa-desktop"></i> Scope</h5>
+                    <button class="btn btn-sm btn-success" onclick="InstrumentsManager.newConfig('scope')">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div id="scope-configs-list" class="configs-list">
+                    <!-- Scope configurations will be loaded here -->
+                </div>
+            </div>
+
+            <!-- LUT Configs Section -->
+            <div class="config-type-section">
+                <div class="config-type-header">
+                    <h5><i class="fas fa-chart-line"></i> LUT</h5>
+                    <button class="btn btn-sm btn-success" onclick="InstrumentsManager.newConfig('lut')">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div id="lut-configs-list" class="configs-list">
+                    <!-- LUT configurations will be loaded here -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Configuration Editor -->
+        <main class="editor-panel">
+            <!-- Tab Navigation -->
+            <div class="config-tabs">
+                <button class="config-tab active" data-tab="awg" onclick="InstrumentsManager.switchTab('awg')">
+                    <i class="fas fa-broadcast-tower"></i> AWG
+                </button>
+                <button class="config-tab" data-tab="scope" onclick="InstrumentsManager.switchTab('scope')">
+                    <i class="fas fa-desktop"></i> Scope
+                </button>
+                <button class="config-tab" data-tab="lut" onclick="InstrumentsManager.switchTab('lut')">
+                    <i class="fas fa-chart-line"></i> LUT
+                </button>
+            </div>
+
+            <!-- AWG Configuration Tab -->
+            <div id="awg-tab" class="tab-content active">
+                <section class="config-header-section">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="awg-config-name">Configuration Name <span class="text-danger">*</span></label>
+                                <input type="text" id="awg-config-name" class="form-control" placeholder="e.g., Lab AWG 1">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="awg-config-description">Description</label>
+                                <input type="text" id="awg-config-description" class="form-control" placeholder="Optional description">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="config-section">
+                    <h4><i class="fas fa-broadcast-tower"></i> AWG Settings</h4>
+                    <div class="config-card">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="awg-type">AWG Type</label>
+                                    <select id="awg-type" class="form-select">
+                                        <!-- Options populated dynamically from backend -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="awg-ip">IP Address</label>
+                                    <input type="text" id="awg-ip" class="form-control" placeholder="192.168.0.2">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="awg-sample-rate">Sample Rate (Hz)</label>
+                                    <input type="number" id="awg-sample-rate" class="form-control" value="25000000000" step="1000000000">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="awg-timeout">VISA Timeout (s)</label>
+                                    <input type="number" id="awg-timeout" class="form-control" value="60" min="1" max="300" step="1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-check mt-2">
+                            <input type="checkbox" class="form-check-input" id="awg-flags">
+                            <label class="form-check-label" for="awg-flags">Enable Flags</label>
+                        </div>
+
+                        <!-- AWG Channel Settings -->
+                        <div class="channel-settings mt-3">
+                            <h5>Channel Settings</h5>
+                            <div class="row">
+                                <!-- Channel 1 -->
+                                <div class="col-md-6">
+                                    <div class="channel-card">
+                                        <h6>Channel 1</h6>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>Resolution (bits)</label>
+                                                    <input type="number" id="awg-ch1-resolution" class="form-control form-control-sm" value="8" min="1" max="16">
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>Amplitude (V)</label>
+                                                    <input type="number" id="awg-ch1-amplitude" class="form-control form-control-sm" value="0.5" step="0.1">
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>Hold Mode</label>
+                                                    <select id="awg-ch1-hold" class="form-select form-select-sm">
+                                                        <option value="FIRST">FIRST</option>
+                                                        <option value="ZERO">ZERO</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Channel 2 -->
+                                <div class="col-md-6">
+                                    <div class="channel-card">
+                                        <h6>Channel 2</h6>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>Resolution (bits)</label>
+                                                    <input type="number" id="awg-ch2-resolution" class="form-control form-control-sm" value="8" min="1" max="16">
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>Amplitude (V)</label>
+                                                    <input type="number" id="awg-ch2-amplitude" class="form-control form-control-sm" value="0.5" step="0.1">
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>Hold Mode</label>
+                                                    <select id="awg-ch2-hold" class="form-select form-select-sm">
+                                                        <option value="FIRST">FIRST</option>
+                                                        <option value="ZERO">ZERO</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="action-buttons mt-3">
+                    <button id="save-awg-btn" class="btn btn-success">
+                        <i class="fas fa-save"></i> Save AWG Configuration
+                    </button>
+                    <button id="delete-awg-btn" class="btn btn-danger" disabled>
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                    <button id="test-awg-btn" class="btn btn-outline-primary">
+                        <i class="fas fa-cog"></i> Configure Instrument
+                    </button>
+                    <button id="export-awg-btn" class="btn btn-outline-secondary" disabled>
+                        <i class="fas fa-download"></i> Export YAML
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scope Configuration Tab -->
+            <div id="scope-tab" class="tab-content">
+                <section class="config-header-section">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="scope-config-name">Configuration Name <span class="text-danger">*</span></label>
+                                <input type="text" id="scope-config-name" class="form-control" placeholder="e.g., Lab Scope 1">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="scope-config-description">Description</label>
+                                <input type="text" id="scope-config-description" class="form-control" placeholder="Optional description">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="config-section">
+                    <h4><i class="fas fa-desktop"></i> Scope Settings</h4>
+                    <div class="config-card">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="scope-type">Scope Type</label>
+                                    <select id="scope-type" class="form-select">
+                                        <!-- Options populated dynamically from backend -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="scope-ip">IP Address</label>
+                                    <input type="text" id="scope-ip" class="form-control" placeholder="192.168.0.3">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="scope-acq-mode">Acquisition Mode</label>
+                                    <select id="scope-acq-mode" class="form-select">
+                                        <option value="sample">Sample</option>
+                                        <option value="high_res">High Resolution</option>
+                                        <option value="average">Average</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="scope-timeout">VISA Timeout (s)</label>
+                                    <input type="number" id="scope-timeout" class="form-control" value="60" min="1" max="300" step="1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Trigger Settings -->
+                        <div class="subsection mt-3">
+                            <h5>Trigger Settings</h5>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="trigger-type">Type</label>
+                                        <select id="trigger-type" class="form-select form-select-sm">
+                                            <option value="EDGE">Edge</option>
+                                            <option value="GLITCH">Glitch</option>
+                                            <option value="WIDTH">Width</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="trigger-edge">Edge/Slope</label>
+                                        <select id="trigger-edge" class="form-select form-select-sm">
+                                            <option value="RISE">Rise</option>
+                                            <option value="FALL">Fall</option>
+                                            <option value="EITHER">Either</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="trigger-level">Level (V)</label>
+                                        <input type="number" id="trigger-level" class="form-control form-control-sm" value="0.5" step="0.1">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="trigger-source">Source</label>
+                                        <select id="trigger-source" class="form-select form-select-sm">
+                                            <option value="CH1">CH1</option>
+                                            <option value="CH2">CH2</option>
+                                            <option value="CH3">CH3</option>
+                                            <option value="AUX" selected>AUX</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Horizontal Settings -->
+                        <div class="subsection mt-3">
+                            <h5>Horizontal Settings</h5>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="horizontal-position">Position (s)</label>
+                                        <input type="number" id="horizontal-position" class="form-control form-control-sm" value="0" step="0.000001">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="horizontal-scale">Scale (s/div)</label>
+                                        <input type="number" id="horizontal-scale" class="form-control form-control-sm" value="1" step="0.1">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="horizontal-record-length">Record Length</label>
+                                        <input type="number" id="horizontal-record-length" class="form-control form-control-sm" value="5000" step="1000">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="horizontal-sample-rate">Sample Rate (Hz)</label>
+                                        <input type="number" id="horizontal-sample-rate" class="form-control form-control-sm" value="25000000000" step="1000000000">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="horizontal-mode">Mode</label>
+                                        <select id="horizontal-mode" class="form-select form-select-sm">
+                                            <option value="auto" selected>Auto</option>
+                                            <option value="manual">Manual</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Scope Channel Settings -->
+                        <div class="subsection mt-3">
+                            <h5>Channel Settings</h5>
+                            <div class="row" id="scope-channels-container">
+                                <!-- Channel 1 -->
+                                <div class="col-md-4">
+                                    <div class="channel-card">
+                                        <div class="channel-header">
+                                            <span>CH1</span>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="scope-ch1-enabled">
+                                                <label class="form-check-label" for="scope-ch1-enabled">Enabled</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>Scale (V/div)</label>
+                                                    <input type="number" id="scope-ch1-scale" class="form-control form-control-sm" value="0.1" step="0.01">
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>Offset (V)</label>
+                                                    <input type="number" id="scope-ch1-offset" class="form-control form-control-sm" value="0" step="0.1">
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label>Position (div)</label>
+                                                    <input type="number" id="scope-ch1-position" class="form-control form-control-sm" value="0" step="0.1">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Channel 2 -->
+                                <div class="col-md-4">
+                                    <div class="channel-card">
+                                        <div class="channel-header">
+                                            <span>CH2</span>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="scope-ch2-enabled">
+                                                <label class="form-check-label" for="scope-ch2-enabled">Enabled</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>Scale (V/div)</label>
+                                                    <input type="number" id="scope-ch2-scale" class="form-control form-control-sm" value="0.1" step="0.01">
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>Offset (V)</label>
+                                                    <input type="number" id="scope-ch2-offset" class="form-control form-control-sm" value="0" step="0.1">
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label>Position (div)</label>
+                                                    <input type="number" id="scope-ch2-position" class="form-control form-control-sm" value="0" step="0.1">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Channel 3 -->
+                                <div class="col-md-4">
+                                    <div class="channel-card">
+                                        <div class="channel-header">
+                                            <span>CH3</span>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="scope-ch3-enabled">
+                                                <label class="form-check-label" for="scope-ch3-enabled">Enabled</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>Scale (V/div)</label>
+                                                    <input type="number" id="scope-ch3-scale" class="form-control form-control-sm" value="0.1" step="0.01">
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>Offset (V)</label>
+                                                    <input type="number" id="scope-ch3-offset" class="form-control form-control-sm" value="0" step="0.1">
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label>Position (div)</label>
+                                                    <input type="number" id="scope-ch3-position" class="form-control form-control-sm" value="0" step="0.1">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="action-buttons mt-3">
+                    <button id="save-scope-btn" class="btn btn-success">
+                        <i class="fas fa-save"></i> Save Scope Configuration
+                    </button>
+                    <button id="delete-scope-btn" class="btn btn-danger" disabled>
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                    <button id="test-scope-btn" class="btn btn-outline-primary">
+                        <i class="fas fa-cog"></i> Configure Instrument
+                    </button>
+                    <button id="export-scope-btn" class="btn btn-outline-secondary" disabled>
+                        <i class="fas fa-download"></i> Export YAML
+                    </button>
+                </div>
+            </div>
+
+            <!-- LUT Configuration Tab -->
+            <div id="lut-tab" class="tab-content">
+                <section class="config-header-section">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="lut-config-name">Configuration Name <span class="text-danger">*</span></label>
+                                <input type="text" id="lut-config-name" class="form-control" placeholder="e.g., Channel 1 Calibration">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="lut-config-description">Description</label>
+                                <input type="text" id="lut-config-description" class="form-control" placeholder="Optional description">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="config-section">
+                    <h4><i class="fas fa-chart-line"></i> Amplitude Calibration (LUT)</h4>
+                    <div class="config-card">
+                        <p class="text-muted mb-3">
+                            Upload a CSV file with 'input' and 'output' columns to create an amplitude calibration lookup table.
+                            This LUT can be applied per-channel during sequence upload.
+                        </p>
+                        <div class="row align-items-end">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label for="lut-file">LUT CSV File</label>
+                                    <input type="file" id="lut-file" class="form-control" accept=".csv">
+                                </div>
+                            </div>
+                        </div>
+                        <div id="lut-status" class="mt-3">
+                            <span class="badge bg-secondary">No LUT data loaded</span>
+                        </div>
+                        <div id="lut-preview" class="mt-3" style="display: none;">
+                            <h5>LUT Preview</h5>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <p><strong>Points:</strong> <span id="lut-num-points">0</span></p>
+                                    <p><strong>Input Range:</strong> <span id="lut-input-range">-</span></p>
+                                    <p><strong>Output Range:</strong> <span id="lut-output-range">-</span></p>
+                                </div>
+                            </div>
+                            <div id="lut-plot" style="width: 100%; height: 350px; border: 1px solid #dee2e6; border-radius: 8px; margin-top: 15px;"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="action-buttons mt-3">
+                    <button id="save-lut-btn" class="btn btn-success">
+                        <i class="fas fa-save"></i> Save LUT Configuration
+                    </button>
+                    <button id="delete-lut-btn" class="btn btn-danger" disabled>
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Status Panel -->
+        <aside class="actions-panel">
+            <h3>Status</h3>
+
+            <div id="test-results" class="test-results mt-2">
+                <!-- Test results will be shown here -->
+            </div>
+
+            <div class="action-section mt-4">
+                <h4>Current Status</h4>
+                <div id="config-status" class="status-display">
+                    <p class="text-muted">Select a configuration type to begin</p>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loading-overlay" class="loading-overlay" style="display: none;">
+    <div class="spinner"></div>
+    <p id="loading-message">Processing...</p>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-confirm-modal" class="custom-modal" style="display: none;">
+    <div class="custom-modal-backdrop"></div>
+    <div class="custom-modal-dialog">
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h5 class="custom-modal-title">
+                    <i class="fas fa-exclamation-triangle text-danger"></i> Confirm Delete
+                </h5>
+            </div>
+            <div class="custom-modal-body">
+                <p>Are you sure you want to delete the configuration "<strong id="delete-config-name"></strong>"?</p>
+                <p class="text-muted">This action cannot be undone.</p>
+            </div>
+            <div class="custom-modal-footer">
+                <button type="button" class="custom-modal-btn custom-modal-btn-secondary" id="delete-modal-cancel">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="custom-modal-btn custom-modal-btn-danger" id="delete-modal-confirm">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'waveform_designer/js/common-utils.js' %}"></script>
+<script src="{% static 'waveform_designer/js/instruments.js' %}"></script>
+{% endblock %}
