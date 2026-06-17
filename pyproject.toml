@@ -51,7 +51,9 @@ docs = [
     "sphinx-jsonschema",
     "ipykernel",
 ]
-
+plotly = [
+    "plotly>=5.0.0",
+]
 
 [tool.pytest]
 minversion = "9.0"
@@ -67,7 +69,8 @@ warn_redundant_casts = true
 [[tool.mypy.overrides]]
 module = [
     "matplotlib.*",
-    "schema"
+    "schema",
+    "plotly.*",
 ]
 ignore_missing_imports = true
 
