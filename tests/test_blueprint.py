@@ -332,7 +332,7 @@ def test_not_equal(blueprint_tophat):
     bpc = blueprint_tophat.copy()
 
     with pytest.raises(ValueError):
-        bpc == "1"
+        _ = bpc == "1"
 
     bpc.insertSegment(0, ramp, (0, 0), dur=1 / 3)
 
