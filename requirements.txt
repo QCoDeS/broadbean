@@ -256,7 +256,7 @@ traitlets==5.15.1
     #   nbsphinx
 types-pytz==2026.2.0.20260518
     # via broadbean (pyproject.toml)
-typing-extensions==4.15.0
+typing-extensions==4.16.0
     # via
     #   beautifulsoup4
     #   mypy
