@@ -153,3 +153,5 @@ cython_debug/
 
 # Mac files
 .DS_Store
+
+uv.lock

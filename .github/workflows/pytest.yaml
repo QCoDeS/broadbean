@@ -23,10 +23,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ["3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.12", "3.13", "3.14"]
         exclude:
-          - os: windows-latest
-            python-version: "3.12"
           - os: windows-latest
             python-version: "3.13"
           - os: windows-latest
@@ -36,11 +34,11 @@ jobs:
       PYTHON: ${{ matrix.python-version }}
 
     steps:
-    - uses: actions/checkout@v6.0.2
+    - uses: actions/checkout@v7.0.0
       with:
         submodules: true
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v6.2.0
+      uses: actions/setup-python@v6.3.0
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
@@ -59,7 +57,7 @@ jobs:
       run: |
         pytest --cov=broadbean --cov-report xml --hypothesis-profile ci tests
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
+      uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
       with:
         files: ./coverage.xml
         env_vars: OS,PYTHON
