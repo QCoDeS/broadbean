@@ -1,0 +1,192 @@
+{% extends "waveform_designer/base.html" %}
+{% load static %}
+
+{% block title %}Waveform Sequencer{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'waveform_designer/css/designer.css' %}">
+<link rel="stylesheet" href="{% static 'waveform_designer/css/sequencer.css' %}">
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        height: 100vh;
+    }
+
+    .main-content {
+        display: flex !important;
+        flex-direction: column !important;
+        height: calc(100vh - 120px) !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="designer-container" style="height: 100%; display: flex; flex-direction: column;">
+
+
+    <!-- Main Content Area -->
+    <div class="designer-main" style="flex: 1; overflow: hidden;">
+        <!-- Sequences Library Panel -->
+        <aside class="sequences-panel">
+            <h3>Sequences Library</h3>
+            <div class="library-controls mb-3">
+                <button id="refresh-sequences-btn" class="btn btn-sm btn-outline-primary w-100">
+                    <i class="fas fa-sync"></i> Refresh Sequences
+                </button>
+            </div>
+            <div id="sequences-library" class="element-grid">
+                <!-- Saved waveform sequences will be loaded here -->
+            </div>
+        </aside>
+
+        <!-- Element Library Panel -->
+        <aside class="segment-library">
+            <h3>Element Library</h3>
+            <div class="library-controls mb-3">
+                <button id="refresh-elements-btn" class="btn btn-sm btn-outline-primary w-100">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+            </div>
+            <div id="element-library" class="element-grid">
+                <!-- Saved waveform elements will be loaded here -->
+            </div>
+        </aside>
+
+        <!-- Center Panel with Sequence Timeline and Preview -->
+        <main class="center-panel">
+            <!-- Sequence Timeline -->
+            <section class="timeline-section">
+                <div class="timeline-header">
+                    <h3>Sequence Timeline</h3>
+                    <div class="timeline-info">
+                        <span class="badge bg-primary" id="position-count">0 positions</span>
+                        <span class="badge bg-info" id="total-duration-badge">0 μs</span>
+                        <button id="save-sequence-btn" class="btn btn-sm btn-success ms-2">
+                            <i class="fas fa-save"></i> Save Sequence
+                        </button>
+                        <button id="clear-sequence-btn" class="btn btn-sm btn-secondary ms-1">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                    </div>
+                </div>
+                <div class="sequence-timeline-container">
+                    <div id="sequence-timeline" class="sequence-timeline">
+                        <div class="timeline-placeholder">
+                            <i class="fas fa-list"></i>
+                            <p>Drag elements from the library to build your sequence</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Preview Panel -->
+            <section class="preview-section">
+                <div class="preview-header">
+                    <h3>Sequence Preview</h3>
+                    <div class="preview-controls">
+                        <button id="refresh-preview-btn" class="btn btn-sm btn-primary">
+                            <i class="fas fa-sync"></i> Update Preview
+                        </button>
+                        <span class="badge bg-secondary" id="preview-status" style="font-size: 0.9rem; padding: 0.5em 0.8em;">No sequence</span>
+                        <div class="max-seq-control ms-2" style="display: inline-flex; align-items: center;">
+                            <label for="max-subsequences" class="small me-1" style="white-space: nowrap;">Max shown:</label>
+                            <input type="number" id="max-subsequences" class="form-control form-control-sm"
+                                   value="10" min="1" max="100" style="width: 60px;">
+                        </div>
+                    </div>
+                </div>
+                <div id="sequence-preview-plot" class="preview-plot"></div>
+                <div id="sequence-stats" class="preview-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Positions:</span>
+                        <span id="stat-positions">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Total Duration:</span>
+                        <span id="stat-total-duration">0 μs</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Sample Rate:</span>
+                        <span id="stat-sample-rate">0 Hz</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Element Inspector Panel -->
+        <aside class="properties-panel">
+            <h3>Element Inspector</h3>
+
+            <!-- Element Properties -->
+            <div id="element-inspector-content" class="properties-content">
+                <p class="no-selection">Select an element in the timeline to edit its properties</p>
+            </div>
+
+            <!-- Sequence Element List -->
+            <div class="segment-list-container">
+                <h4>Sequence Order</h4>
+                <div id="sequence-element-list" class="segment-list">
+                    <!-- Sequence elements will be listed here -->
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loading-overlay" class="loading-overlay" style="display: none;">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+</div>
+
+<!-- Save Sequence Modal -->
+<div id="save-sequence-modal" class="custom-modal" style="display: none;">
+    <div class="custom-modal-backdrop"></div>
+    <div class="custom-modal-dialog">
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h5 class="custom-modal-title">
+                    <i class="fas fa-save"></i> Save Waveform Sequence
+                </h5>
+                <button type="button" class="custom-modal-close" id="save-seq-modal-close">&times;</button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="form-group mb-3">
+                    <label for="save-sequence-name" class="form-label">Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="save-sequence-name" placeholder="Enter sequence name" required>
+                    <div class="invalid-feedback" id="save-seq-name-error">Please enter a name for the sequence.</div>
+                </div>
+                <div class="form-group">
+                    <label for="save-sequence-description" class="form-label">Description</label>
+                    <textarea class="form-control" id="save-sequence-description" rows="3" placeholder="Enter optional description"></textarea>
+                </div>
+            </div>
+            <div class="custom-modal-footer">
+                <button type="button" class="custom-modal-btn custom-modal-btn-secondary" id="save-seq-modal-cancel">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="custom-modal-btn custom-modal-btn-primary" id="save-seq-modal-save">
+                    <i class="fas fa-save"></i> Save Sequence
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- JavaScript -->
+<script src="{% static 'waveform_designer/js/common-utils.js' %}"></script>
+<script src="{% static 'waveform_designer/js/modal-utils.js' %}"></script>
+<script src="{% static 'waveform_designer/js/drag-reorder-utils.js' %}"></script>
+<script src="{% static 'waveform_designer/js/element-library.js' %}"></script>
+<script src="{% static 'waveform_designer/js/sequences-library-sequencer.js' %}"></script>
+<script src="{% static 'waveform_designer/js/sequence-timeline.js' %}"></script>
+<script src="{% static 'waveform_designer/js/element-inspector.js' %}"></script>
+<script src="{% static 'waveform_designer/js/sequence-preview.js' %}"></script>
+<script src="{% static 'waveform_designer/js/sequencer.js' %}"></script>
+{% endblock %}
