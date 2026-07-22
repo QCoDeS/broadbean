@@ -189,6 +189,8 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
             # reduce the tickmark density (must be called before scaling)
             ax.locator_params(tight=True, nbins=4, prune="lower")
 
+            m1: np.ndarray = np.array([])
+            m2: np.ndarray = np.array([])
             if seq[pos + 1]["type"] == "element":
                 content = seq[pos + 1]["content"][1]["data"][chan]
                 wfm = content["wfm"]
@@ -199,7 +201,7 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
 
             else:
                 arr_dict = _plot_summariser(seq[pos + 1]["content"])
-                wfm = arr_dict[chan]["wfm"]
+                wfm = arr_dict[int(chan)]["wfm"]
                 newdurs = []
 
                 ax.annotate(
@@ -317,6 +319,7 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
             if pos == seqlen - 1 and not (isinstance(obj_to_plot, BluePrint)):
                 newax = ax.twinx()
                 newax.set_yticks([])
+                new_ylabel: str = str(chan)
                 if isinstance(chan, int):
                     new_ylabel = f"Ch. {chan}"
                 elif isinstance(chan, str):
