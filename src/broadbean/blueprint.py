@@ -866,7 +866,7 @@ def _subelementBuilder(
             raise SegmentDurationError(
                 "Too short segment detected! "
                 f'Segment "{namelist[ii]}" at position {ii} '
-                f"has a duration of {newdurations[ii]} which at "
+                f"has a duration of {dur} which at "
                 f"an SR of {SR:.3E} leads to just {int_dur} "
                 "point(s). There must be at least "
                 "2 points in each segment."

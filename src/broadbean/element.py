@@ -280,10 +280,9 @@ class Element:
             else:
                 return len(chan["array"]["wfm"])
 
-        else:
-            # this line is here to make mypy happy; this exception is
-            # already raised by validateDurations
-            raise KeyError("Empty Element, nothing assigned")
+        # this line is here to make mypy happy; this exception is
+        # already raised by validateDurations
+        raise KeyError("Empty Element, nothing assigned")
 
     @property
     def duration(self):
@@ -370,7 +369,7 @@ class Element:
         channel: str | int,
         name: str,
         arg: str | int,
-        value: int | float,
+        value: float,
         replaceeverywhere: bool = False,
     ) -> None:
         """
@@ -408,7 +407,7 @@ class Element:
         self,
         channel: str | int,
         name: str,
-        newdur: int | float,
+        newdur: float,
         replaceeverywhere: bool = False,
     ) -> None:
         """
@@ -502,11 +501,11 @@ class Element:
         return new
 
     def __eq__(self, other):
-        if not isinstance(other, Element):
-            return False
-        elif not self._data == other._data:
-            return False
-        elif not self._meta == other._meta:
+        if (
+            not isinstance(other, Element)
+            or not self._data == other._data
+            or not self._meta == other._meta
+        ):
             return False
         else:
             return True

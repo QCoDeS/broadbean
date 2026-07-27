@@ -95,15 +95,13 @@ class Sequence:
         self._name = ""
 
     def __eq__(self, other):
-        if not isinstance(other, Sequence):
-            return False
-        elif not self._data == other._data:
-            return False
-        elif not self._meta == other._meta:
-            return False
-        elif not self._awgspecs == other._awgspecs:
-            return False
-        elif not self._sequencing == other._sequencing:
+        if (
+            not isinstance(other, Sequence)
+            or not self._data == other._data
+            or not self._meta == other._meta
+            or not self._awgspecs == other._awgspecs
+            or not self._sequencing == other._sequencing
+        ):
             return False
         else:
             return True
@@ -862,8 +860,6 @@ class Sequence:
                 "inconsistent. Please run "
                 "checkConsistency(verbose=True) for more details"
             )
-        #
-        #
         channels = self.element(1).channels  # all elements have ident. chans
         # We copy the data so that the state of the Sequence is left unaltered
         # by outputting for AWG
@@ -1084,7 +1080,7 @@ class Sequence:
                     ""
                 )
 
-            if nrep not in range(0, 16384):
+            if nrep not in range(16384):
                 raise SequencingError(
                     "Invalid number of repetions at position"
                     f"{pos}: {nrep}. Must be either 0 (infinite) "
@@ -1099,7 +1095,7 @@ class Sequence:
                     ""
                 )
 
-            if goto not in range(0, seqlen + 1):
+            if goto not in range(seqlen + 1):
                 raise SequencingError(
                     "Invalid goto target at position"
                     f"{pos}: {goto}. Must be either 0 (next),"
@@ -1254,7 +1250,7 @@ class Sequence:
                     ""
                 )
 
-            if nrep not in range(0, 65537):
+            if nrep not in range(65537):
                 raise SequencingError(
                     "Invalid number of repetions at position"
                     f"{pos}: {nrep}. Must be either 0 (infinite) "
@@ -1269,7 +1265,7 @@ class Sequence:
                     ""
                 )
 
-            if goto not in range(0, seqlen + 1):
+            if goto not in range(seqlen + 1):
                 raise SequencingError(
                     "Invalid goto target at position"
                     f"{pos}: {goto}. Must be either 0 (next),"
