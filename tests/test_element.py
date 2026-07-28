@@ -227,7 +227,7 @@ def test_points(SR, N):
     elem = Element()
 
     with pytest.raises(KeyError):
-        elem.points
+        _ = elem.points
 
     bp = bb.BluePrint()
 

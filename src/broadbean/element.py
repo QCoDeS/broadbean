@@ -45,7 +45,7 @@ class Element:
         Overwrites whatever was there before.
         """
         if not isinstance(blueprint, BluePrint):
-            raise ValueError(
+            raise ValueError(  # noqa: TRY004
                 "Invalid blueprint given. Must be an instance of the BluePrint class."
             )
 
@@ -70,7 +70,7 @@ class Element:
         2 or "L" for 'Low', 3 or "T" for 'Toggle', 4 or "P" for 'Pulse'.
         """
         if not isinstance(flags, Sequence):
-            raise ValueError(
+            raise ValueError(  # noqa: TRY004
                 "Flags should be given as a sequence (e.g. a list or a tuple)."
             )
 
@@ -147,13 +147,13 @@ class Element:
         # First the sample rate
         SRs = []
         for channel in channels:
-            if "blueprint" in channel.keys():
+            if "blueprint" in channel:
                 SRs.append(channel["blueprint"].SR)
-            elif "array" in channel.keys():
+            elif "array" in channel:
                 SR = channel["SR"]
                 SRs.append(SR)
 
-        if not SRs.count(SRs[0]) == len(SRs):
+        if SRs.count(SRs[0]) != len(SRs):
             errmssglst = zip(list(self._data.keys()), SRs)
             raise ElementDurationError(
                 "Different channels have different "
@@ -164,9 +164,9 @@ class Element:
         # Next the total time
         durations = []
         for channel in channels:
-            if "blueprint" in channel.keys():
+            if "blueprint" in channel:
                 durations.append(channel["blueprint"].duration)
-            elif "array" in channel.keys():
+            elif "array" in channel:
                 length = len(channel["array"]["wfm"]) / channel["SR"]
                 durations.append(length)
 
@@ -187,13 +187,13 @@ class Element:
         # (kind of redundant if sample rate and duration match?)
         npts = []
         for channel in channels:
-            if "blueprint" in channel.keys():
+            if "blueprint" in channel:
                 npts.append(channel["blueprint"].points)
-            elif "array" in channel.keys():
+            elif "array" in channel:
                 length = len(channel["array"]["wfm"])
                 npts.append(length)
 
-        if not npts.count(npts[0]) == len(npts):
+        if npts.count(npts[0]) != len(npts):
             errmssglst = zip(list(self._data.keys()), npts)
             raise ElementDurationError(
                 "Different channels have different "
@@ -225,19 +225,19 @@ class Element:
 
         outdict = {}
         for channel, signal in self._data.items():
-            if "array" in signal.keys():
+            if "array" in signal:
                 outdict[channel] = signal["array"]
-                if includetime and "time" not in signal["array"].keys():
+                if includetime and "time" not in signal["array"]:
                     N = len(signal["array"]["wfm"])
                     dur = N / signal["SR"]
                     outdict[channel]["time"] = np.linspace(0, dur, N)
-            elif "blueprint" in signal.keys():
+            elif "blueprint" in signal:
                 bp = signal["blueprint"]
                 durs = bp.durations
                 SR = bp.SR
                 forged_bp = _subelementBuilder(bp, SR, durs)
                 outdict[channel] = forged_bp
-                if "flags" in signal.keys():
+                if "flags" in signal:
                     outdict[channel]["flags"] = signal["flags"]
                 if not includetime:
                     outdict[channel].pop("time")
@@ -271,19 +271,18 @@ class Element:
         # if validateDurations did not raise an error, all channels
         # have the same number of points
         for chan in channels:
-            if not ("array" in chan.keys() or "blueprint" in chan.keys()):
+            if not ("array" in chan or "blueprint" in chan):
                 raise ValueError(
                     f"Neither BluePrint nor array assigned to chan {chan}!"
                 )
-            if "blueprint" in chan.keys():
+            if "blueprint" in chan:
                 return chan["blueprint"].points
             else:
                 return len(chan["array"]["wfm"])
 
-        else:
-            # this line is here to make mypy happy; this exception is
-            # already raised by validateDurations
-            raise KeyError("Empty Element, nothing assigned")
+        # this line is here to make mypy happy; this exception is
+        # already raised by validateDurations
+        raise KeyError("Empty Element, nothing assigned")
 
     @property
     def duration(self):
@@ -301,7 +300,7 @@ class Element:
         """
         The channels that has something on them
         """
-        chans = [key for key in self._data.keys()]
+        chans = [key for key in self._data]
         return chans
 
     @property
@@ -312,12 +311,12 @@ class Element:
         desc = {}
 
         for key, val in self._data.items():
-            if "blueprint" in val.keys():
+            if "blueprint" in val:
                 desc[str(key)] = val["blueprint"].description
-            elif "array" in val.keys():
+            elif "array" in val:
                 desc[str(key)] = "array"
 
-            if "flags" in val.keys():
+            if "flags" in val:
                 desc[str(key)]["flags"] = val["flags"]
 
         return desc
@@ -370,7 +369,7 @@ class Element:
         channel: str | int,
         name: str,
         arg: str | int,
-        value: int | float,
+        value: float,
         replaceeverywhere: bool = False,
     ) -> None:
         """
@@ -397,7 +396,7 @@ class Element:
         if channel not in self.channels:
             raise ValueError(f"Nothing assigned to channel {channel}")
 
-        if "blueprint" not in self._data[channel].keys():
+        if "blueprint" not in self._data[channel]:
             raise ValueError(f"No blueprint on channel {channel}.")
 
         bp = self._data[channel]["blueprint"]
@@ -408,7 +407,7 @@ class Element:
         self,
         channel: str | int,
         name: str,
-        newdur: int | float,
+        newdur: float,
         replaceeverywhere: bool = False,
     ) -> None:
         """
@@ -429,7 +428,7 @@ class Element:
         if channel not in self.channels:
             raise ValueError(f"Nothing assigned to channel {channel}")
 
-        if "blueprint" not in self._data[channel].keys():
+        if "blueprint" not in self._data[channel]:
             raise ValueError(f"No blueprint on channel {channel}.")
 
         bp = self._data[channel]["blueprint"]
@@ -468,7 +467,7 @@ class Element:
         for chanind, chan in enumerate(self.channels):
             delay = delays[chanind]
 
-            if "blueprint" in self._data[chan].keys():
+            if "blueprint" in self._data[chan]:
                 blueprint = self._data[chan]["blueprint"]
 
                 # update existing waituntils
@@ -501,12 +500,9 @@ class Element:
         new._meta = deepcopy(self._meta)
         return new
 
-    def __eq__(self, other):
-        if not isinstance(other, Element):
-            return False
-        elif not self._data == other._data:
-            return False
-        elif not self._meta == other._meta:
-            return False
-        else:
-            return True
+    def __eq__(self, other) -> bool:
+        return (
+            isinstance(other, Element)
+            and self._data == other._data
+            and self._meta == other._meta
+        )
