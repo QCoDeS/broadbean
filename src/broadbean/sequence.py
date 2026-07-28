@@ -94,13 +94,13 @@ class Sequence:
         # we make the name a property of the sequence
         self._name = ""
 
-    def __eq__(self, other):
-        return not (
-            not isinstance(other, Sequence)
-            or not self._data == other._data
-            or not self._meta == other._meta
-            or not self._awgspecs == other._awgspecs
-            or not self._sequencing == other._sequencing
+    def __eq__(self, other) -> bool:
+        return (
+            isinstance(other, Sequence)
+            and self._data == other._data
+            and self._meta == other._meta
+            and self._awgspecs == other._awgspecs
+            and self._sequencing == other._sequencing
         )
 
     def __add__(self, other):

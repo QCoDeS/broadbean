@@ -500,9 +500,9 @@ class Element:
         new._meta = deepcopy(self._meta)
         return new
 
-    def __eq__(self, other):
-        return not (
-            not isinstance(other, Element)
-            or not self._data == other._data
-            or not self._meta == other._meta
+    def __eq__(self, other) -> bool:
+        return (
+            isinstance(other, Element)
+            and self._data == other._data
+            and self._meta == other._meta
         )

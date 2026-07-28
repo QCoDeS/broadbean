@@ -73,13 +73,12 @@ def should_raise_sequencingerror(wait, nrep, jump_to, goto, num_elms):
     """
     Function to tell us whether a SequencingError should be raised
     """
-    if wait not in [0, 1]:
-        return True
-    if nrep not in range(16384):
-        return True
-    if jump_to not in range(-1, num_elms + 1):
-        return True
-    return goto not in range(num_elms + 1)
+    return (
+        wait not in [0, 1]
+        or nrep not in range(16384)
+        or jump_to not in range(-1, num_elms + 1)
+        or goto not in range(num_elms + 1)
+    )
 
 
 @settings(max_examples=25, suppress_health_check=(HealthCheck.function_scoped_fixture,))

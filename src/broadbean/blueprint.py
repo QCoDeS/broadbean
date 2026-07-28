@@ -778,19 +778,15 @@ class BluePrint:
                              """
             )
 
-        if not self._namelist == other._namelist:
-            return False
-        if not self._funlist == other._funlist:
-            return False
-        if not self._argslist == other._argslist:
-            return False
-        if not self.marker1 == other.marker1:
-            return False
-        if not self.marker2 == other.marker2:
-            return False
-        if not self._segmark1 == other._segmark1:
-            return False
-        return self._segmark2 == other._segmark2
+        return (
+            self._namelist == other._namelist
+            and self._funlist == other._funlist
+            and self._argslist == other._argslist
+            and self.marker1 == other.marker1
+            and self.marker2 == other.marker2
+            and self._segmark1 == other._segmark1
+            and self._segmark2 == other._segmark2
+        )
 
 
 def _subelementBuilder(
