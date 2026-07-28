@@ -169,7 +169,7 @@ def applyCustomTransferFunction(signal, SR, tf_freqs, tf_amp, invert=False):
             "Nyquist frequency of the signal."
         )
 
-    if not tf_freqs[0] == 0:
+    if tf_freqs[0] != 0:
         # what to do in this case? Extrapolate 1s? Make the user do this?
         pass
 

@@ -95,16 +95,13 @@ class Sequence:
         self._name = ""
 
     def __eq__(self, other):
-        if (
+        return not (
             not isinstance(other, Sequence)
             or not self._data == other._data
             or not self._meta == other._meta
             or not self._awgspecs == other._awgspecs
             or not self._sequencing == other._sequencing
-        ):
-            return False
-        else:
-            return True
+        )
 
     def __add__(self, other):
         """
@@ -127,16 +124,14 @@ class Sequence:
         newseq = Sequence()
         N = len(self._data)
 
-        newdata1 = {key: self.element(key).copy() for key in self._data.keys()}
-        newdata2 = {key + N: other.element(key).copy() for key in other._data.keys()}
+        newdata1 = {key: self.element(key).copy() for key in self._data}
+        newdata2 = {key + N: other.element(key).copy() for key in other._data}
         newdata1.update(newdata2)
 
         newseq._data = newdata1
 
-        newsequencing1 = {
-            key: self._sequencing[key].copy() for key in self._sequencing.keys()
-        }
-        newsequencing2 = dict()
+        newsequencing1 = {key: self._sequencing[key].copy() for key in self._sequencing}
+        newsequencing2 = {}
 
         for key, item in other._sequencing.items():
             newitem = item.copy()
@@ -369,7 +364,7 @@ class Sequence:
                 'Filter kind must either be "LP" (low pass) or "HP" (high pass).'
             )
         if not isinstance(order, int):
-            raise ValueError("Filter order must be an integer.")
+            raise ValueError("Filter order must be an integer.")  # noqa: TRY004
         if (f_cut is not None) and (tau is not None):
             raise SpecificationInconsistencyError(
                 "Can not specify BOTH a time constant and a cut-off frequency."
@@ -424,7 +419,7 @@ class Sequence:
             subsequence: The subsequence to add
         """
         if not isinstance(subsequence, Sequence):
-            raise ValueError(
+            raise ValueError(  # noqa: TRY004
                 "Subsequence must be a sequence object. "
                 "Received object of type "
                 f"{type(subsequence)}."
@@ -432,7 +427,7 @@ class Sequence:
 
         for elem in subsequence._data.values():
             if isinstance(elem, Sequence):
-                raise ValueError("Subsequences can not contain subsequences.")
+                raise ValueError("Subsequences can not contain subsequences.")  # noqa: TRY004
 
         if subsequence.SR != self.SR:
             raise ValueError(
@@ -497,7 +492,7 @@ class Sequence:
         positions = list(self._data.keys())
         if positions == []:  # case of empty Sequence
             positions = [1]
-        if not positions == list(range(1, len(positions) + 1)):
+        if positions != list(range(1, len(positions) + 1)):
             failmssg = (
                 "checkConsistency failed: inconsistent sequence"
                 "positions. Must be 1, 2, 3, ..."
@@ -622,7 +617,7 @@ class Sequence:
     @name.setter
     def name(self, newname):
         if not isinstance(newname, str):
-            raise ValueError("The sequence name must be a string")
+            raise ValueError("The sequence name must be a string")  # noqa: TRY004
         self._name = newname
 
     @property
@@ -820,11 +815,11 @@ class Sequence:
         if apply_filters:
             for pos1 in range(1, seqlen + 1):
                 thiselem = output[pos1]["content"]
-                for pos2 in thiselem.keys():
+                for pos2 in thiselem:
                     data = thiselem[pos2]["data"]
-                    for channame in data.keys():
+                    for channame in data:
                         keystr = f"channel{channame}_filtercompensation"
-                        if keystr in self._awgspecs.keys():
+                        if keystr in self._awgspecs:
                             kind = self._awgspecs[keystr]["kind"]
                             order = self._awgspecs[keystr]["order"]
                             f_cut = self._awgspecs[keystr]["f_cut"]
@@ -866,7 +861,7 @@ class Sequence:
         data = deepcopy(self._data)
         seqlen = len(data.keys())
         # check if sequencing information is specified for each element
-        if not sorted(list(self._sequencing.keys())) == list(range(1, seqlen + 1)):
+        if not sorted(self._sequencing.keys()) == list(range(1, seqlen + 1)):
             raise ValueError(
                 "Can not generate output for file; incorrect sequencer information."
             )
@@ -874,7 +869,7 @@ class Sequence:
         # Verify physical amplitude specifiations
         for chan in channels:
             ampkey = f"channel{chan}_amplitude"
-            if ampkey not in self._awgspecs.keys():
+            if ampkey not in self._awgspecs:
                 raise KeyError(
                     "No amplitude specified for channel {chan}. Can not continue."
                 )
@@ -893,10 +888,10 @@ class Sequence:
                 element = data[pos]
                 delay = delays[chanind]
 
-                if "blueprint" in element._data[chan].keys():
+                if "blueprint" in element._data[chan]:
                     blueprint = element._data[chan]["blueprint"]
                     # prevent information about flags to be lost
-                    if "flags" in element._data[chan].keys():
+                    if "flags" in element._data[chan]:
                         flags = element._data[chan]["flags"]
                     else:
                         flags = None
@@ -936,7 +931,7 @@ class Sequence:
         # Now that the numerical arrays exist, we can apply filter compensation
         for chan in channels:
             keystr = f"channel{chan}_filtercompensation"
-            if keystr in self._awgspecs.keys():
+            if keystr in self._awgspecs:
                 kind = self._awgspecs[keystr]["kind"]
                 order = self._awgspecs[keystr]["order"]
                 f_cut = self._awgspecs[keystr]["f_cut"]
@@ -991,7 +986,7 @@ class Sequence:
 
         for chan in channels:
             offkey = f"channel{chan}_offset"
-            if offkey in self._awgspecs.keys():
+            if offkey in self._awgspecs:
                 log.warning(
                     "Found a specified offset for channel "
                     f"{chan}, but .seqx files can't contain offset "
@@ -1184,7 +1179,7 @@ class Sequence:
 
         for chan in channels:
             offkey = f"channel{chan}_offset"
-            if offkey not in self._awgspecs.keys():
+            if offkey not in self._awgspecs:
                 raise ValueError(
                     f"No specified offset for channel {chan}, can not continue."
                 )

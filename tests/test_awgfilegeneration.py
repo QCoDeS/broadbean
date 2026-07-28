@@ -79,9 +79,7 @@ def should_raise_sequencingerror(wait, nrep, jump_to, goto, num_elms):
         return True
     if jump_to not in range(-1, num_elms + 1):
         return True
-    if goto not in range(num_elms + 1):
-        return True
-    return False
+    return goto not in range(num_elms + 1)
 
 
 @settings(max_examples=25, suppress_health_check=(HealthCheck.function_scoped_fixture,))

@@ -68,7 +68,7 @@ class BluePrint:
         # Are the names valid names?
         for name in namelist:
             if not isinstance(name, str):
-                raise ValueError(f"All segment names must be strings. Received {name}.")
+                raise ValueError(f"All segment names must be strings. Received {name}.")  # noqa: TRY004
             if name != "" and name[-1].isdigit():
                 raise ValueError(
                     "Segment names are not allowed to end"
@@ -128,7 +128,7 @@ class BluePrint:
         """
 
         if not isinstance(string, str):
-            raise ValueError(
+            raise ValueError(  # noqa: TRY004
                 f"_basename received a non-string input! Got the following: {string}"
             )
 
@@ -160,7 +160,7 @@ class BluePrint:
         """
 
         if not isinstance(lst, list):
-            raise ValueError(f"_make_names_unique received a non-list input! Got {lst}")
+            raise ValueError(f"_make_names_unique received a non-list input! Got {lst}")  # noqa: TRY004
 
         baselst = [BluePrint._basename(lstel) for lstel in lst]
         uns = np.unique(baselst)
@@ -311,7 +311,7 @@ class BluePrint:
             bp_seg = BluePrint()
             if seg_dict["function"] == "waituntil":
                 arguments = blue_dict[seg]["arguments"].values()
-                arguments = (list(arguments)[0][0],)
+                arguments = (next(iter(arguments))[0],)
                 bp_seg.insertSegment(i, "waituntil", arguments)
             else:
                 arguments = tuple(blue_dict[seg]["arguments"].values())
@@ -456,13 +456,12 @@ class BluePrint:
             sig = signature(function)
 
             # Validation
-            if isinstance(arg, str):
-                if arg not in sig.parameters:
-                    raise ValueError(
-                        "No such argument of function "
-                        f"{function.__name__}. Has arguments "
-                        f"{sig.parameters.keys()}."
-                    )
+            if isinstance(arg, str) and arg not in sig.parameters:
+                raise ValueError(
+                    "No such argument of function "
+                    f"{function.__name__}. Has arguments "
+                    f"{sig.parameters.keys()}."
+                )
             # Each function has two 'secret' arguments, SR and dur
             user_params = len(sig.parameters) - 2
             if isinstance(arg, int) and (arg not in range(user_params)):
@@ -512,7 +511,7 @@ class BluePrint:
         """
 
         if not (isinstance(dur, float)) and not (isinstance(dur, int)):
-            raise ValueError(
+            raise ValueError(  # noqa: TRY004
                 f"New duration must be an int or a float. Received {type(dur)}"
             )
 
@@ -537,11 +536,8 @@ class BluePrint:
             if dur <= 0:
                 raise ValueError("Duration must be strictly greater than zero.")
 
-            if self.SR is not None:
-                if dur * self.SR < 1:
-                    raise ValueError(
-                        "Duration too short! Must be at least 1/sample rate."
-                    )
+            if self.SR is not None and dur * self.SR < 1:
+                raise ValueError("Duration too short! Must be at least 1/sample rate.")
 
             self._durslist[position] = dur
 
@@ -670,10 +666,8 @@ class BluePrint:
                 name = "waituntil"
             else:
                 name = func.__name__
-        elif isinstance(name, str):
-            if len(name) > 0:
-                if name[-1].isdigit():
-                    raise ValueError("Segment name must not end in a number")
+        elif isinstance(name, str) and len(name) > 0 and name[-1].isdigit():
+            raise ValueError("Segment name must not end in a number")
 
         if pos == -1:
             self._namelist.append(name)
@@ -728,7 +722,7 @@ class BluePrint:
             ValueError: If the input is not a BluePrint instance
         """
         if not isinstance(other, BluePrint):
-            raise ValueError(
+            raise ValueError(  # noqa: TRY004
                 f"""
                              BluePrint can only be added to another Blueprint.
                              Received an object of type {type(other)}
@@ -776,7 +770,7 @@ class BluePrint:
             ValueError: If the input is not a BluePrint instance
         """
         if not isinstance(other, BluePrint):
-            raise ValueError(
+            raise ValueError(  # noqa: TRY004
                 f"""
                              Blueprint can only be compared to another
                              Blueprint.
@@ -796,9 +790,7 @@ class BluePrint:
             return False
         if not self._segmark1 == other._segmark1:
             return False
-        if not self._segmark2 == other._segmark2:
-            return False
-        return True
+        return self._segmark2 == other._segmark2
 
 
 def _subelementBuilder(

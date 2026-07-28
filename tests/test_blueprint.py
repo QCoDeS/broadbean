@@ -332,7 +332,8 @@ def test_not_equal(blueprint_tophat):
     bpc = blueprint_tophat.copy()
 
     with pytest.raises(ValueError):
-        bpc == "1"
+        # BluePrint.__eq__ raises when compared to a non-BluePrint object
+        _ = bpc == "1"
 
     bpc.insertSegment(0, ramp, (0, 0), dur=1 / 3)
 
@@ -418,8 +419,8 @@ def test_description(blueprint_nasty, blueprint_tophat):
         "segment_03",
     ]
 
-    assert sorted(list(desc1.keys())) == sorted(exp_keys)
-    assert sorted(list(desc2.keys())) == sorted(exp_keys)
+    assert sorted(desc1.keys()) == sorted(exp_keys)
+    assert sorted(desc2.keys()) == sorted(exp_keys)
 
 
 # More to come...
