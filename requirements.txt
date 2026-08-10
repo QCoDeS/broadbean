@@ -134,7 +134,7 @@ numpy==2.5.1
     #   broadbean (pyproject.toml)
     #   contourpy
     #   matplotlib
-packaging==26.2
+packaging==26.3
     # via
     #   ipykernel
     #   matplotlib
