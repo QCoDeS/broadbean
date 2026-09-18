@@ -1,0 +1,69 @@
+broadbean package
+=================
+
+Submodules
+----------
+
+broadbean.blueprint module
+--------------------------
+
+.. automodule:: broadbean.blueprint
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+broadbean.broadbean module
+--------------------------
+
+.. automodule:: broadbean.broadbean
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+broadbean.element module
+------------------------
+
+.. automodule:: broadbean.element
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+broadbean.plotting module
+-------------------------
+
+.. automodule:: broadbean.plotting
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+broadbean.ripasso module
+------------------------
+
+.. automodule:: broadbean.ripasso
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+broadbean.sequence module
+-------------------------
+
+.. automodule:: broadbean.sequence
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+broadbean.tools module
+----------------------
+
+.. automodule:: broadbean.tools
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: broadbean
+   :members:
+   :show-inheritance:
+   :undoc-members:
