@@ -31,7 +31,7 @@ comm==0.2.3
     # via ipykernel
 contourpy==1.4.0
     # via matplotlib
-coverage==7.16.1
+coverage==7.16.2
     # via
     #   broadbean (pyproject.toml)
     #   pytest-cov
