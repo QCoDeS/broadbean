@@ -48,7 +48,7 @@ docutils==0.22.4
     #   nbsphinx
     #   sphinx
     #   sphinx-jsonschema
-executing==2.2.1
+executing==2.3.0
     # via stack-data
 fastjsonschema==2.22.2
     # via nbformat
