@@ -179,7 +179,7 @@ pytest==9.2.0
     #   pytest-cov
 pytest-cov==7.1.0
     # via broadbean (pyproject.toml)
-python-dateutil==3.0.0
+python-dateutil==4.0.0
     # via
     #   jupyter-client
     #   matplotlib
