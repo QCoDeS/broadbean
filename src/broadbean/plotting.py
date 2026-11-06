@@ -167,7 +167,7 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
                 wfmdata = seq[pos]["content"][1]["data"][chan]["wfm"]
                 chanminmax = update_minmax(chanminmax, wfmdata, chanind)
             elif seq[pos]["type"] == "subsequence":
-                for pos2 in seq[pos]["content"].keys():
+                for pos2 in seq[pos]["content"]:
                     elem = seq[pos]["content"][pos2]["data"]
                     wfmdata = elem[chan]["wfm"]
                     chanminmax = update_minmax(chanminmax, wfmdata, chanind)
@@ -329,9 +329,9 @@ def plotter(obj_to_plot: BBObject, **forger_kwargs) -> None:
                 ax.set_xlabel(f"({timeunit})")
 
             # remove excess space from the plot
-            if not chanind + 1 == len(chans):
+            if chanind + 1 != len(chans):
                 ax.set_xticks([])
-            if not pos == 0:
+            if pos != 0:
                 ax.set_yticks([])
             fig.subplots_adjust(hspace=0, wspace=0)
 
