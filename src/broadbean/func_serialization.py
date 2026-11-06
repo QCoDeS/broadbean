@@ -159,7 +159,7 @@ def _eval_expression(source: str):
         The resulting callable.
     """
     try:
-        return eval(source, _SAFE_EVAL_NAMESPACE)  # noqa: S307
+        return eval(source, _SAFE_EVAL_NAMESPACE)
     except Exception as e:
         log.warning("Could not reconstruct function from source %r: %s", source, e)
         raise ValueError(f"Failed to evaluate function expression: {source!r}") from e

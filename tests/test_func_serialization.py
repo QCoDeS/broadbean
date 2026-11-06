@@ -21,7 +21,7 @@ from broadbean.func_serialization import (
 
 def test_serialize_lambda():
     """Lambda functions are serialized with func_type='lambda'"""
-    func = lambda t, ampl: ampl * t  # noqa: E731
+    func = lambda t, ampl: ampl * t
     result = serialize_function(func)
     assert result["func_type"] == "lambda"
     assert "lambda" in result["func_source"]
@@ -41,7 +41,7 @@ def test_serialize_named_function():
 
 def test_serialize_func_source_attribute():
     """Functions with __func_source__ use that attribute directly"""
-    func = lambda t, a: a * t  # noqa: E731
+    func = lambda t, a: a * t
     func.__func_source__ = "lambda t, a: a * t"
     result = serialize_function(func)
     assert result["func_type"] == "lambda"
@@ -195,7 +195,7 @@ def test_named_function_no_globals_leak():
 
 def test_roundtrip_lambda():
     """Serialize and deserialize a lambda, then verify it produces the same results"""
-    original = lambda t, ampl: ampl * t * t  # noqa: E731
+    original = lambda t, ampl: ampl * t * t
     serialized = serialize_function(original)
     restored = deserialize_function(serialized)
 
@@ -222,7 +222,7 @@ def test_roundtrip_named_function():
 def test_roundtrip_func_source_attribute():
     """Round-trip a function created from a UI-provided source string"""
     source_str = "lambda t, ampl, tau: ampl * np.exp(-t / tau)"
-    original = eval(source_str, {"np": np})  # noqa: S307
+    original = eval(source_str, {"np": np})
     original.__func_source__ = source_str
 
     serialized = serialize_function(original)
