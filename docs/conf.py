@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-#
 # broadbean documentation build configuration file, created by
 # sphinx-quickstart on Wed May 17 09:11:27 2017.
 #

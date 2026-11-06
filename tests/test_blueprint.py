@@ -62,6 +62,22 @@ def blueprint_nasty():
 # TEST STATIC METHODS
 
 
+def test_named_waituntil_json_roundtrip(tmp_path):
+    """JSON reconstruction preserves custom wait names and sample rate."""
+    bp = bb.BluePrint()
+    bp.insertSegment(0, ramp, (0, 1), name="rise", dur=0.1)
+    bp.insertSegment(1, "waituntil", (0.2,), name="pause")
+    bp.setSR(tophat_SR)
+    path = str(tmp_path / "named_wait.json")
+
+    bp.write_to_json(path)
+    restored = bb.BluePrint.init_from_json(path)
+
+    assert restored == bp
+    assert restored.SR == tophat_SR
+    assert restored.description["segment_02"]["name"] == "pause"
+
+
 @pytest.mark.parametrize(
     "inp, outp",
     [
@@ -332,7 +348,8 @@ def test_not_equal(blueprint_tophat):
     bpc = blueprint_tophat.copy()
 
     with pytest.raises(ValueError):
-        bpc == "1"
+        # BluePrint.__eq__ raises when compared to a non-BluePrint object
+        _ = bpc == "1"
 
     bpc.insertSegment(0, ramp, (0, 0), dur=1 / 3)
 
@@ -478,8 +495,8 @@ def test_description(blueprint_nasty, blueprint_tophat):
         "segment_03",
     ]
 
-    assert sorted(list(desc1.keys())) == sorted(exp_keys)
-    assert sorted(list(desc2.keys())) == sorted(exp_keys)
+    assert sorted(desc1.keys()) == sorted(exp_keys)
+    assert sorted(desc2.keys()) == sorted(exp_keys)
 
 
 # More to come...
