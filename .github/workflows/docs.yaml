@@ -33,13 +33,13 @@ jobs:
       OS: ${{ matrix.os }}
       UPLOAD_TO_GHPAGES: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
-    - uses: actions/checkout@v7.0.0
+    - uses: actions/checkout@v7.0.1
       with:
         fetch-depth: '0'
         # if we upload to ghpages we need the full
         # history to generate correct version info
       if: ${{ fromJSON(env.UPLOAD_TO_GHPAGES) }}
-    - uses: actions/checkout@v7.0.0
+    - uses: actions/checkout@v7.0.1
       if: ${{ !fromJSON(env.UPLOAD_TO_GHPAGES) }}
     - name: install pandoc linux
       run: sudo apt install pandoc
@@ -54,7 +54,7 @@ jobs:
         attempt_delay: 1000
       if: runner.os == 'Windows'
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v6.3.0
+      uses: actions/setup-python@v7.1.0
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
@@ -81,12 +81,12 @@ jobs:
         ./make.bat html
       if: runner.os == 'Windows'
     - name: Upload build docs
-      uses: actions/upload-artifact@v7.0.1
+      uses: actions/upload-artifact@v7.0.2
       with:
         name: docs_${{ matrix.python-version }}_${{ matrix.os }}
         path: ${{ github.workspace }}/docs/_build/html
     - name: Deploy to gh pages
-      uses: JamesIves/github-pages-deploy-action@v4.8.0
+      uses: JamesIves/github-pages-deploy-action@v4.9.0
       with:
         branch: gh-pages
         folder: ${{ github.workspace }}/docs/_build/html
