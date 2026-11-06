@@ -10,3 +10,4 @@ Broadbean Examples
     Example_Write_Read_JSON.ipynb
     Filter_compensation.ipynb
     Subsequences.ipynb
+    Plotting_Examples.ipynb
