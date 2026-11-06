@@ -144,7 +144,7 @@ class QCodesStationMixin:
                     "Removed temporary station config: %s", self._temp_yaml_path
                 )
             except Exception as e:
-                logger.warning("Failed to remove temp YAML file: %s", e)
+                logger.warning("Failed to remove temp YAML file: %s", e, exc_info=True)
             self._temp_yaml_path = None
 
     def _disconnect_station(self):
@@ -155,7 +155,9 @@ class QCodesStationMixin:
             try:
                 self.station.close_all_registered_instruments()
             except Exception as e:
-                logger.warning("Error closing station instruments: %s", e)
+                logger.warning(
+                    "Error closing station instruments: %s", e, exc_info=True
+                )
             self.station = None
 
         self._cleanup_temp_yaml()

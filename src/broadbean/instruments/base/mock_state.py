@@ -113,8 +113,8 @@ class MockInstrumentState:
                 self.waveform_data = None
                 self.time_axis = None
 
-        except Exception as e:
-            logger.error("Mock state: Error parsing waveform data: %s", e)
+        except Exception:
+            logger.exception("Mock state: Error parsing waveform data")
             self.waveform_data = None
             self.time_axis = None
 
@@ -211,14 +211,18 @@ class MockInstrumentState:
                 self.awg_instance.disconnect()
                 logger.info("Mock state: AWG disconnected")
             except Exception as e:
-                logger.warning("Mock state: Error disconnecting AWG: %s", str(e))
+                logger.warning(
+                    "Mock state: Error disconnecting AWG: %s", e, exc_info=True
+                )
 
         if self.scope_instance is not None:
             try:
                 self.scope_instance.disconnect()
                 logger.info("Mock state: Scope disconnected")
             except Exception as e:
-                logger.warning("Mock state: Error disconnecting Scope: %s", str(e))
+                logger.warning(
+                    "Mock state: Error disconnecting Scope: %s", e, exc_info=True
+                )
 
         # Clear instrument instances
         self.awg_instance = None

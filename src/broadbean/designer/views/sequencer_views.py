@@ -1,6 +1,7 @@
 """Views for the sequencer interface (sequencer.html)."""
 
 import json
+import logging
 
 import plotly.utils
 from django.http import HttpResponse, JsonResponse
@@ -14,6 +15,8 @@ from broadbean.sequence import Sequence
 
 from ..models import SequenceElement, WaveformElement, WaveformSequence
 from .common import _build_sequence
+
+logger = logging.getLogger(__name__)
 
 
 def sequencer_view(request):
@@ -85,9 +88,7 @@ def preview_sequence(request):
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("preview_sequence failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -107,7 +108,7 @@ def save_sequence(request):
                 {"success": False, "error": "No elements in sequence"}, status=400
             )
 
-        seq, sample_rate, total_duration = _build_sequence(sequence_elements)
+        seq, _sample_rate, total_duration = _build_sequence(sequence_elements)
 
         sequence = WaveformSequence.objects.create(
             name=name,
@@ -147,9 +148,7 @@ def save_sequence(request):
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("save_sequence failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -174,9 +173,7 @@ def get_sequences(request):
         return JsonResponse({"success": True, "sequences": sequences_data})
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("get_sequences failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -231,9 +228,7 @@ def get_sequence_detail(request, sequence_id):
             {"success": False, "error": "Sequence not found"}, status=404
         )
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("get_sequence_detail failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -260,7 +255,7 @@ def update_sequence(request, sequence_id):
                 {"success": False, "error": "Sequence not found"}, status=404
             )
 
-        seq, sample_rate, total_duration = _build_sequence(sequence_elements)
+        seq, _sample_rate, total_duration = _build_sequence(sequence_elements)
 
         sequence.name = name
         sequence.description = description
@@ -301,9 +296,7 @@ def update_sequence(request, sequence_id):
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("update_sequence failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -328,9 +321,7 @@ def download_sequence_data(request, sequence_id):
             {"success": False, "error": "Sequence not found"}, status=404
         )
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("download_sequence_data failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -357,9 +348,7 @@ def delete_sequence(request, sequence_id):
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("delete_sequence failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -378,9 +367,7 @@ def get_sequence_channels(request, sequence_id):
             {"success": False, "error": "Sequence not found"}, status=404
         )
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("get_sequence_channels failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -445,7 +432,5 @@ def preview_saved_sequence(request, sequence_id):
             {"success": False, "error": "Sequence not found"}, status=404
         )
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("preview_saved_sequence failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)

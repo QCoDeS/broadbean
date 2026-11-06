@@ -1,6 +1,7 @@
 """Views for the parametric generator interface (parametric_generator.html)."""
 
 import json
+import logging
 
 import numpy as np
 from django.http import JsonResponse
@@ -13,6 +14,8 @@ from broadbean.tools import makeVaryingSequence
 from ..models import SequenceElement, WaveformElement, WaveformSequence
 from ..utils import map_ui_param_to_broadbean_arg, parse_element_data_to_ui_format
 from .common import _build_element, _build_sequence
+
+logger = logging.getLogger(__name__)
 
 
 def parametric_generator_view(request):
@@ -57,9 +60,7 @@ def generate_parametric_sequence(request):
                 continue
             channel_idx = int(channel_str) - 1
 
-            segment_keys = sorted(
-                [k for k in channel_data.keys() if k.startswith("segment_")]
-            )
+            segment_keys = sorted([k for k in channel_data if k.startswith("segment_")])
 
             for segment_idx, seg_key in enumerate(segment_keys):
                 value = channel_data[seg_key]
@@ -92,13 +93,12 @@ def generate_parametric_sequence(request):
 
                 channel_idx = channel - 1
 
-                if segment_idx is None:
-                    if channel_idx < len(channels):
-                        channel_segments = channels[channel_idx].get("segments", [])
-                        for idx, seg in enumerate(channel_segments):
-                            if seg.get("name") == segment_name_from_ui:
-                                segment_idx = idx
-                                break
+                if segment_idx is None and channel_idx < len(channels):
+                    channel_segments = channels[channel_idx].get("segments", [])
+                    for idx, seg in enumerate(channel_segments):
+                        if seg.get("name") == segment_name_from_ui:
+                            segment_idx = idx
+                            break
 
                 if (
                     segment_idx is not None
@@ -197,6 +197,7 @@ def generate_parametric_sequence(request):
                 base_elem, channels_list, names_list, args_list, iters_list
             )
         except Exception as e:
+            logger.exception("Failed to create varying sequence")
             return JsonResponse(
                 {
                     "success": False,
@@ -275,7 +276,5 @@ def generate_parametric_sequence(request):
             {"success": False, "error": "Base element not found"}, status=404
         )
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("generate_parametric_sequence failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)

@@ -1,5 +1,7 @@
 """Models for the waveform designer app."""
 
+from typing import ClassVar
+
 from django.core.validators import MinValueValidator
 from django.db import models
 
@@ -38,7 +40,7 @@ class WaveformElement(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["-created_at"]
+        ordering: ClassVar[list[str]] = ["-created_at"]
         verbose_name = "Waveform Element"
         verbose_name_plural = "Waveform Elements"
 
@@ -71,7 +73,7 @@ class WaveformSequence(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["-created_at"]
+        ordering: ClassVar[list[str]] = ["-created_at"]
         verbose_name = "Waveform Sequence"
         verbose_name_plural = "Waveform Sequences"
 
@@ -125,8 +127,8 @@ class SequenceElement(models.Model):
     )
 
     class Meta:
-        ordering = ["sequence", "position"]
-        unique_together = ["sequence", "position"]
+        ordering: ClassVar[list[str]] = ["sequence", "position"]
+        unique_together: ClassVar[list[str]] = ["sequence", "position"]
         verbose_name = "Sequence Element"
         verbose_name_plural = "Sequence Elements"
 
@@ -194,7 +196,7 @@ class AWGStationConfig(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["name"]
+        ordering: ClassVar[list[str]] = ["name"]
         verbose_name = "AWG Station Configuration"
         verbose_name_plural = "AWG Station Configurations"
 
@@ -306,7 +308,7 @@ class LUTConfig(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["name"]
+        ordering: ClassVar[list[str]] = ["name"]
         verbose_name = "LUT Configuration"
         verbose_name_plural = "LUT Configurations"
 
@@ -373,7 +375,7 @@ class ScopeStationConfig(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["name"]
+        ordering: ClassVar[list[str]] = ["name"]
         verbose_name = "Scope Station Configuration"
         verbose_name_plural = "Scope Station Configurations"
 

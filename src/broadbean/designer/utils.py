@@ -143,9 +143,7 @@ def parse_element_data_to_ui_format(element_data: dict) -> list:
         channel = {"name": f"Channel {channel_num}", "segments": []}
 
         # Get all segment keys and sort them
-        segment_keys = sorted(
-            [k for k in channel_data.keys() if k.startswith("segment_")]
-        )
+        segment_keys = sorted([k for k in channel_data if k.startswith("segment_")])
 
         for seg_key in segment_keys:
             seg_data = channel_data[seg_key]

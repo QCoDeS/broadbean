@@ -95,9 +95,7 @@ def get_awg_configs(request):
         return JsonResponse({"success": True, "configs": configs_data})
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("get_awg_configs failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -170,9 +168,7 @@ def create_awg_config(request):
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("create_awg_config failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -215,9 +211,7 @@ def get_awg_config_detail(request, config_id):
             {"success": False, "error": "AWG configuration not found"}, status=404
         )
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("get_awg_config_detail failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -287,9 +281,7 @@ def update_awg_config(request, config_id):
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("update_awg_config failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -314,9 +306,7 @@ def delete_awg_config(request, config_id):
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("delete_awg_config failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -341,9 +331,7 @@ def download_awg_config(request, config_id):
             {"success": False, "error": "AWG configuration not found"}, status=404
         )
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("download_awg_config failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -390,9 +378,7 @@ def get_scope_configs(request):
         return JsonResponse({"success": True, "configs": configs_data})
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("get_scope_configs failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -468,9 +454,7 @@ def create_scope_config(request):
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("create_scope_config failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -513,9 +497,7 @@ def get_scope_config_detail(request, config_id):
             {"success": False, "error": "Scope configuration not found"}, status=404
         )
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("get_scope_config_detail failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -588,9 +570,7 @@ def update_scope_config(request, config_id):
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("update_scope_config failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -615,9 +595,7 @@ def delete_scope_config(request, config_id):
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("delete_scope_config failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -642,9 +620,7 @@ def download_scope_config(request, config_id):
             {"success": False, "error": "Scope configuration not found"}, status=404
         )
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("download_scope_config failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -675,9 +651,7 @@ def get_lut_configs(request):
         return JsonResponse({"success": True, "configs": configs_data})
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("get_lut_configs failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -834,9 +808,7 @@ def create_lut_config(request):
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("create_lut_config failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -877,9 +849,7 @@ def get_lut_config_detail(request, config_id):
             {"success": False, "error": "LUT configuration not found"}, status=404
         )
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("get_lut_config_detail failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -942,9 +912,7 @@ def update_lut_config(request, config_id):
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("update_lut_config failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -969,9 +937,7 @@ def delete_lut_config(request, config_id):
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("delete_lut_config failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -1033,9 +999,7 @@ def get_all_configs(request):
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("get_all_configs failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -1095,7 +1059,9 @@ def configure_instrument(request):
                     sample_rate = awg.awg.sample_rate()
                     logger.info(f"AWG configured: sample_rate={sample_rate}")
                 except Exception as read_error:
-                    logger.warning(f"Could not read sample_rate: {read_error}")
+                    logger.warning(
+                        "Could not read sample_rate: %s", read_error, exc_info=True
+                    )
                     sample_rate = None
 
                 # Disconnect after configuration
@@ -1130,7 +1096,9 @@ def configure_instrument(request):
                     logger.info(f"Scope configured: time_unit={time_unit}")
                     readback_info = f"time_unit: {time_unit}"
                 except Exception as read_error:
-                    logger.warning(f"Could not read timebase: {read_error}")
+                    logger.warning(
+                        "Could not read timebase: %s", read_error, exc_info=True
+                    )
                     readback_info = None
 
                 # Disconnect after configuration
@@ -1160,13 +1128,11 @@ def configure_instrument(request):
                 {"success": False, "error": "Scope configuration not found"}, status=404
             )
         except Exception as conn_error:
-            logger.error(f"Configuration failed: {conn_error}")
+            logger.exception("Configuration failed")
             return JsonResponse(
                 {"success": False, "error": f"Configuration failed: {conn_error!s}"}
             )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("configure_instrument failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)

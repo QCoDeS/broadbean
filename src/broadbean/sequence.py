@@ -875,7 +875,7 @@ class Sequence:
 
                         # Apply amplitude LUT if present
                         lut_key = f"channel{channame}_amplitude_LUT"
-                        if lut_key in self._awgspecs.keys():
+                        if lut_key in self._awgspecs:
                             lut = self._awgspecs[lut_key]
                             output[pos1]["content"][pos2]["data"][channame]["wfm"] = (
                                 applyAmplitudeLUT(
@@ -999,7 +999,7 @@ class Sequence:
 
             # Apply amplitude LUT if present
             lut_key = f"channel{chan}_amplitude_LUT"
-            if lut_key in self._awgspecs.keys():
+            if lut_key in self._awgspecs:
                 lut = self._awgspecs[lut_key]
                 for pos in range(seqlen):
                     elements[pos][chan]["wfm"] = applyAmplitudeLUT(

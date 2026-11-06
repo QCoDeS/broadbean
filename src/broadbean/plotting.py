@@ -156,7 +156,7 @@ def _plot_matplotlib(
 
         minmax: tuple[float, float] = chanminmax[chanind]
 
-        (voltagescaling, voltageprefix) = getSIScalingAndPrefix(minmax)
+        voltagescaling, voltageprefix = getSIScalingAndPrefix(minmax)
         voltageunit = voltageprefix + "V"
 
         for pos in range(seqlen):
@@ -383,7 +383,7 @@ def _plot_plotly(
 
         minmax: tuple[float, float] = chanminmax[chanind]
 
-        (voltagescaling, voltageprefix) = getSIScalingAndPrefix(minmax)
+        voltagescaling, voltageprefix = getSIScalingAndPrefix(minmax)
         voltageunit = voltageprefix + "V"
 
         for pos in range(seqlen):
@@ -432,7 +432,7 @@ def _plot_plotly(
                         x=timescaling * time,
                         y=voltagescaling * wfm,
                         mode="lines",
-                        line=dict(color=rgba((0.6, 0.4, 0.3), 0.4), width=3),
+                        line={"color": rgba((0.6, 0.4, 0.3), 0.4), "width": 3},
                         showlegend=False,
                         hoverinfo="skip",
                     ),
@@ -449,7 +449,7 @@ def _plot_plotly(
                         x=timescaling * time,
                         y=np.ones_like(m1) * y_m1,
                         mode="lines",
-                        line=dict(color=rgba((0.6, 0.1, 0.1), 0.2), width=2),
+                        line={"color": rgba((0.6, 0.1, 0.1), 0.2), "width": 2},
                         showlegend=False,
                         hoverinfo="skip",
                     ),
@@ -463,7 +463,7 @@ def _plot_plotly(
                             x=(timescaling * time)[marker_on_mask],
                             y=(np.ones_like(m1) * y_m1)[marker_on_mask],
                             mode="lines",
-                            line=dict(color=rgba((0.6, 0.1, 0.1), 0.6), width=2),
+                            line={"color": rgba((0.6, 0.1, 0.1), 0.6), "width": 2},
                             showlegend=False,
                             hoverinfo="skip",
                         ),
@@ -480,7 +480,7 @@ def _plot_plotly(
                         x=timescaling * time,
                         y=np.ones_like(m2) * y_m2,
                         mode="lines",
-                        line=dict(color=rgba((0.1, 0.1, 0.6), 0.2), width=2),
+                        line={"color": rgba((0.1, 0.1, 0.6), 0.2), "width": 2},
                         showlegend=False,
                         hoverinfo="skip",
                     ),
@@ -494,7 +494,7 @@ def _plot_plotly(
                             x=(timescaling * time)[marker_on_mask],
                             y=(np.ones_like(m2) * y_m2)[marker_on_mask],
                             mode="lines",
-                            line=dict(color=rgba((0.1, 0.1, 0.6), 0.6), width=2),
+                            line={"color": rgba((0.1, 0.1, 0.6), 0.6), "width": 2},
                             showlegend=False,
                             hoverinfo="skip",
                         ),
@@ -509,7 +509,7 @@ def _plot_plotly(
                             x=[timescaling * dur, timescaling * dur],
                             y=[ylim_min, ylim_max],
                             mode="lines",
-                            line=dict(color=rgba((0.312, 0.2, 0.33), 0.3), width=1),
+                            line={"color": rgba((0.312, 0.2, 0.33), 0.3), "width": 1},
                             showlegend=False,
                             hoverinfo="skip",
                         ),
@@ -525,7 +525,7 @@ def _plot_plotly(
                         x=time,
                         y=np.ones_like(time) * wfm[0],
                         mode="lines",
-                        line=dict(color=rgba((0.12, 0.12, 0.12), 0.2), width=2),
+                        line={"color": rgba((0.12, 0.12, 0.12), 0.2), "width": 2},
                         showlegend=False,
                         hoverinfo="skip",
                     ),
@@ -538,7 +538,7 @@ def _plot_plotly(
                         x=time,
                         y=np.ones_like(time) * wfm[1],
                         mode="lines",
-                        line=dict(color=rgba((0.12, 0.12, 0.12), 0.2), width=2),
+                        line={"color": rgba((0.12, 0.12, 0.12), 0.2), "width": 2},
                         showlegend=False,
                         hoverinfo="skip",
                     ),
@@ -658,7 +658,7 @@ def _plot_plotly(
     fig.update_layout(
         plot_bgcolor="white",
         paper_bgcolor="white",
-        margin=dict(l=50, r=50, t=30, b=50),
+        margin={"l": 50, "r": 50, "t": 30, "b": 50},
         showlegend=False,
     )
 
@@ -714,7 +714,7 @@ def plotter(
         seqlen = min(seqlen, max_subsequences)
 
     def update_minmax(chanminmax, wfmdata, chanind):
-        (thismin, thismax) = (wfmdata.min(), wfmdata.max())
+        thismin, thismax = (wfmdata.min(), wfmdata.max())
         if thismin < chanminmax[chanind][0]:
             chanminmax[chanind] = [thismin, chanminmax[chanind][1]]
         if thismax > chanminmax[chanind][1]:

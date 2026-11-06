@@ -32,7 +32,7 @@ class MockAWG(ArbitraryWaveformGenerator):
         **kwargs: Additional arguments (ignored).
     """
 
-    def __init__(self, config: dict = None, flags: bool = False, **kwargs):
+    def __init__(self, config: dict | None = None, flags: bool = False, **kwargs):
         self._config = config or {}
         self.flags = flags
         logger.info("MockAWG initialized (simulation mode)")
@@ -99,7 +99,7 @@ class MockScope(Scope):
     DEFAULT_SAMPLE_RATE = 2.5e9
     DEFAULT_RECORD_LENGTH = 5000
 
-    def __init__(self, config: dict = None, **kwargs):
+    def __init__(self, config: dict | None = None, **kwargs):
         self._config = config or {}
         self.device = 1
         self.points_per_trace = self.DEFAULT_RECORD_LENGTH

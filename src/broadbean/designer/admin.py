@@ -1,5 +1,7 @@
 """Admin configuration for waveform designer models."""
 
+from typing import ClassVar
+
 from django.contrib import admin
 
 from .models import SequenceElement, WaveformElement, WaveformSequence
@@ -30,7 +32,7 @@ class WaveformElementAdmin(admin.ModelAdmin):
     )
 
     # Enable delete functionality
-    actions = ["delete_selected"]
+    actions: ClassVar[list[str]] = ["delete_selected"]
 
     def has_delete_permission(self, request, obj=None):
         """Allow deletion of WaveformElement objects."""
@@ -52,7 +54,7 @@ class SequenceElementInline(admin.TabularInline):
     ordering = ("position",)
 
     # Enable delete functionality
-    actions = ["delete_selected"]
+    actions: ClassVar[list[str]] = ["delete_selected"]
 
     def has_delete_permission(self, request, obj=None):
         """Allow deletion of SequenceElement objects."""
@@ -72,7 +74,7 @@ class WaveformSequenceAdmin(admin.ModelAdmin):
     list_filter = ("created_at",)
     search_fields = ("name", "description")
     readonly_fields = ("created_at", "updated_at")
-    inlines = [SequenceElementInline]
+    inlines: ClassVar[list[type[admin.TabularInline]]] = [SequenceElementInline]
     fieldsets = (
         ("Basic Information", {"fields": ("name", "description")}),
         ("Sequence Data", {"fields": ("sequence_data",)}),
@@ -84,7 +86,7 @@ class WaveformSequenceAdmin(admin.ModelAdmin):
     )
 
     # Enable delete functionality
-    actions = ["delete_selected"]
+    actions: ClassVar[list[str]] = ["delete_selected"]
 
     def has_delete_permission(self, request, obj=None):
         """Allow deletion of WaveformSequence objects."""
@@ -108,7 +110,7 @@ class SequenceElementAdmin(admin.ModelAdmin):
     ordering = ("sequence", "position")
 
     # Enable delete functionality
-    actions = ["delete_selected"]
+    actions: ClassVar[list[str]] = ["delete_selected"]
 
     def has_delete_permission(self, request, obj=None):
         """Allow deletion of SequenceElement objects."""

@@ -1,6 +1,7 @@
 """Views for the waveform designer interface (designer.html)."""
 
 import json
+import logging
 import os
 import tempfile
 
@@ -18,6 +19,8 @@ from broadbean.plotting import plotter
 from ..models import WaveformElement
 from ..utils import parse_element_data_to_ui_format
 from .common import _build_element
+
+logger = logging.getLogger(__name__)
 
 
 def designer_view(request):
@@ -112,9 +115,7 @@ def export_waveform(request):
                 os.unlink(tmp_path)
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("export_waveform failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -195,9 +196,7 @@ def preview_waveform(request):
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("preview_waveform failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -241,9 +240,7 @@ def save_waveform_element(request):
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("save_waveform_element failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -293,9 +290,7 @@ def update_waveform_element(request, element_id):
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("update_waveform_element failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -322,9 +317,7 @@ def delete_waveform_element(request, element_id):
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("delete_waveform_element failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -351,9 +344,7 @@ def get_waveform_elements(request):
         return JsonResponse({"success": True, "elements": elements_data})
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("get_waveform_elements failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -385,7 +376,5 @@ def get_waveform_element(request, element_id):
             {"success": False, "error": "Element not found"}, status=404
         )
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("get_waveform_element failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)

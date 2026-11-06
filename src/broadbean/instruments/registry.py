@@ -11,7 +11,7 @@ Usage:
 
 import logging
 from enum import Enum
-from typing import Any
+from typing import Any, ClassVar
 
 logger = logging.getLogger(__name__)
 
@@ -61,8 +61,8 @@ class InstrumentRegistry:
         awg = InstrumentRegistry.create_awg("my_driver", config_dict)
     """
 
-    _awg_registry: dict[str, type] = {}
-    _scope_registry: dict[str, type] = {}
+    _awg_registry: ClassVar[dict[str, type]] = {}
+    _scope_registry: ClassVar[dict[str, type]] = {}
 
     @classmethod
     def register_awg(cls, driver_key: str):

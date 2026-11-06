@@ -309,12 +309,12 @@ def _get_instruments(awg_config_id, scope_config_id):
             try:
                 _awg_instance.disconnect()
             except Exception as e:
-                logger.warning(f"Error disconnecting AWG: {e}")
+                logger.warning("Error disconnecting AWG: %s", e, exc_info=True)
         if _scope_instance is not None:
             try:
                 _scope_instance.disconnect()
             except Exception as e:
-                logger.warning(f"Error disconnecting Scope: {e}")
+                logger.warning("Error disconnecting Scope: %s", e, exc_info=True)
         _awg_instance = None
         _scope_instance = None
 

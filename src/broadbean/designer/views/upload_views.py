@@ -129,9 +129,7 @@ def upload_sequence(request):
             status=404,
         )
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("upload_sequence failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -188,15 +186,11 @@ def trigger_and_capture(request):
             )
 
         except Exception as e:
-            import traceback
-
-            traceback.print_exc()
+            logger.exception("trigger_and_capture failed")
             return JsonResponse({"success": False, "error": str(e)}, status=400)
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("trigger_and_capture failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -266,15 +260,11 @@ def jump_to_and_capture(request):
             )
 
         except Exception as e:
-            import traceback
-
-            traceback.print_exc()
+            logger.exception("jump_to_and_capture failed")
             return JsonResponse({"success": False, "error": str(e)}, status=400)
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("jump_to_and_capture failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
@@ -296,7 +286,5 @@ def disconnect_instruments(request):
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception("disconnect_instruments failed")
         return JsonResponse({"success": False, "error": str(e)}, status=400)

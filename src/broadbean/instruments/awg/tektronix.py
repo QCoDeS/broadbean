@@ -47,7 +47,7 @@ class TektronixAWGBase(QCodesStationMixin, ArbitraryWaveformGenerator):
             sample_rate = self.awg.sample_rate()
             logger.info("AWG loaded - Sample rate: %s Sa/s", sample_rate)
         except Exception as e:
-            logger.warning("Could not read sample rate: %s", e)
+            logger.warning("Could not read sample rate: %s", e, exc_info=True)
 
     def upload(self, sequence: Sequence):
         """Upload a sequence to the AWG using upload_seqx.
