@@ -11,6 +11,6 @@ from broadbean.instruments.scope.tektronix import (
 )
 
 __all__ = [
-    "TektronixDPO70000",
     "TektronixDPO7200",
+    "TektronixDPO70000",
 ]

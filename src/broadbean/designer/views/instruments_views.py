@@ -764,7 +764,7 @@ def create_lut_config(request):
                     return JsonResponse(
                         {
                             "success": False,
-                            "error": f"Row {row_num}: Invalid number format - {str(e)}",
+                            "error": f"Row {row_num}: Invalid number format - {e!s}",
                         },
                         status=400,
                     )
@@ -1162,7 +1162,7 @@ def configure_instrument(request):
         except Exception as conn_error:
             logger.error(f"Configuration failed: {conn_error}")
             return JsonResponse(
-                {"success": False, "error": f"Configuration failed: {str(conn_error)}"}
+                {"success": False, "error": f"Configuration failed: {conn_error!s}"}
             )
 
     except Exception as e:

@@ -7,7 +7,7 @@ implementations based on configuration using the InstrumentRegistry.
 import logging
 
 # Import implementations to trigger registration with InstrumentRegistry
-import broadbean.instruments.mock  # noqa: F401
+import broadbean.instruments.mock
 from broadbean.instruments.base.scope import Scope
 from broadbean.instruments.registry import InstrumentRegistry
 

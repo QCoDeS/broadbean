@@ -15,6 +15,6 @@ from broadbean.instruments.registry import (
 
 __all__ = [
     "AWGDriver",
-    "ScopeDriver",
     "InstrumentRegistry",
+    "ScopeDriver",
 ]

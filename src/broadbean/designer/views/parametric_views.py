@@ -200,7 +200,7 @@ def generate_parametric_sequence(request):
             return JsonResponse(
                 {
                     "success": False,
-                    "error": f"Failed to create varying sequence: {str(e)}",
+                    "error": f"Failed to create varying sequence: {e!s}",
                 },
                 status=400,
             )

@@ -134,7 +134,7 @@ def parse_element_data_to_ui_format(element_data: dict) -> list:
     channels = []
 
     # Get all channel numbers (keys that are digits)
-    channel_nums = sorted([int(k) for k in element_data.keys() if k.isdigit()])
+    channel_nums = sorted([int(k) for k in element_data if k.isdigit()])
 
     for channel_num in channel_nums:
         channel_data = element_data[str(channel_num)]

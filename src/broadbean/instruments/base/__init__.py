@@ -6,7 +6,7 @@ from broadbean.instruments.base.scope import Scope
 
 __all__ = [
     "ArbitraryWaveformGenerator",
+    "MockInstrumentState",
     "Scope",
     "mock_state",
-    "MockInstrumentState",
 ]
