@@ -331,6 +331,28 @@ def test_backends_produce_output():
 # TEST FORGER KWARGS
 
 
+@pytest.mark.parametrize("backend", ["matplotlib", "plotly"])
+def test_subsequence_plotting_with_position_limit(simple_sequence, backend):
+    """Both backends retain subsequence plotting and the preview limit."""
+    seq = bb.Sequence()
+    seq.setSR(simple_sequence.SR)
+    seq.addSubSequence(1, simple_sequence)
+    seq.addSubSequence(2, simple_sequence)
+
+    fig = plotter(seq, backend=backend, max_subsequences=1, apply_delays=False)
+
+    if backend == "matplotlib":
+        assert isinstance(fig, matplotlib.figure.Figure)
+        assert len(fig.axes) == 2  # One subplot and its channel-label twin axis
+        matplotlib.pyplot.close(fig)
+    else:
+        import plotly.graph_objects as go
+
+        assert isinstance(fig, go.Figure)
+        assert len(fig.data) > 0
+        assert "xaxis2" not in fig.layout
+
+
 def test_matplotlib_with_forger_kwargs(simple_element):
     """Test that forger kwargs are passed through for matplotlib"""
     fig = plotter(simple_element, backend="matplotlib", apply_delays=False)

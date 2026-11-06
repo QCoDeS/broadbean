@@ -168,7 +168,7 @@ class _AWGOutput:
 
     def __getitem__(self, key):
         if isinstance(key, int):
-            if key in self._channels.keys():
+            if key in self._channels:
                 output = (
                     [self._channels[key]["wfms"]],
                     [self._channels[key]["m1s"]],
