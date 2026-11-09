@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "setuptools >= 68.1.2",
+    "setuptools >= 77.0.3",
     "versioningit >= 2.2.1",
 ]
 build-backend = 'setuptools.build_meta'
@@ -13,14 +13,14 @@ keywords = ["Pulsebuilding signal processing arbitrary waveforms"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering",
 ]
-license = {text = "MIT"}
+license = "MIT"
+license-files = ["LICENSE"]
 urls = {Homepage = "https://github.com/QCoDeS/broadbean"}
 requires-python = ">=3.12"
 dependencies = [
