@@ -187,7 +187,7 @@ python-dateutil==4.0.0
     #   matplotlib
 pyyaml==6.0.3
     # via sphinx-jsonschema
-pyzmq==27.2.0
+pyzmq==27.3.0
     # via
     #   ipykernel
     #   jupyter-client
