@@ -39,7 +39,7 @@ cycler==0.12.1
     # via matplotlib
 debugpy==1.8.22
     # via ipykernel
-decorator==5.3.1
+decorator==5.3.2
     # via ipython
 defusedxml==0.7.1
     # via nbconvert
